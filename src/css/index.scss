@@ -1,0 +1,26 @@
+* {
+	box-sizing: border-box;
+}
+html {
+	-webkit-text-size-adjust: 100%;
+	font-size: 62.5%;
+}
+body {
+	line-height: 1.5;
+	font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック","MS PGothic", sans-serif; /* 適時変更 */
+	font-size: 1.2rem;
+	color: #333333;
+}
+img {
+	max-width: 100%;
+	height: auto;
+	vertical-align: bottom;
+	-ms-interpolation-mode: bicubic;
+}
+.App {
+    max-width: 640px;
+    margin: 0 auto;
+}
+main {
+  display: block;
+}
