@@ -1,13 +1,19 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
+import { Balance, sumAmount } from '../Model/budget.model';
 
-export const Graph:React.FC = () => {
+interface GraphProps {
+    moneyList: Balance[];
+}
+
+export const Graph:React.FC<GraphProps> = (props) => {
 
     const data = {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        labels: ['Red', 'Blue'],
+        //labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
         datasets: [{
             label: 'Dataset',
-            data: [12, 19, 3, 5, 2, 3],
+            data: [sumAmount(props.moneyList, 'income'), sumAmount(props.moneyList, 'outgo')],
             backgroundColor: [
                 'rgba(255, 99, 132, 1)',
                 'rgba(54, 162, 235, 1)',

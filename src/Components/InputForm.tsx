@@ -5,7 +5,6 @@ interface InputFormProps {
     onSubmitHandler: (newAmount: number, newType: BalanceType, newContent: string) => void
 }
 
-
 export const InputForm: React.FC<InputFormProps> = (props) => {
 
     // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
@@ -19,9 +18,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
         const newContent = contentInputRef.current!.value;
         const newType = (newAmount >= 0) ? 'income' : 'outgo';
 
-
         props.onSubmitHandler(newAmount, newType, newContent)
-        console.log('run');
         
 
     }
