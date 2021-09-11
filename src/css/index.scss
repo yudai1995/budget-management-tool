@@ -47,6 +47,10 @@ main {
 
 .topWrapper {
     display: flex;
+
+    &+ section {
+        margin-top: 60px;
+    }
 }
 
 .monthlyResult {

@@ -65,7 +65,7 @@ const App: React.FC = () => {
                     </div>
 
                     <section>
-                        <h2 className="result-ttl">{`${date.getMonth()}月の結果`}</h2>
+                        <h2 className="result-ttl">{`${date.getMonth()+1}月の結果`}</h2>
                         <ul className="monthlyResult">
                             {balanceType.map((type, index) => (
                                 <li key={index}>

@@ -37,7 +37,7 @@ export const Graph: React.FC<GraphProps> = (props) => {
 
     return (
         <div className="doughnutWrapper">
-            <Doughnut data={data} width={300} height={300} options={options} />
+            <Doughnut data={data} width={240} height={240} options={options} />
         </div>
     );
 };

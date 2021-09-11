@@ -53,7 +53,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                     type="number"
                     id="amount"
                     ref={amountInputRef}
-                    placeholder="Enter amount to add."
+                    placeholder="金額をご入力ください"
                 />
             </div>
 
@@ -63,7 +63,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                     type="text"
                     id="amount"
                     ref={contentInputRef}
-                    placeholder="Enter to add."
+                    placeholder="内容をご入力ください"
                 />
             </div>
 
