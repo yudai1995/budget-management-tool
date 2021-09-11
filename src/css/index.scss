@@ -47,25 +47,6 @@ main {
 
 .topWrapper {
     display: flex;
-
-    &+ section {
-        margin-top: 60px;
-    }
-}
-
-.monthlyResult {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    
-    > li {
-        width: 50%;
-    }
-}
-h2.result-ttl {
-    text-align: center;
-    font-size: 1.8rem;
 }
 
 @media screen and (max-width: 760px) {
@@ -78,4 +59,4 @@ h2.result-ttl {
     .topWrapper {
         display: block;
     }
-  }
+}

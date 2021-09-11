@@ -19,66 +19,75 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
     const amountInputRef = useRef<HTMLInputElement>(null);
     const contentInputRef = useRef<HTMLInputElement>(null);
     const [inputDate, setInputDate] = useState(new Date());
-    const [activeTab, setActiveaTab] = useState(balanceType[0]);
+    const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
 
     const newItemSubmitHandler = (event: React.FormEvent) => {
         event.preventDefault();
         const newAmount = +amountInputRef.current!.value;
         const newContent = contentInputRef.current!.value;
-        const newType = balanceType.findIndex((type) => type === activeTab);
+        const newType = balanceType.findIndex(
+            (type) => type.typename === activeTab
+        );
         props.onSubmitHandler(newAmount, newType, newContent, inputDate);
+        amountInputRef.current!.value = '';
+        contentInputRef.current!.value = '';
     };
 
-    const tabClickHandler = (type: string) => {
+    const tabClickHandler = (type: '収入' | '支出') => {
         setActiveaTab(type);
     };
 
     return (
-        <form onSubmit={newItemSubmitHandler}>
-            <ul className="tabList">
-                {balanceType.map((type, index) => (
-                    <li
-                        key={index}
-                        className={classNames({ isActive: activeTab === type })}
-                        onClick={tabClickHandler.bind(null, type)}
-                    >
-                        {type}
-                    </li>
-                ))}
-            </ul>
+        <section className="inputFormSection">
+            <h2>入力</h2>
+            <form onSubmit={newItemSubmitHandler}>
+                <ul className="tabList">
+                    {balanceType.map((type, index) => (
+                        <li
+                            key={index}
+                            className={classNames({
+                                isActive: activeTab === type.typename,
+                            })}
+                            onClick={tabClickHandler.bind(null, type.typename)}
+                        >
+                            {type.typename}
+                        </li>
+                    ))}
+                </ul>
 
-            <div className={classNames('inputAmount', 'input')}>
-                <label htmlFor="amount">金額</label>
-                <input
-                    type="number"
-                    id="amount"
-                    ref={amountInputRef}
-                    placeholder="金額をご入力ください"
-                />
-            </div>
+                <div className={classNames('inputAmount', 'input')}>
+                    <label htmlFor="amount">金額</label>
+                    <input
+                        type="number"
+                        id="amount"
+                        ref={amountInputRef}
+                        placeholder="金額をご入力ください: 例 1000"
+                    />
+                </div>
 
-            <div className={classNames('inputContent', 'input')}>
-                <label htmlFor="content">内容</label>
-                <input
-                    type="text"
-                    id="amount"
-                    ref={contentInputRef}
-                    placeholder="内容をご入力ください"
-                />
-            </div>
+                <div className={classNames('inputContent', 'input')}>
+                    <label htmlFor="content">内容</label>
+                    <input
+                        type="text"
+                        id="amount"
+                        ref={contentInputRef}
+                        placeholder="内容をご入力ください"
+                    />
+                </div>
 
-            <div className={classNames('inputDate', 'input')}>
-                <label htmlFor="content">日付</label>
-                <DatePicker
-                    dateFormat="yyyy/MM/dd"
-                    selected={inputDate}
-                    //maxDate={inputDate}
-                    onChange={(date: Date) => setInputDate(date)}
-                />
-            </div>
-            <button type="submit" className="submitBtn">
-                追加
-            </button>
-        </form>
+                <div className={classNames('inputDate', 'input')}>
+                    <label htmlFor="content">日付</label>
+                    <DatePicker
+                        dateFormat="yyyy/MM/dd"
+                        selected={inputDate}
+                        //maxDate={inputDate}
+                        onChange={(date: Date) => setInputDate(date)}
+                    />
+                </div>
+                <button type="submit" className="submitBtn">
+                    追加
+                </button>
+            </form>
+        </section>
     );
 };

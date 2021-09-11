@@ -1,10 +1,31 @@
-// export type BalanceType = 'income' | 'outgo';
-
 export enum BalanceType {
     Income,
     Outgo,
 }
-export const balanceType = ['収入', '支出'];
+export type BalanceTypes = {
+    type: 'income' | 'outgo';
+    typenum: 0 | 1;
+    typename: '収入' | '支出';
+    color: string;
+    borderColor: string;
+};
+
+export const balanceType: BalanceTypes[] = [
+    {
+        type: 'income',
+        typenum: 0,
+        typename: '収入',
+        color: '#4dbf7b',
+        borderColor: '#0d9242',
+    },
+    {
+        type: 'outgo',
+        typenum: 1,
+        typename: '支出',
+        color: '#ff9676',
+        borderColor: '#ff2419',
+    },
+];
 
 export class Balance {
     constructor(

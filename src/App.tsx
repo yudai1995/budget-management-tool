@@ -3,12 +3,11 @@ import { Header } from './Components/Header';
 import { InputForm } from './Components/InputForm';
 import {
     BalanceType,
-    balanceType,
     Balance,
-    sumAmount,
 } from './Model/budget.model';
 import { Graph } from './Components/Graph';
 import { ItemList } from './Components/ItemList';
+import { Result } from './Components/Result';
 
 const App: React.FC = () => {
     const [moneyList, setMoneyList] = useState<Balance[]>([]);
@@ -60,25 +59,40 @@ const App: React.FC = () => {
             <main>
                 <div className="inner">
                     <div className="topWrapper">
-                        <InputForm onSubmitHandler={addHandler} />
                         <Graph moneyList={filterActiveMonth()} />
+                        <InputForm onSubmitHandler={addHandler} />
                     </div>
 
-                    <section>
-                        <h2 className="result-ttl">{`${date.getMonth()+1}月の結果`}</h2>
+                    <Result filterActiveMonth={filterActiveMonth}  date={date}/>
+
+
+                    {/* <section>
+                        <h2 className="result-ttl">{`${
+                            date.getMonth() + 1 === thisMonth
+                                ? '今'
+                                : date.getMonth() + 1
+                        }月の${
+                            date.getMonth() + 1 > thisMonth ? '計画' : '結果'
+                        }`}</h2>
                         <ul className="monthlyResult">
                             {balanceType.map((type, index) => (
                                 <li key={index}>
-                                    <h3>{`今月の${type}`}</h3>
+                                    <h3>{`今月の${type.typename}`}</h3>
                                     <p>
-                                        {`${index === 0 ? "+" : "-"} ${sumAmount(filterActiveMonth(), index)}円`}
+                                        {`${
+                                            index === 0 ? '+' : '-'
+                                        } ${sumAmount(
+                                            filterActiveMonth(),
+                                            index
+                                        )}円`}
                                     </p>
                                 </li>
                             ))}
                         </ul>
+                        </section> */}
 
                         <ItemList moneyList={filterActiveMonth()}></ItemList>
-                    </section>
+                    
                 </div>
             </main>
         </div>
