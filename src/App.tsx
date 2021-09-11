@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
+import { validate } from 'class-validator';
 import { Header } from './Components/Header';
 import { InputForm } from './Components/InputForm';
-import {
-    BalanceType,
-    Balance,
-} from './Model/budget.model';
+import { BalanceType, Balance } from './Model/budget.model';
 import { Graph } from './Components/Graph';
 import { ItemList } from './Components/ItemList';
 import { Result } from './Components/Result';
@@ -26,7 +24,19 @@ const App: React.FC = () => {
             newContent,
             newDate
         );
-        setMoneyList((prevmoneyList) => [newItem, ...prevmoneyList]);
+        validate(newItem)
+            .then((errors) => {
+                console.log(errors);
+                if (errors.length > 0) {
+                    throw new Error('Error');
+                }
+
+                setMoneyList((prevmoneyList) => [newItem, ...prevmoneyList]);
+            })
+            .catch((err) => {
+                console.log(err);
+                alert('再度入力してください');
+            });
     };
 
     const handlerPrevMonth = () => {
@@ -63,36 +73,9 @@ const App: React.FC = () => {
                         <InputForm onSubmitHandler={addHandler} />
                     </div>
 
-                    <Result filterActiveMonth={filterActiveMonth}  date={date}/>
+                    <Result filterActiveMonth={filterActiveMonth} date={date} />
 
-
-                    {/* <section>
-                        <h2 className="result-ttl">{`${
-                            date.getMonth() + 1 === thisMonth
-                                ? '今'
-                                : date.getMonth() + 1
-                        }月の${
-                            date.getMonth() + 1 > thisMonth ? '計画' : '結果'
-                        }`}</h2>
-                        <ul className="monthlyResult">
-                            {balanceType.map((type, index) => (
-                                <li key={index}>
-                                    <h3>{`今月の${type.typename}`}</h3>
-                                    <p>
-                                        {`${
-                                            index === 0 ? '+' : '-'
-                                        } ${sumAmount(
-                                            filterActiveMonth(),
-                                            index
-                                        )}円`}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                        </section> */}
-
-                        <ItemList moneyList={filterActiveMonth()}></ItemList>
-                    
+                    <ItemList moneyList={filterActiveMonth()}></ItemList>
                 </div>
             </main>
         </div>

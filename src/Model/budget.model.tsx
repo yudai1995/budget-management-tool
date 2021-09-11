@@ -1,3 +1,4 @@
+import { IsNotEmpty, Min, IsDate } from 'class-validator';
 export enum BalanceType {
     Income,
     Outgo,
@@ -28,13 +29,23 @@ export const balanceType: BalanceTypes[] = [
 ];
 
 export class Balance {
+    @IsNotEmpty()
+    @Min(1)
+    amount: number;
+
+    @IsDate()
+    date: Date
+
     constructor(
         public id: string,
-        public amount: number,
+        amount: number,
         public balanceType: BalanceType,
         public content: string,
-        public date: Date
-    ) {}
+        date: Date
+    ) {
+        this.amount = amount;
+        this.date = date;
+    }
 }
 
 /**

@@ -30,9 +30,15 @@ export const Graph: React.FC<GraphProps> = (props) => {
     };
 
     const options = {
-        legend: {
-            position: 'bottom',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                }
+            },
         },
+
         // scales: {
         //     yAxes: [{
         //         ticks: {
