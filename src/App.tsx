@@ -11,6 +11,7 @@ import { Footer } from './Components/Footer';
 const App: React.FC = () => {
     const [moneyList, setMoneyList] = useState<Balance[]>([]);
     const [date, setDate] = useState(new Date());
+    const [inputDate, setInputDate] = useState(new Date());
 
     const addHandler = (
         newAmount: number,
@@ -40,11 +41,16 @@ const App: React.FC = () => {
             });
     };
 
+    const changeDateHandler = (date: Date) => {
+        setInputDate(date);
+    };
+
     const handlerPrevMonth = () => {
         const year = date.getFullYear();
         const month = date.getMonth() - 1;
         const day = date.getDate();
         setDate(new Date(year, month, day));
+        setInputDate(new Date(year, month, 1));
     };
 
     const handlerNextMonth = () => {
@@ -52,11 +58,12 @@ const App: React.FC = () => {
         const month = date.getMonth() + 1;
         const day = date.getDate();
         setDate(new Date(year, month, day));
+        setInputDate(new Date(year, month, 1));
     };
 
     const filterActiveMonth = () => {
         return moneyList.filter(
-            (item) => item.date.getMonth() === date.getMonth()
+            (item) => item.date.getMonth() === date.getMonth() && item.date.getFullYear() === date.getFullYear()
         );
     };
 
@@ -71,7 +78,11 @@ const App: React.FC = () => {
                 <div className="inner">
                     <div className="topWrapper">
                         <Graph moneyList={filterActiveMonth()} />
-                        <InputForm onSubmitHandler={addHandler} />
+                        <InputForm
+                            onSubmitHandler={addHandler}
+                            onChangeDateHandler={changeDateHandler}
+                            inputDate={inputDate}
+                        />
                     </div>
 
                     <Result filterActiveMonth={filterActiveMonth} date={date} />

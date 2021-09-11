@@ -12,13 +12,14 @@ interface InputFormProps {
         newContent: string,
         newDate: Date
     ) => void;
+    onChangeDateHandler: (date: Date) => void;
+    inputDate: Date;
 }
 
 export const InputForm: React.FC<InputFormProps> = (props) => {
     // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
     const amountInputRef = useRef<HTMLInputElement>(null);
     const contentInputRef = useRef<HTMLInputElement>(null);
-    const [inputDate, setInputDate] = useState(new Date());
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
 
     const newItemSubmitHandler = (event: React.FormEvent) => {
@@ -28,7 +29,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
         const newType = balanceType.findIndex(
             (type) => type.typename === activeTab
         );
-        props.onSubmitHandler(newAmount, newType, newContent, inputDate);
+        props.onSubmitHandler(newAmount, newType, newContent, props.inputDate);
         amountInputRef.current!.value = '';
         contentInputRef.current!.value = '';
     };
@@ -36,6 +37,11 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
     const tabClickHandler = (type: '収入' | '支出') => {
         setActiveaTab(type);
     };
+
+    const onChangeDateHandler = (date: Date) => {
+        props.onChangeDateHandler(date);
+
+    }
 
     return (
         <section className="inputFormSection">
@@ -79,9 +85,9 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                     <label htmlFor="content">日付</label>
                     <DatePicker
                         dateFormat="yyyy/MM/dd"
-                        selected={inputDate}
+                        selected={props.inputDate}
                         //maxDate={inputDate}
-                        onChange={(date: Date) => setInputDate(date)}
+                        onChange={(date: Date) => onChangeDateHandler(date)}
                     />
                 </div>
                 <button type="submit" className="submitBtn">
