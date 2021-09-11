@@ -18,7 +18,7 @@ export const Graph: React.FC<GraphProps> = (props) => {
                     sumAmount(props.moneyList, 0),
                     sumAmount(props.moneyList, 1),
                 ],
-                backgroundColor: ['#53dc8a', '#ff9676'],
+                backgroundColor: ['#4dbf7b', '#ff9676'],
                 borderColor: ['#0d9242', '#ff2419'],
                 borderWidth: 1,
             },
