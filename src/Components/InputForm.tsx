@@ -91,7 +91,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                     />
                 </div>
                 <button type="submit" className="submitBtn">
-                    追加
+                    追加する
                 </button>
             </form>
         </section>
