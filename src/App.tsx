@@ -6,6 +6,7 @@ import { BalanceType, Balance } from './Model/budget.model';
 import { Graph } from './Components/Graph';
 import { ItemList } from './Components/ItemList';
 import { Result } from './Components/Result';
+import { Footer } from './Components/Footer';
 
 const App: React.FC = () => {
     const [moneyList, setMoneyList] = useState<Balance[]>([]);
@@ -78,6 +79,7 @@ const App: React.FC = () => {
                     <ItemList moneyList={filterActiveMonth()}></ItemList>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 };
