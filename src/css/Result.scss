@@ -23,6 +23,8 @@ section.resultSection {
         width: 100%;
 
         > li {
+            width: 50%;
+            text-align: center;
             & + li {
                 margin-left: 20px;
             }
