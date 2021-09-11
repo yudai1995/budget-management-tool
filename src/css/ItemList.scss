@@ -6,17 +6,15 @@
     margin-top: 40px;
 
     > div.income,
-    > div.outgo { 
+    > div.outgo {
         width: 100%;
 
         ul {
             > li {
-
                 display: flex;
                 padding: 0 10px;
 
-                &+ li {
-                    
+                & + li {
                     margin-top: 10px;
                     padding-top: 10px;
                     border-top: 1px solid #dddddd;
@@ -26,23 +24,48 @@
                     font-size: 1.4rem;
                     color: #696969;
 
-                    &+ .amount {
+                    & + .amount {
                         margin-left: 20px;
                     }
                 }
                 .amount {
                     font-size: 1.6rem;
                 }
-
             }
         }
     }
 
     > div.income {
-        &+div.outgo {
+        & + div.outgo {
             margin-left: 30px;
         }
     }
+}
 
+@media screen and (max-width: 760px) {
+    .result {
+        > div.income,
+        > div.outgo {
+            ul {
+                text-align: left;
+                > li {
+                    display: block;
 
+                    > .date {
+                        font-size: 1.2rem;
+                        color: #696969;
+
+                        & + .amount {
+                            margin-left: 0;
+                            margin-top: 2px;
+                        }
+                    }
+
+                    span {
+                        display: block;
+                    }
+                }
+            }
+        }
+    }
 }

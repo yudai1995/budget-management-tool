@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React from 'react';
 import '../css/Header.scss';
 
@@ -18,7 +19,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
                 <div className="activeMonth">
                     <button
                         onClick={props.onPrevMonth}
-                        className="changeMonthBtn"
+                        className={classNames("changeMonthBtn", "prev")}
                     >
                         先月
                     </button>
@@ -27,7 +28,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
                     </p>
                     <button
                         onClick={props.onNextMonth}
-                        className="changeMonthBtn"
+                        className={classNames("changeMonthBtn", "next")}
                     >
                         来月
                     </button>

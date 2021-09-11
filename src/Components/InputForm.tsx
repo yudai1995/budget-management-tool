@@ -47,7 +47,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                 ))}
             </ul>
 
-            <div className={classNames("inputAmount", "input")}>
+            <div className={classNames('inputAmount', 'input')}>
                 <label htmlFor="amount">金額</label>
                 <input
                     type="number"
@@ -57,7 +57,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                 />
             </div>
 
-            <div className={classNames("inputContent", "input")}>
+            <div className={classNames('inputContent', 'input')}>
                 <label htmlFor="content">内容</label>
                 <input
                     type="text"
@@ -67,7 +67,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                 />
             </div>
 
-            <div className={classNames("inputDate", "input")}>
+            <div className={classNames('inputDate', 'input')}>
                 <label htmlFor="content">日付</label>
                 <DatePicker
                     dateFormat="yyyy/MM/dd"

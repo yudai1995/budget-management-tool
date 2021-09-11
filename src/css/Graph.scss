@@ -2,3 +2,11 @@
     max-width: min-content;
     width: calc(100% - 300px);
 }
+
+@media screen and (max-width: 760px) {
+    .doughnutWrapper {
+        max-width: min-content;
+        width: 100%;
+        margin: 0 auto!important;
+    }
+}

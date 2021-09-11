@@ -11,7 +11,7 @@ export const ItemList: React.FC<ItemListProps> = (props) => {
     return (
         <div className="result">
             {balanceType.map((type, index) => (
-                <div
+                <div key={index}
                     className={classNames({
                         income: type === '収入',
                         outgo: type === '支出',
