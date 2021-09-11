@@ -1,26 +1,74 @@
 * {
-	box-sizing: border-box;
+    box-sizing: border-box;
 }
+
 html {
-	-webkit-text-size-adjust: 100%;
-	font-size: 62.5%;
+    -webkit-text-size-adjust: 100%;
+    font-size: 62.5%;
 }
 body {
-	line-height: 1.5;
-	font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック","MS PGothic", sans-serif; /* 適時変更 */
-	font-size: 1.2rem;
-	color: #333333;
+    line-height: 1.5;
+    font-family: 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ',
+        Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif; /* 適時変更 */
+    font-size: 1.2rem;
+    color: #333333;
+    margin: 0;
+    min-width: 860px;
 }
 img {
-	max-width: 100%;
-	height: auto;
-	vertical-align: bottom;
-	-ms-interpolation-mode: bicubic;
+    max-width: 100%;
+    height: auto;
+    vertical-align: bottom;
+    -ms-interpolation-mode: bicubic;
+}
+button,
+input {
+    outline: none;
+}
+ul,
+ol {
+    margin: 0;
+    padding: 0;
+}
+li {
+    margin: 0;
+    padding: 0;
+    display: block;
 }
 .App {
-    max-width: 640px;
-    margin: 0 auto;
+    .inner {
+        max-width: 860px;
+        margin: 0 auto;
+    }
 }
 main {
-  display: block;
+    display: block;
 }
+
+.topWrapper {
+    display: flex;
+}
+
+.monthlyResult {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    
+    > li {
+        width: 50%;
+    }
+}
+h2.result-ttl {
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+@media screen and (max-width: 760px) {
+    body {
+        min-width: auto;
+    }
+    .inner {
+        padding: 0 8px;
+    }
+  }

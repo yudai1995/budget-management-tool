@@ -1,0 +1,47 @@
+.result {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: baseline;
+
+    > div.income,
+    > div.outgo { 
+        width: 100%;
+
+        ul {
+            > li {
+
+                display: flex;
+                padding: 0 10px;
+
+                &+ li {
+                    
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    border-top: 1px solid #dddddd;
+                }
+
+                > .date {
+                    font-size: 1.4rem;
+                    color: #696969;
+
+                    &+ .amount {
+                        margin-left: 20px;
+                    }
+                }
+                .amount {
+                    font-size: 1.6rem;
+                }
+
+            }
+        }
+    }
+
+    > div.income {
+        &+div.outgo {
+            margin-left: 30px;
+        }
+    }
+
+
+}
