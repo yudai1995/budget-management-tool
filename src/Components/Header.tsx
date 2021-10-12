@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
     return (
         <header>
             <div className="inner">
-                <h1>Budget</h1>
+                <h1>家計簿管理ツール</h1>
                 <div className="activeMonth">
                     <button
                         onClick={props.onPrevMonth}
