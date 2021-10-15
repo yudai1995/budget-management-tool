@@ -1,6 +1,6 @@
 import React from 'react';
 import { Balance, balanceType, filterMoneyType } from '../Model/budget.model';
-import '../css/ItemList.scss';
+import '../styles/ItemList.scss';
 
 interface ItemListProps {
     moneyList: Balance[];

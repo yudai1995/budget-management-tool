@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
-import '../css/Header.scss';
+import '../styles/Header.scss';
+import Logo from '../img/common/icon-logo.png';
 
 interface HeaderProps {
     date: Date;
@@ -15,11 +16,14 @@ export const Header: React.FC<HeaderProps> = (props) => {
     return (
         <header>
             <div className="inner">
-                <h1>家計簿管理ツール</h1>
+                <h1>
+                    <img src={Logo} alt="家計簿管理ツール" width="32" height="32" />
+                    家計簿管理ツール
+                </h1>
                 <div className="activeMonth">
                     <button
                         onClick={props.onPrevMonth}
-                        className={classNames("changeMonthBtn", "prev")}
+                        className={classNames('changeMonthBtn', 'prev')}
                     >
                         先月
                     </button>
@@ -28,7 +32,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
                     </p>
                     <button
                         onClick={props.onNextMonth}
-                        className={classNames("changeMonthBtn", "next")}
+                        className={classNames('changeMonthBtn', 'next')}
                     >
                         来月
                     </button>

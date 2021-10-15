@@ -3,7 +3,7 @@ import DatePicker from 'react-datepicker';
 import classNames from 'classnames';
 import { BalanceType, balanceType } from '../Model/budget.model';
 import 'react-datepicker/dist/react-datepicker.css';
-import '../css/InputForm.scss';
+import '../styles/InputForm.scss';
 
 interface InputFormProps {
     onSubmitHandler: (

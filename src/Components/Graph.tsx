@@ -1,7 +1,7 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Balance, balanceType, sumAmount } from '../Model/budget.model';
-import '../css/Graph.scss';
+import '../styles/Graph.scss';
 import classNames from 'classnames';
 
 interface GraphProps {

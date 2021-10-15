@@ -1,6 +1,6 @@
 import React from 'react';
 import { Balance, balanceType, sumAmount } from '../Model/budget.model';
-import '../css/Result.scss';
+import '../styles/Result.scss';
 
 interface ResultProps {
     date: Date;
