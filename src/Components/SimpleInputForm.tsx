@@ -1,26 +1,22 @@
 import React, { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addBudget } from '../store/budgetListSlice';
+import { validate } from 'class-validator';
 import DatePicker from 'react-datepicker';
 import classNames from 'classnames';
-import { BalanceType, balanceType } from '../Model/budget.model';
+import { Budget, balanceType, getRandomID } from '../Model/budget.model';
+import { DateModel, formatDate } from '../Model/Date.model';
 import 'react-datepicker/dist/react-datepicker.css';
-import '../styles/InputForm.scss';
+import '../styles/SimpleInputForm.scss';
 
-interface InputFormProps {
-    onSubmitHandler: (
-        newAmount: number,
-        newType: BalanceType,
-        newContent: string,
-        newDate: Date
-    ) => void;
-    onChangeDateHandler: (date: Date) => void;
-    inputDate: Date;
-}
-
-export const InputForm: React.FC<InputFormProps> = (props) => {
+export const SimpleInputForm: React.FC = () => {
     // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
     const amountInputRef = useRef<HTMLInputElement>(null);
     const contentInputRef = useRef<HTMLInputElement>(null);
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
+    const [activeDate, setActiveDate] = useState(new Date());
+
+    const dispatch = useDispatch();
 
     const newItemSubmitHandler = (event: React.FormEvent) => {
         event.preventDefault();
@@ -29,23 +25,38 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
         const newType = balanceType.findIndex(
             (type) => type.typename === activeTab
         );
-        props.onSubmitHandler(newAmount, newType, newContent, props.inputDate);
+
+        const newDate = formatDate(activeDate, DateModel.YY_MM_DD);
+
+        const newItem = new Budget(
+            getRandomID(),
+            newAmount,
+            newType,
+            newContent,
+            newDate,
+            0
+        );
+
+        validate(newItem)
+            .then((errors) => {
+                if (errors.length > 0) {
+                    throw new Error('Error');
+                }
+                dispatch(
+                    addBudget({ newAmount, newType, newContent, newDate })
+                );
+            })
+            .catch((err) => {
+                console.log(err);
+                alert('再度入力してください');
+            });
+
         amountInputRef.current!.value = '';
         contentInputRef.current!.value = '';
     };
 
-    const tabClickHandler = (type: '収入' | '支出') => {
-        setActiveaTab(type);
-    };
-
-    const onChangeDateHandler = (date: Date) => {
-        props.onChangeDateHandler(date);
-
-    }
-
     return (
-        <section className="inputFormSection">
-            <h2>入力</h2>
+        <>
             <form onSubmit={newItemSubmitHandler}>
                 <ul className="tabList">
                     {balanceType.map((type, index) => (
@@ -54,7 +65,7 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                             className={classNames({
                                 isActive: activeTab === type.typename,
                             })}
-                            onClick={tabClickHandler.bind(null, type.typename)}
+                            onClick={() => setActiveaTab(type.typename)}
                         >
                             {type.typename}
                         </li>
@@ -85,15 +96,15 @@ export const InputForm: React.FC<InputFormProps> = (props) => {
                     <label htmlFor="content">日付</label>
                     <DatePicker
                         dateFormat="yyyy/MM/dd"
-                        selected={props.inputDate}
+                        selected={activeDate}
                         //maxDate={inputDate}
-                        onChange={(date: Date) => onChangeDateHandler(date)}
+                        onChange={(date: Date) => setActiveDate(date)}
                     />
                 </div>
                 <button type="submit" className="submitBtn">
                     追加する
                 </button>
             </form>
-        </section>
+            </>
     );
 };

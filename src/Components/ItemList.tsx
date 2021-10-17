@@ -1,25 +1,25 @@
 import React from 'react';
-import { Balance, balanceType, filterMoneyType } from '../Model/budget.model';
+import { Budget, balanceType } from '../Model/budget.model';
 import '../styles/ItemList.scss';
 
 interface ItemListProps {
-    moneyList: Balance[];
+    BudgetLists: Budget[];
 }
 
-export const ItemList: React.FC<ItemListProps> = (props) => {
+export const ItemList: React.FC<ItemListProps> = ({BudgetLists}) => {
     return (
         <section className="itemListSection">
             <h2>収支一覧</h2>
-            {props.moneyList.length === 0 ? (
+            {BudgetLists.length === 0 ? (
                 <p className="noData">データがありません</p>
             ) : (
                 <div className="result">
                     {balanceType.map((type, index) => (
                         <div key={index} className={type.type}>
                             <h3>{type.typename}</h3>
-                            <ul>
+                            {/* <ul>
                                 {filterMoneyType(
-                                    props.moneyList,
+                                    BudgetLists,
                                     type.typenum
                                 ).map((item) => (
                                     <li key={item.id}>
@@ -33,7 +33,7 @@ export const ItemList: React.FC<ItemListProps> = (props) => {
                                         }円`}</span>
                                     </li>
                                 ))}
-                            </ul>
+                            </ul> */}
                         </div>
                     ))}
                 </div>

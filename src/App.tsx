@@ -1,96 +1,63 @@
-import React, { useState } from 'react';
-import { validate } from 'class-validator';
+import React from 'react';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from './store/index';
+import { getTargetDateList } from './store/budgetListSlice';
 import { Header } from './Components/Header';
-import { InputForm } from './Components/InputForm';
-import { BalanceType, Balance } from './Model/budget.model';
+import { ColumnLayout, SubColumn, MainColumn } from './Components/Layout';
+import { NotFound } from './Components/NotFound';
 import { Graph } from './Components/Graph';
 import { ItemList } from './Components/ItemList';
-import { Result } from './Components/Result';
 import { Footer } from './Components/Footer';
 
 const App: React.FC = () => {
-    const [moneyList, setMoneyList] = useState<Balance[]>([]);
-    const [date, setDate] = useState(new Date());
-    const [inputDate, setInputDate] = useState(new Date());
-
-    const addHandler = (
-        newAmount: number,
-        newType: BalanceType,
-        newContent: string,
-        newDate: Date
-    ) => {
-        const newItem = new Balance(
-            Math.random().toString(),
-            newAmount,
-            newType,
-            newContent,
-            newDate
-        );
-        validate(newItem)
-            .then((errors) => {
-                console.log(errors);
-                if (errors.length > 0) {
-                    throw new Error('Error');
-                }
-
-                setMoneyList((prevmoneyList) => [newItem, ...prevmoneyList]);
-            })
-            .catch((err) => {
-                console.log(err);
-                alert('再度入力してください');
-            });
-    };
-
-    const changeDateHandler = (date: Date) => {
-        setInputDate(date);
-    };
-
-    const handlerPrevMonth = () => {
-        const year = date.getFullYear();
-        const month = date.getMonth() - 1;
-        const day = date.getDate();
-        setDate(new Date(year, month, day));
-        setInputDate(new Date(year, month, 1));
-    };
-
-    const handlerNextMonth = () => {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        setDate(new Date(year, month, day));
-        setInputDate(new Date(year, month, 1));
-    };
-
-    const filterActiveMonth = () => {
-        return moneyList.filter(
-            (item) => item.date.getMonth() === date.getMonth() && item.date.getFullYear() === date.getFullYear()
-        );
-    };
+    const today = new Date();
+    const budgetLists = useSelector((state) =>
+        getTargetDateList(state as RootState, [
+            today.getFullYear(),
+            today.getMonth() + 1,
+        ])
+    );
 
     return (
         <div className="App">
-            <Header
-                date={date}
-                onPrevMonth={handlerPrevMonth}
-                onNextMonth={handlerNextMonth}
-            />
-            <main>
-                <div className="inner">
-                    <div className="topWrapper">
-                        <Graph moneyList={filterActiveMonth()} />
-                        <InputForm
-                            onSubmitHandler={addHandler}
-                            onChangeDateHandler={changeDateHandler}
-                            inputDate={inputDate}
-                        />
+            <BrowserRouter>
+                <Header />
+                <main>
+                    <div className="inner">
+                        <Switch>
+                            <Route path="/edit">
+                                <section className="content">
+                                    <h2 className="headTitle">収支の入力</h2>
+                                </section>
+                            </Route>
+                            {/* <Route path={['monthly', 'report']}> */}
+                            <Route exact path={['/', '/report']}>
+                                <ColumnLayout>
+                                    <SubColumn />
+                                    <MainColumn />
+                                </ColumnLayout>
+                            </Route>
+                            <Route path="/monthly">
+                                <ColumnLayout>
+                                    <SubColumn />
+                                    <MainColumn />
+                                </ColumnLayout>
+                            </Route>
+                            <Route>
+                                <NotFound />
+                            </Route>
+                        </Switch>
+
+                        <div className="topWrapper">
+                            <Graph />
+                        </div>
+
+                        <ItemList BudgetLists={budgetLists}></ItemList>
                     </div>
-
-                    <Result filterActiveMonth={filterActiveMonth} date={date} />
-
-                    <ItemList moneyList={filterActiveMonth()}></ItemList>
-                </div>
-            </main>
-            <Footer />
+                </main>
+                <Footer />
+            </BrowserRouter>
         </div>
     );
 };

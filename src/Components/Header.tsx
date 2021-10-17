@@ -1,42 +1,46 @@
-import classNames from 'classnames';
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import '../styles/Header.scss';
 import Logo from '../img/common/icon-logo.png';
 
-interface HeaderProps {
-    date: Date;
-    onPrevMonth: () => void;
-    onNextMonth: () => void;
-}
-
-export const Header: React.FC<HeaderProps> = (props) => {
-    const year = props.date.getFullYear();
-    const month = props.date.getMonth() + 1;
-
+export const Header: React.FC = () => {
     return (
         <header>
             <div className="inner">
                 <h1>
-                    <img src={Logo} alt="家計簿管理ツール" width="32" height="32" />
-                    家計簿管理ツール
+                    <NavLink to="/">
+                        <img
+                            src={Logo}
+                            alt="家計簿管理ツール"
+                            width="32"
+                            height="32"
+                        />
+                        家計簿管理ツール
+                    </NavLink>
                 </h1>
-                <div className="activeMonth">
-                    <button
-                        onClick={props.onPrevMonth}
-                        className={classNames('changeMonthBtn', 'prev')}
-                    >
-                        先月
-                    </button>
-                    <p className="month">
-                        <span>{year}</span>年 <span>{month}</span>月
-                    </p>
-                    <button
-                        onClick={props.onNextMonth}
-                        className={classNames('changeMonthBtn', 'next')}
-                    >
-                        来月
-                    </button>
-                </div>
+
+                <ul className="grobalNavi">
+                    <li>
+                        <NavLink activeClassName="active" exact to="/">
+                            ホーム
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink activeClassName="active" to="/monthly">
+                            カレンダー
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink activeClassName="active" to="/report">
+                            レポート
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink activeClassName="active" to="/edit">
+                            入力
+                        </NavLink>
+                    </li>
+                </ul>
             </div>
         </header>
     );

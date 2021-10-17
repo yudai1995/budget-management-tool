@@ -1,50 +1,50 @@
-import { IsNotEmpty, Min, IsDate } from 'class-validator';
+import { IsNotEmpty, Min } from 'class-validator';
+
 export enum BalanceType {
-    Income,
     Outgo,
+    Income,
 }
 export type BalanceTypes = {
-    type: 'income' | 'outgo';
+    type: 'outgo' | 'income';
     typenum: 0 | 1;
-    typename: '収入' | '支出';
+    typename: '支出' | '収入';
     color: string;
     borderColor: string;
 };
 
 export const balanceType: BalanceTypes[] = [
     {
-        type: 'income',
-        typenum: 0,
-        typename: '収入',
-        color: '#4dbf7b',
-        borderColor: '#0d9242',
-    },
-    {
         type: 'outgo',
-        typenum: 1,
+        typenum: 0,
         typename: '支出',
         color: '#ff9676',
         borderColor: '#ff2419',
     },
+    {
+        type: 'income',
+        typenum: 1,
+        typename: '収入',
+        color: '#4dbf7b',
+        borderColor: '#0d9242',
+    },
 ];
 
-export class Balance {
+export class Budget {
     @IsNotEmpty()
     @Min(1)
     amount: number;
-
-    @IsDate()
-    date: Date
+    categoryId: number;
 
     constructor(
         public id: string,
         amount: number,
         public balanceType: BalanceType,
         public content: string,
-        date: Date
+        public date: string,
+        categoryId: number
     ) {
         this.amount = amount;
-        this.date = date;
+        this.categoryId = categoryId;
     }
 }
 
@@ -54,20 +54,29 @@ export class Balance {
  * @param {BalanceType} type
  * @return {number} 合計値
  */
-export const sumAmount = (moneyList: Balance[], type: BalanceType) => {
-    let counter = 0;
-    for (const item of moneyList) {
-        if (item.balanceType === type) counter = counter + item.amount;
-    }
-    return counter;
-};
+// export const sumAmount = (budgetLists: Budget[], type: BalanceType) => {
+//     let counter = 0;
+//     for (const data of budgetLists) {
+//         if (data.balanceType === type) counter = counter + data.amount;
+//     }
+//     return counter;
+// };
 
 /**
- * インスタンスの費用のタイプを取得
+ * インスタンスの支出または収入を取得
  * @param {Balance[]} moneyList
  * @param {BalanceType} type
- * @return {number} 合計値
+ * @return {Budget[]}
  */
-export const filterMoneyType = (moneyList: Balance[], type: BalanceType) => {
-    return moneyList.filter((item) => item.balanceType === type);
+//export const filterMoneyType = (budgetLists: Budget[], type: BalanceType) => {
+//     return budgetLists.filter((data) => data.balanceType === type);
+// };
+
+/**
+ * ランダム値
+ * @param {number} number
+ * @return {string}
+ */
+export const getRandomID = () => {
+    return Math.random().toString();
 };

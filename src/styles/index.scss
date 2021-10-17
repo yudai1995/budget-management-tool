@@ -13,7 +13,7 @@ body {
     font-size: 1.2rem;
     color: #333333;
     margin: 0;
-    min-width: 860px;
+    min-width: 1080px;
 }
 img {
     max-width: 100%;
@@ -37,8 +37,9 @@ li {
 }
 .App {
     .inner {
-        max-width: 860px;
+        max-width: 1080px;
         margin: 0 auto;
+        padding: 0 10px;
     }
 }
 main {
@@ -49,12 +50,20 @@ main {
     display: flex;
 }
 
+h2.headTitle {
+    text-align: center;
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: #ffa600;
+}
+
 @media screen and (max-width: 760px) {
     body {
         min-width: auto;
     }
     .inner {
         padding: 0 8px;
+        max-width: 100%;
     }
     .topWrapper {
         display: block;
