@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store';
 import { addBudget } from '../store/budgetListSlice';
 import { validate } from 'class-validator';
 import DatePicker from 'react-datepicker';
@@ -13,8 +14,13 @@ export const SimpleInputForm: React.FC = () => {
     // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
     const amountInputRef = useRef<HTMLInputElement>(null);
     const contentInputRef = useRef<HTMLInputElement>(null);
+    const categorySelectRef = useRef<HTMLSelectElement>(null);
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
     const [activeDate, setActiveDate] = useState(new Date());
+
+    const categoryList = useSelector(
+        (state: RootState) => state.CategoryList.data
+    );
 
     const dispatch = useDispatch();
 
@@ -25,6 +31,7 @@ export const SimpleInputForm: React.FC = () => {
         const newType = balanceType.findIndex(
             (type) => type.typename === activeTab
         );
+        const newCategory = +categorySelectRef.current!.value;
 
         const newDate = formatDate(activeDate, DateModel.YY_MM_DD);
 
@@ -34,21 +41,37 @@ export const SimpleInputForm: React.FC = () => {
             newType,
             newContent,
             newDate,
-            0
+            newCategory
         );
 
         validate(newItem)
             .then((errors) => {
                 if (errors.length > 0) {
-                    throw new Error('Error');
+                    throw errors;
                 }
                 dispatch(
-                    addBudget({ newAmount, newType, newContent, newDate })
+                    addBudget({
+                        newAmount,
+                        newType,
+                        newContent,
+                        newDate,
+                        newCategory,
+                    })
                 );
             })
             .catch((err) => {
-                console.log(err);
-                alert('再度入力してください');
+                if (err.length > 0) {
+                    err.forEach((err: any) => {
+                        if (err.property === 'categoryId') {
+                            alert('カテゴリが未選択です');
+                        } else if (err.property === 'amount') {
+                            alert('再度入力してください');
+                        } else {
+                            alert('入力エラーです');
+                        }
+                    });
+                    
+                }
             });
 
         amountInputRef.current!.value = '';
@@ -71,27 +94,6 @@ export const SimpleInputForm: React.FC = () => {
                         </li>
                     ))}
                 </ul>
-
-                <div className={classNames('inputAmount', 'input')}>
-                    <label htmlFor="amount">金額</label>
-                    <input
-                        type="number"
-                        id="amount"
-                        ref={amountInputRef}
-                        placeholder="金額をご入力ください: 例 1000"
-                    />
-                </div>
-
-                <div className={classNames('inputContent', 'input')}>
-                    <label htmlFor="content">内容</label>
-                    <input
-                        type="text"
-                        id="amount"
-                        ref={contentInputRef}
-                        placeholder="内容をご入力ください"
-                    />
-                </div>
-
                 <div className={classNames('inputDate', 'input')}>
                     <label htmlFor="content">日付</label>
                     <DatePicker
@@ -101,10 +103,46 @@ export const SimpleInputForm: React.FC = () => {
                         onChange={(date: Date) => setActiveDate(date)}
                     />
                 </div>
+                <div className={classNames('inputAmount', 'input')}>
+                    <label htmlFor="amount">金額</label>
+                    <input
+                        type="number"
+                        id="amount"
+                        ref={amountInputRef}
+                        placeholder="金額をご入力ください: 例 1000"
+                    />
+                </div>
+                <div className={classNames('inputContent', 'input')}>
+                    <label htmlFor="content">カテゴリ</label>
+                    <select
+                        name="category"
+                        id="category"
+                        ref={categorySelectRef}
+                    >
+                        {categoryList.map((category) => (
+                            <option
+                                className={`category${category.categoryId}`}
+                                value={category.categoryId}
+                                key={category.categoryId}
+                            >
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className={classNames('inputContent', 'input')}>
+                    <label htmlFor="content">内容</label>
+                    <input
+                        type="text"
+                        id="amount"
+                        ref={contentInputRef}
+                        placeholder="内容をご入力ください"
+                    />
+                </div>
                 <button type="submit" className="submitBtn">
                     追加する
                 </button>
             </form>
-            </>
+        </>
     );
 };

@@ -1,12 +1,19 @@
+import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import {
     TypedUseSelectorHook,
     useSelector as rawUseSelector,
 } from 'react-redux';
 import budgetListReducer from './budgetListSlice';
+import CategoryListReducer from './CategoryListSlice';
+
+const reducer = combineReducers({
+    budgetList: budgetListReducer,
+    CategoryList: CategoryListReducer,
+});
 
 export const store = configureStore({
-    reducer: { budgetList: budgetListReducer },
+    reducer: reducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {

@@ -1,20 +1,18 @@
-section.graphSection {
-    .doughnutWrapper {
-        width: 300px;
-        &.noData {
-            color: #858585;
-            margin-top: 20px;
-        }
+.doughnutWrapper {
+    width: 300px;
+    &.noData {
+        color: #858585;
+        margin-top: 20px;
     }
+}
 
-    @media screen and (max-width: 760px) {
-        .doughnutWrapper {
-            max-width: min-content;
-            width: 100%;
-            margin: 0 auto !important;
-            &.noData {
-                max-width: 100%;
-            }
+@media screen and (max-width: 760px) {
+    .doughnutWrapper {
+        max-width: min-content;
+        width: 100%;
+        margin: 0 auto !important;
+        &.noData {
+            max-width: 100%;
         }
     }
 }

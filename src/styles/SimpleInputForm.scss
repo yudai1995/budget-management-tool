@@ -1,7 +1,5 @@
 .content {
-    
     form {
-        text-align: center;
         ul.tabList {
             display: flex;
             justify-content: center;
@@ -52,13 +50,16 @@
 
         .input {
             text-align: left;
+            display: inline-block;
+
             > label {
+                display: inline-block;
                 font-size: 1.6rem;
-                width: 160px;
+                width: 100px;
             }
             input {
                 text-align: left;
-                width: 280px;
+                width: 200px;
                 margin-left: 20px;
                 border: 1px solid #5f5f5f;
                 border-radius: 4px;
@@ -101,7 +102,7 @@
             }
         }
 
-        .inputAmount {
+        .inputDate {
             margin-top: 20px;
         }
 
@@ -128,7 +129,7 @@
 }
 
 @media screen and (max-width: 760px) {
-    .inputFormSection {
+    .content {
         width: 100%;
         margin-left: 0;
         form {

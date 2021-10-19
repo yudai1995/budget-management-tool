@@ -1,0 +1,13 @@
+@media screen and (max-width: 760px) {
+    .columnWrapper {
+        display: block !important;
+
+        .mainColumn {
+            width: 100% !important;
+        }
+
+        .subColumn {
+            width: 100% !important;
+        }
+    }
+}

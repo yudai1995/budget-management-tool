@@ -25,7 +25,7 @@ export const budgetListSlice = createSlice({
                 action.payload.newType,
                 action.payload.newContent,
                 action.payload.newDate,
-                0
+                action.payload.newCategory
             );
             state.data = [newItem, ...state.data];
         },
@@ -35,9 +35,9 @@ export const budgetListSlice = createSlice({
 /**
  *  Type Guard
  * */
-function isState(data: any): data is RootState {
+const isState = (data: any): data is RootState => {
     return data.budgetList !== undefined;
-}
+};
 
 /**
  * stateのbudgetListを返す
@@ -95,7 +95,7 @@ export const filterMoneyType = (type: BalanceType, state: RootState) => {
 
 /**
  * 指定の期間のデータを取得する
- * @param {state} RootState
+ * @param {T extends RootState | Budget[]} data
  * @param {Date} targetDate
  * @param {string?} targetDay
  * @return {number} 合計値
@@ -128,6 +128,31 @@ export const getTargetDateList = <T extends RootState | Budget[]>(
                 catchMonth(data.date) === targetDate[1].toString()
         );
     }
+};
+
+/**
+ * 指定の年の通年データを取得する
+ * @param {T extends RootState | Budget[]} data
+ * @param {Date} targetYear
+ * @return {number} 合計値
+ */
+export const getTargetAnnulaList = <T extends RootState | Budget[]>(
+    data: T,
+    target: Date
+) => {
+    let dataList: Budget[];
+    if (isState(data)) {
+        dataList = data.budgetList.data;
+    } else {
+        dataList = data;
+    }
+
+    const isYearDate = (data: Budget) => {
+        const targetYear = data.date.split('-')[0];
+        return targetYear === target.getFullYear().toString();
+    };
+
+    return dataList.filter(isYearDate);
 };
 
 /**

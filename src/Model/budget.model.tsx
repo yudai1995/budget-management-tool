@@ -33,6 +33,8 @@ export class Budget {
     @IsNotEmpty()
     @Min(1)
     amount: number;
+
+    @Min(1)
     categoryId: number;
 
     constructor(
@@ -47,30 +49,6 @@ export class Budget {
         this.categoryId = categoryId;
     }
 }
-
-/**
- * インスタンスの合計金額を取得
- * @param {Balance[]} moneyList
- * @param {BalanceType} type
- * @return {number} 合計値
- */
-// export const sumAmount = (budgetLists: Budget[], type: BalanceType) => {
-//     let counter = 0;
-//     for (const data of budgetLists) {
-//         if (data.balanceType === type) counter = counter + data.amount;
-//     }
-//     return counter;
-// };
-
-/**
- * インスタンスの支出または収入を取得
- * @param {Balance[]} moneyList
- * @param {BalanceType} type
- * @return {Budget[]}
- */
-//export const filterMoneyType = (budgetLists: Budget[], type: BalanceType) => {
-//     return budgetLists.filter((data) => data.balanceType === type);
-// };
 
 /**
  * ランダム値

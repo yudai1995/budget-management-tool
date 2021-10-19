@@ -1,24 +1,13 @@
 import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from './store/index';
-import { getTargetDateList } from './store/budgetListSlice';
 import { Header } from './Components/Header';
-import { ColumnLayout, SubColumn, MainColumn } from './Components/Layout';
+import { ColumnLayout } from './Components/Layout/Column/ColumnLayout';
+import { SubColumn } from './Components/Layout/Column/SubColumn';
+import { MainColumn } from './Components/Layout/Column/MainColumn';
 import { NotFound } from './Components/NotFound';
-import { Graph } from './Components/Graph';
-import { ItemList } from './Components/ItemList';
 import { Footer } from './Components/Footer';
 
 const App: React.FC = () => {
-    const today = new Date();
-    const budgetLists = useSelector((state) =>
-        getTargetDateList(state as RootState, [
-            today.getFullYear(),
-            today.getMonth() + 1,
-        ])
-    );
-
     return (
         <div className="App">
             <BrowserRouter>
@@ -31,14 +20,13 @@ const App: React.FC = () => {
                                     <h2 className="headTitle">収支の入力</h2>
                                 </section>
                             </Route>
-                            {/* <Route path={['monthly', 'report']}> */}
-                            <Route exact path={['/', '/report']}>
+                            <Route exact path={['/', '/monthly']}>
                                 <ColumnLayout>
                                     <SubColumn />
                                     <MainColumn />
                                 </ColumnLayout>
                             </Route>
-                            <Route path="/monthly">
+                            <Route path="/report">
                                 <ColumnLayout>
                                     <SubColumn />
                                     <MainColumn />
@@ -48,12 +36,6 @@ const App: React.FC = () => {
                                 <NotFound />
                             </Route>
                         </Switch>
-
-                        <div className="topWrapper">
-                            <Graph />
-                        </div>
-
-                        <ItemList BudgetLists={budgetLists}></ItemList>
                     </div>
                 </main>
                 <Footer />

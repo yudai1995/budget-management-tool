@@ -1,8 +1,31 @@
-export const Category: {
+import { IsNotEmpty, Min } from 'class-validator';
+
+export interface CategoryType {
     categoryId: number;
     name: string;
     color: string;
-}[] = [
-    { categoryId: 0, name: '未分類', color: '#' },
-    { categoryId: 1, name: '食費', color: '#' },
-];
+    isActive: Boolean;
+}
+
+export class Category {
+    @IsNotEmpty()
+    @Min(0)
+    categoryId: number;
+
+    @IsNotEmpty()
+    name: string;
+    color: string;
+    isActive: Boolean;
+
+    constructor(
+        categoryId: number,
+        name: string,
+        color: string,
+        isActive: Boolean
+    ) {
+        this.categoryId = categoryId;
+        this.name = name;
+        this.color = color;
+        this.isActive = isActive;
+    }
+}
