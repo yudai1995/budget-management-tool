@@ -2,17 +2,18 @@ import '../../../styles/ColumnLayout.scss';
 
 interface ColumnLayoutProp {
     children: [React.ReactElement, React.ReactElement];
+    width: [number, number];
 }
-export const ColumnLayout: React.FC<ColumnLayoutProp> = ({ children }) => {
+export const ColumnLayout: React.FC<ColumnLayoutProp> = ({ children, width }) => {
     return (
         <div className="columnWrapper" style={{ display: 'flex' }}>
-            <div className="subColumn" style={{ width: '40%' }}>
+            <div className="leftColumn" style={{ width: `${width[0]}%` }}>
                 {children[0]}
             </div>
             <div
-                className="mainColumn"
+                className="rightColumn"
                 style={{
-                    width: '60%',
+                    width: `${width[1]}%`,
                     marginLeft: '10px',
                 }}
             >

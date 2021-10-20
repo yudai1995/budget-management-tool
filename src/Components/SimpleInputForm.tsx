@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { addBudget } from '../store/budgetListSlice';
 import { validate } from 'class-validator';
-import DatePicker from 'react-datepicker';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import ja from 'date-fns/locale/ja';
 import classNames from 'classnames';
 import { Budget, balanceType, getRandomID } from '../Model/budget.model';
 import { DateModel, formatDate } from '../Model/Date.model';
+import { getTypeNumber } from '../Model/Category.model';
 import 'react-datepicker/dist/react-datepicker.css';
-import '../styles/SimpleInputForm.scss';
+import '../styles/Edit.scss';
 
 export const SimpleInputForm: React.FC = () => {
     // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
@@ -16,7 +18,8 @@ export const SimpleInputForm: React.FC = () => {
     const contentInputRef = useRef<HTMLInputElement>(null);
     const categorySelectRef = useRef<HTMLSelectElement>(null);
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
-    const [activeDate, setActiveDate] = useState(new Date());
+    const [targetDate, setTargetDate] = useState(new Date());
+    registerLocale('ja', ja);
 
     const categoryList = useSelector(
         (state: RootState) => state.CategoryList.data
@@ -28,12 +31,11 @@ export const SimpleInputForm: React.FC = () => {
         event.preventDefault();
         const newAmount = +amountInputRef.current!.value;
         const newContent = contentInputRef.current!.value;
-        const newType = balanceType.findIndex(
-            (type) => type.typename === activeTab
-        );
+        const newType = getTypeNumber(activeTab);
+
         const newCategory = +categorySelectRef.current!.value;
 
-        const newDate = formatDate(activeDate, DateModel.YY_MM_DD);
+        const newDate = formatDate(targetDate, DateModel.YY_MM_DD);
 
         const newItem = new Budget(
             getRandomID(),
@@ -70,7 +72,6 @@ export const SimpleInputForm: React.FC = () => {
                             alert('入力エラーです');
                         }
                     });
-                    
                 }
             });
 
@@ -95,12 +96,13 @@ export const SimpleInputForm: React.FC = () => {
                     ))}
                 </ul>
                 <div className={classNames('inputDate', 'input')}>
-                    <label htmlFor="content">日付</label>
+                    <label htmlFor="date">日付</label>
                     <DatePicker
+                        id="date"
                         dateFormat="yyyy/MM/dd"
-                        selected={activeDate}
-                        //maxDate={inputDate}
-                        onChange={(date: Date) => setActiveDate(date)}
+                        selected={targetDate}
+                        locale="ja"
+                        onChange={(date: Date) => setTargetDate(date)}
                     />
                 </div>
                 <div className={classNames('inputAmount', 'input')}>
@@ -113,13 +115,13 @@ export const SimpleInputForm: React.FC = () => {
                     />
                 </div>
                 <div className={classNames('inputContent', 'input')}>
-                    <label htmlFor="content">カテゴリ</label>
+                    <label htmlFor="category">カテゴリ</label>
                     <select
                         name="category"
                         id="category"
                         ref={categorySelectRef}
                     >
-                        {categoryList.map((category) => (
+                        {categoryList[getTypeNumber(activeTab)].map((category) => (
                             <option
                                 className={`category${category.categoryId}`}
                                 value={category.categoryId}
@@ -134,7 +136,7 @@ export const SimpleInputForm: React.FC = () => {
                     <label htmlFor="content">内容</label>
                     <input
                         type="text"
-                        id="amount"
+                        id="content"
                         ref={contentInputRef}
                         placeholder="内容をご入力ください"
                     />

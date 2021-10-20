@@ -49,10 +49,9 @@ export const stateBadgetLists = (state: RootState) => {
 };
 
 /**
- * stateの合計金額を取得
+ * 合計金額を取得
  * @param {state} date
- * @param {BalanceType | "All"} type
- * @param {string} date
+ * @param {BalanceType?} type
  * @return {number} 合計値
  */
 export const sumAmount = <T extends RootState | Budget[]>(

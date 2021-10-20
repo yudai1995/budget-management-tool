@@ -4,6 +4,7 @@ import { Header } from './Components/Header';
 import { ColumnLayout } from './Components/Layout/Column/ColumnLayout';
 import { SubColumn } from './Components/Layout/Column/SubColumn';
 import { MainColumn } from './Components/Layout/Column/MainColumn';
+import { Edit } from './Components/Edit';
 import { NotFound } from './Components/NotFound';
 import { Footer } from './Components/Footer';
 
@@ -15,19 +16,17 @@ const App: React.FC = () => {
                 <main>
                     <div className="inner">
                         <Switch>
-                            <Route path="/edit">
-                                <section className="content">
-                                    <h2 className="headTitle">収支の入力</h2>
-                                </section>
+                            <Route exact path="/edit">
+                                <Edit />
                             </Route>
                             <Route exact path={['/', '/monthly']}>
-                                <ColumnLayout>
+                                <ColumnLayout width={[40, 60]}>
                                     <SubColumn />
                                     <MainColumn />
                                 </ColumnLayout>
                             </Route>
                             <Route path="/report">
-                                <ColumnLayout>
+                                <ColumnLayout width={[40, 60]}>
                                     <SubColumn />
                                     <MainColumn />
                                 </ColumnLayout>

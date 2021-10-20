@@ -10,7 +10,7 @@ export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
     budgetData,
 }) => {
     const categoryName = useSelector((state: RootState) =>
-        getCategoryName(state, budgetData.categoryId)
+        getCategoryName(state, budgetData.categoryId, budgetData.balanceType)
     );
     return (
         <>

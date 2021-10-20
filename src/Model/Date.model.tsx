@@ -6,16 +6,36 @@ export enum DateModel {
  * YYYY-MM-DD, MM-DDにフォーマットする
  * @param {Date} date
  * @param {DateModel} type
+ * @param {Boolean} isPadStart
  * @return {string}
  */
-export const formatDate = (date: Date, type: DateModel): string => {
-    switch (type) {
-        case DateModel.YY_MM_DD:
-            return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
-        case DateModel.MM_DD:
-            return `${date.getMonth()+1}-${date.getDate()}`;
-        default:
-            return '';
+export const formatDate = (
+    date: Date,
+    type: DateModel,
+    isPadStart?: Boolean
+): string => {
+    if (isPadStart) {
+        switch (type) {
+            case DateModel.YY_MM_DD:
+                return `${date.getFullYear()}-${
+                    (date.getMonth() + 1).toString().padStart(2, '0')
+                }-${date.getDate().toString().padStart(2, '0')}`;
+            case DateModel.MM_DD:
+                return `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            default:
+                return '';
+        }
+    } else {
+        switch (type) {
+            case DateModel.YY_MM_DD:
+                return `${date.getFullYear()}-${
+                    date.getMonth() + 1
+                }-${date.getDate()}`;
+            case DateModel.MM_DD:
+                return `${date.getMonth() + 1}-${date.getDate()}`;
+            default:
+                return '';
+        }
     }
 };
 
@@ -51,6 +71,6 @@ export const catchDay = (stringDate: string) => {
  * @param {string} stringDate
  * @return {Date}
  */
- export const hyphenToSlash = (stringDate: string) => {
+export const hyphenToSlash = (stringDate: string) => {
     return new Date(stringDate.replace(/-/g, '/'));
 };

@@ -1,4 +1,5 @@
 import { IsNotEmpty, Min } from 'class-validator';
+import { balanceType, BalanceTypes } from './budget.model';
 
 export interface CategoryType {
     categoryId: number;
@@ -29,3 +30,7 @@ export class Category {
         this.isActive = isActive;
     }
 }
+
+export const getTypeNumber = (activeTab: BalanceTypes['typename']) => {
+    return balanceType.findIndex((type) => type.typename === activeTab);
+};
