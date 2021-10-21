@@ -1,6 +1,6 @@
 import React from 'react';
-import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useCallback, useRef } from 'react';
+import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { sumAmount, getTargetDateList } from '../store/budgetListSlice';
@@ -14,7 +14,29 @@ import '../styles/Monthly.scss';
 interface MonthlyProps {}
 
 export const Monthly: React.FC<MonthlyProps> = () => {
+    const calendarRef = useRef<FullCalendar>(null!);
     const [targetDate, setTargetDate] = useState(new Date());
+
+    const customPrevHandler = useCallback(() => {
+        const calendarApi = calendarRef.current.getApi();
+        const currentDate = calendarApi.getDate();
+
+        setTargetDate(
+            new Date(currentDate.setMonth(currentDate.getMonth() - 1))
+        );
+        calendarApi.prev();
+    }, []);
+
+    const customNextHandler = useCallback(() => {
+        const calendarApi = calendarRef.current.getApi();
+        const currentDate = calendarApi.getDate();
+
+        setTargetDate(
+            new Date(currentDate.setMonth(currentDate.getMonth() + 1))
+        );
+        calendarApi.next();
+    }, []);
+
     const targetBudgetList = useSelector((state: RootState) =>
         getTargetDateList(state, [
             targetDate.getFullYear(),
@@ -22,11 +44,13 @@ export const Monthly: React.FC<MonthlyProps> = () => {
         ])
     );
 
-    const dateClickHandler = useCallback((arg: DateClickArg) => {
-        //alert(arg.dateStr);
-        //alert(getFormatDate(arg.date));
-        console.log(arg);
-    }, []);
+    const history = useHistory();
+    const dateClickHandler = useCallback(
+        (arg: DateClickArg) => {
+            history.push(`/edit`, { date: arg.date });
+        },
+        [history]
+    );
 
     let eventList: {
         title: string;
@@ -92,21 +116,19 @@ export const Monthly: React.FC<MonthlyProps> = () => {
 
     // 結果数値
     const renderReportContent = (eventInfo: EventContentArg) => (
-        <div
+        <span
             className={
                 eventInfo.event.extendedProps.typenum === 0
                     ? balanceType[0].type
                     : balanceType[1].type
             }
         >
-            <Link to={`/report/${eventInfo.event.extendedProps.dateStr}`}>
-                ¥
-                <span className="sign">
-                    {eventInfo.event.extendedProps.typenum === 0 ? '-' : '+'}
-                </span>
-                {eventInfo.event.title}
-            </Link>
-        </div>
+            ¥
+            <span className="sign">
+                {eventInfo.event.extendedProps.typenum === 0 ? '-' : '+'}
+            </span>
+            {eventInfo.event.title}
+        </span>
     );
 
     return (
@@ -118,6 +140,9 @@ export const Monthly: React.FC<MonthlyProps> = () => {
                 locale="ja"
                 events={eventList}
                 eventContent={renderReportContent}
+                eventClick={(e) =>
+                    history.push(`/report/${e.event.extendedProps.dateStr}`)
+                }
                 dateClick={dateClickHandler}
                 selectable={true}
                 titleFormat={{
@@ -125,6 +150,23 @@ export const Monthly: React.FC<MonthlyProps> = () => {
                     month: 'short',
                     day: 'numeric',
                 }}
+                customButtons={{
+                    customPrev: {
+                        text: '<',
+                        click: customPrevHandler,
+                    },
+                    customNext: {
+                        text: '>',
+                        click: customNextHandler,
+                    },
+                }}
+                headerToolbar={{
+                    start: 'customPrev',
+                    center: 'title',
+                    end: 'customNext',
+                }}
+                ref={calendarRef}
+                editable={true}
             />
         </div>
     );

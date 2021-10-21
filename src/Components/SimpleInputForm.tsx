@@ -111,7 +111,8 @@ export const SimpleInputForm: React.FC = () => {
                         type="number"
                         id="amount"
                         ref={amountInputRef}
-                        placeholder="金額をご入力ください: 例 1000"
+                        placeholder="金額をご入力ください"
+                        min={1}
                     />
                 </div>
                 <div className={classNames('inputContent', 'input')}>
@@ -121,15 +122,17 @@ export const SimpleInputForm: React.FC = () => {
                         id="category"
                         ref={categorySelectRef}
                     >
-                        {categoryList[getTypeNumber(activeTab)].map((category) => (
-                            <option
-                                className={`category${category.categoryId}`}
-                                value={category.categoryId}
-                                key={category.categoryId}
-                            >
-                                {category.name}
-                            </option>
-                        ))}
+                        {categoryList[getTypeNumber(activeTab)].map(
+                            (category) => (
+                                <option
+                                    className={`category${category.categoryId}`}
+                                    value={category.categoryId}
+                                    key={category.categoryId}
+                                >
+                                    {category.name}
+                                </option>
+                            )
+                        )}
                     </select>
                 </div>
                 <div className={classNames('inputContent', 'input')}>
@@ -138,7 +141,7 @@ export const SimpleInputForm: React.FC = () => {
                         type="text"
                         id="content"
                         ref={contentInputRef}
-                        placeholder="内容をご入力ください"
+                        placeholder="内容をご入力ください(任意)"
                     />
                 </div>
                 <button type="submit" className="submitBtn">

@@ -13,13 +13,15 @@ import { ContentLayout } from './Layout/ContentLayout';
 import { ColumnLayout } from './Layout/Column/ColumnLayout';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../styles/Edit.scss';
+import { useLocation} from 'react-router';
 
 export const Edit: React.FC = () => {
-    // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
+    const location = useLocation();
     const amountInputRef = useRef<HTMLInputElement>(null);
     const contentInputRef = useRef<HTMLInputElement>(null);
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
-    const [targetDate, setTargetDate] = useState(new Date());
+    
+    const [targetDate, setTargetDate] = useState(location.state ? (location.state as {date: Date}).date : new Date());
     const [selectCategory, setSelectCategory] = useState(0);
     registerLocale('ja', ja);
 
@@ -140,7 +142,8 @@ export const Edit: React.FC = () => {
                                         type="number"
                                         id="amount"
                                         ref={amountInputRef}
-                                        placeholder="金額をご入力ください: 例 1000"
+                                        placeholder="金額をご入力ください"
+                                        min={1}
                                     />
                                 </div>
 
