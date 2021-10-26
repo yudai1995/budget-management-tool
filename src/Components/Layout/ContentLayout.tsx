@@ -1,3 +1,5 @@
+import styles from '../../styles/ContentLayout.module.scss';
+
 interface ContentLayoutProp {
     children: React.ReactElement;
     title?: string;
@@ -7,8 +9,8 @@ export const ContentLayout: React.FC<ContentLayoutProp> = ({
     title,
 }) => {
     return (
-        <section className="content">
-            {title ? <h2 className="headTitle">{title}</h2> : <></>}
+        <section className={styles.content}>
+            {title ? <h2 className={styles.headTitle}>{title}</h2> : <></>}
             {children}
         </section>
     );

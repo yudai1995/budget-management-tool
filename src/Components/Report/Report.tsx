@@ -6,9 +6,10 @@ import {
     getTargetAnnulaList,
 } from '../../store/budgetListSlice';
 import { ReportGraph } from '../Graph/ReportGraph';
-import { ReportListLayout } from '../Layout/ReportListLayout';
+// import { ReportListLayout } from '../Layout/ReportListLayout';
 import { NoDateLayout } from '../Layout/NoDateLayout';
 import { Budget } from '../../Model/budget.model';
+import styles from '../../styles/Report.module.scss';
 
 interface ReportProp {
     target: 'Monthly' | 'Annual';
@@ -50,11 +51,14 @@ export const Report: React.FC<ReportProp> = ({ target }) => {
 
     return (
         <>
-            <div className="contorolArea">
-                <button onClick={onClickPrevBtn} className="changeDateBtn prev">
+            <div className={styles.contorolArea}>
+                <button
+                    onClick={onClickPrevBtn}
+                    className={`${styles.changeDateBtn} iconBtn prev`}
+                >
                     ＜
                 </button>
-                <p>
+                <p className={styles.date}>
                     {target === 'Monthly'
                         ? `${targetDate.getFullYear()}年${
                               targetDate.getMonth() + 1
@@ -62,20 +66,25 @@ export const Report: React.FC<ReportProp> = ({ target }) => {
                         : `${targetDate.getFullYear()}年`}
                 </p>
 
-                <button onClick={onClickNextBtn} className="changeDateBtn next">
+                <button
+                    onClick={onClickNextBtn}
+                    className={`${styles.changeDateBtn} iconBtn next`}
+                >
                     ＞
                 </button>
             </div>
             <NoDateLayout data={targetBudgetList}>
                 <>
-                    <ul>
+                    {/* <ul>
                         {targetBudgetList.map((data) => (
                             <li key={data.id}>
                                 <ReportListLayout budgetData={data} />
                             </li>
                         ))}
-                    </ul>
-                    <ReportGraph targetBudgetList={targetBudgetList} />
+                    </ul> */}
+                    <div className={styles.graphWrapper}>
+                        <ReportGraph targetBudgetList={targetBudgetList} />
+                    </div>
                 </>
             </NoDateLayout>
         </>

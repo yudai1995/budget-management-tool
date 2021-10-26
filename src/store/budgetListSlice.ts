@@ -2,16 +2,73 @@ import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from './index';
 import { Budget, BalanceType, getRandomID } from '../Model/budget.model';
 import {
-    catchYear,
-    catchMonth,
+    getYear,
+    getMonth,
     hyphenToSlash,
-    catchDay,
+    getDate,
 } from '../Model/Date.model';
 
 const initialState: {
     data: Budget[];
 } = {
-    data: [],
+    data: [
+        {
+            id: getRandomID(),
+            amount: 100000,
+            balanceType: 0,
+            content: '初期値初期値初期値',
+            date: '2021-10-24',
+            categoryId: 1,
+        },
+        {
+            id: getRandomID(),
+            amount: 5000,
+            balanceType: 1,
+            content: '初期値初期値初期値',
+            date: '2021-10-23',
+            categoryId: 1,
+        },
+        {
+            id: getRandomID(),
+            amount: 70000,
+            balanceType: 1,
+            content: '初期値初期値初期値',
+            date: '2021-10-25',
+            categoryId: 1,
+        },
+        {
+            id: getRandomID(),
+            amount: 1000,
+            balanceType: 0,
+            content: '夕飯',
+            date: '2021-10-25',
+            categoryId: 1,
+        },
+        {
+            id: getRandomID(),
+            amount: 10000,
+            balanceType: 1,
+            content: 'その他',
+            date: '2021-10-24',
+            categoryId: 7,
+        },
+        {
+            id: getRandomID(),
+            amount: 10000,
+            balanceType: 1,
+            content: 'その他',
+            date: '2021-9-24',
+            categoryId: 7,
+        },
+        {
+            id: getRandomID(),
+            amount: 10000,
+            balanceType: 1,
+            content: 'その他',
+            date: '2021-11-24',
+            categoryId: 7,
+        },
+    ],
 };
 
 export const budgetListSlice = createSlice({
@@ -65,7 +122,7 @@ export const sumAmount = <T extends RootState | Budget[]>(
         dataList = data;
     }
 
-    if (type) {
+    if (type === 0 || type === 1) {
         let counter = 0;
         for (const item of dataList) {
             if (item.balanceType === type) counter = counter + item.amount;
@@ -73,8 +130,11 @@ export const sumAmount = <T extends RootState | Budget[]>(
         return counter;
     } else {
         let counter = 0;
+
         dataList.forEach((item) => {
-            if (type === item.balanceType) {
+            if (item.balanceType === 0) {
+                counter = counter - item.amount;
+            } else if (item.balanceType === 1) {
                 counter = counter + item.amount;
             }
         });
@@ -116,15 +176,15 @@ export const getTargetDateList = <T extends RootState | Budget[]>(
     } else if (targetDate.length === 3) {
         return dataList.filter(
             (data) =>
-                catchYear(data.date) === targetDate[0].toString() &&
-                catchMonth(data.date) === targetDate[1].toString() &&
-                catchDay(data.date) === targetDate[2]?.toString()
+                getYear(data.date) === targetDate[0].toString() &&
+                getMonth(data.date) === targetDate[1].toString() &&
+                getDate(data.date) === targetDate[2]?.toString()
         );
     } else {
         return dataList.filter(
             (data) =>
-                catchYear(data.date) === targetDate[0].toString() &&
-                catchMonth(data.date) === targetDate[1].toString()
+                getYear(data.date) === targetDate[0].toString() &&
+                getMonth(data.date) === targetDate[1].toString()
         );
     }
 };

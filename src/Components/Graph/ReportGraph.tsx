@@ -2,7 +2,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { sumAmount } from '../../store/budgetListSlice';
 import { balanceType, Budget } from '../../Model/budget.model';
 import { ContentLayout } from '../Layout/ContentLayout';
-import '../../styles/Graph.scss';
+import '../../styles/Graph.module.scss';
 import classNames from 'classnames';
 
 interface ReportGraphProp {
@@ -35,24 +35,20 @@ export const ReportGraph: React.FC<ReportGraphProp> = ({
     const options = {
         plugins: {
             legend: {
-                position: 'bottom',
+                position: 'bottom' as 'bottom',
                 labels: {
                     padding: 20,
                 },
+                title: {
+                    display: false,
+                    text: '収支グラフ',
+                },
             },
         },
-
-        // scales: {
-        //     yAxes: [{
-        //         ticks: {
-        //             beginAtZero: true
-        //         }
-        //     }]
-        // }
     };
 
     return (
-        <ContentLayout title="収支グラフ">
+        <ContentLayout>
             <div
                 className={classNames('doughnutWrapper', {
                     noData:

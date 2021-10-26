@@ -14,14 +14,26 @@ export const formatDate = (
     type: DateModel,
     isPadStart?: Boolean
 ): string => {
+    if (Object.prototype.toString.call(date) !== '[object Date]') {
+        return '';
+    }
+
     if (isPadStart) {
         switch (type) {
             case DateModel.YY_MM_DD:
-                return `${date.getFullYear()}-${
-                    (date.getMonth() + 1).toString().padStart(2, '0')
-                }-${date.getDate().toString().padStart(2, '0')}`;
+                return `${date.getFullYear()}-${(date.getMonth() + 1)
+                    .toString()
+                    .padStart(2, '0')}-${date
+                    .getDate()
+                    .toString()
+                    .padStart(2, '0')}`;
             case DateModel.MM_DD:
-                return `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+                return `${(date.getMonth() + 1)
+                    .toString()
+                    .padStart(2, '0')}-${date
+                    .getDate()
+                    .toString()
+                    .padStart(2, '0')}`;
             default:
                 return '';
         }
@@ -44,7 +56,7 @@ export const formatDate = (
  * @param {string} stringDate
  * @return {string}
  */
-export const catchYear = (stringDate: string) => {
+export const getYear = (stringDate: string) => {
     return stringDate.split('-')[0];
 };
 
@@ -53,7 +65,7 @@ export const catchYear = (stringDate: string) => {
  * @param {string} stringDate
  * @return {string}
  */
-export const catchMonth = (stringDate: string) => {
+export const getMonth = (stringDate: string) => {
     return stringDate.split('-')[1];
 };
 
@@ -62,7 +74,7 @@ export const catchMonth = (stringDate: string) => {
  * @param {string} stringDate
  * @return {string}
  */
-export const catchDay = (stringDate: string) => {
+export const getDate = (stringDate: string) => {
     return stringDate.split('-')[2];
 };
 

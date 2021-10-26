@@ -3,8 +3,10 @@ import { RootState } from '../../store';
 import { getRecentData } from '../../store/budgetListSlice';
 import { Link } from 'react-router-dom';
 import { Budget } from '../../Model/budget.model';
+import { hyphenToSlash } from '../../Model/Date.model';
 import { ReportListLayout } from '../Layout/ReportListLayout';
 import { NoDateLayout } from '../Layout/NoDateLayout';
+import styles from '../../styles/RecentReport.module.scss';
 
 export const RecentReport: React.FC = () => {
     const recentBudgetList = useSelector((state: RootState) =>
@@ -41,20 +43,35 @@ export const RecentReport: React.FC = () => {
 
     return (
         <NoDateLayout data={recentBudgetList}>
-            <dl key={`recentReport"${recentBudgetList.length}`}>
-                {formatRecentBudgetList.map((data) => (
-                    <>
-                        <dt key={data.date}>
-                            <Link to={`report/${data.date}`}>{data.date}</Link>
-                        </dt>
+            <dl className={styles.recentReportList}>
+                {formatRecentBudgetList
+                    .sort((a, b) =>
+                        hyphenToSlash(a.date) < hyphenToSlash(b.date) ? 1 : -1
+                    )
+                    .map((data) => (
+                        <div key={data.date} className={styles.reportListInner}>
+                            <dt className={styles.date}>
+                                <Link
+                                    to={`report/${data.date}`}
+                                    className={`${styles.toReportLink} iconBtn next`}
+                                >
+                                    {data.date.replace(/-/g, '/')}
+                                </Link>
+                            </dt>
 
-                        {data.BudgetLists.map((Budgetdata) => (
-                            <dd key={Budgetdata.id}>
-                                <ReportListLayout budgetData={Budgetdata} />
-                            </dd>
-                        ))}
-                    </>
-                ))}
+                            {data.BudgetLists.map((Budgetdata) => (
+                                <dd
+                                    className={styles.report}
+                                    key={Budgetdata.id}
+                                >
+                                    <ReportListLayout
+                                        budgetData={Budgetdata}
+                                        key={Budgetdata.id}
+                                    />
+                                </dd>
+                            ))}
+                        </div>
+                    ))}
             </dl>
         </NoDateLayout>
     );

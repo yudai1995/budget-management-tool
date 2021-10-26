@@ -1,4 +1,4 @@
-import { IsNotEmpty, Min } from 'class-validator';
+import { IsNotEmpty, Min, NotEquals } from 'class-validator';
 
 export enum BalanceType {
     Outgo,
@@ -31,21 +31,29 @@ export const balanceType: BalanceTypes[] = [
 
 export class Budget {
     @IsNotEmpty()
+    id: string;
+
+    @IsNotEmpty()
     @Min(1)
     amount: number;
 
     @Min(1)
     categoryId: number;
 
+    @NotEquals('')
+    date: string;
+
     constructor(
-        public id: string,
+        id: string,
         amount: number,
         public balanceType: BalanceType,
         public content: string,
-        public date: string,
+        date: string,
         categoryId: number
     ) {
+        this.id = id;
         this.amount = amount;
+        this.date = date;
         this.categoryId = categoryId;
     }
 }
@@ -57,4 +65,32 @@ export class Budget {
  */
 export const getRandomID = () => {
     return Math.random().toString();
+};
+
+/**
+ * 日本円単位を付与する
+ * @param {number} number
+ * @return {string}
+ */
+export const unitFormat = (num: number) => {
+    const stringNum = num.toString();
+    const len = stringNum.length;
+    const units = ['', '万', '億', '兆', '京', '垓'];
+    let result = '';
+    let results = [];
+
+    for (let i = 0; i < Math.ceil(len / 4); i++) {
+        results[i] = Number(
+            stringNum.substring(len - i * 4, len - (i + 1) * 4)
+        );
+
+        if (results[i] !== 0) {
+            result =
+                results[i].toString().replace(/(\d)(?=(\d\d\d)+$)/g, '$1,') +
+                units[i] +
+                result;
+        }
+    }
+    if (result === '') return '0';
+    return result;
 };

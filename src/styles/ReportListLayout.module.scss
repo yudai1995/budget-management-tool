@@ -1,0 +1,44 @@
+@import './Base/variable';
+$categoryWidth: 100px;
+$amountWidth: 100px;
+
+.reportWrapper {
+    display: flex;
+
+    .category {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        color: $baseColor;
+        min-width: $categoryWidth;
+        width: $categoryWidth;
+
+        .categoryIcon {
+            width: 100%;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #ffffff;
+            padding: 6px 2px;
+            border: 1px solid $grayBorderColor;
+            border-radius: 6px;
+        }
+    }
+    .content {
+        display: flex;
+        align-items: center;
+        font-size: 1.4rem;
+        width: calc(100% - $categoryWidth + $categoryWidth);
+        margin-left: 10px;
+    }
+    .amount {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        font-size: 1.8rem;
+        min-width: $amountWidth;
+        width: $amountWidth;
+        margin-left: 10px;
+        word-break: break-all;
+    }
+}

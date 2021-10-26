@@ -5,11 +5,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { sumAmount, getTargetDateList } from '../store/budgetListSlice';
 import { balanceType, BalanceType } from '../Model/budget.model';
+import { getYear, getMonth, getDate } from '../Model/Date.model';
 import FullCalendar, { EventContentArg } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import allLocales from '@fullcalendar/core/locales-all';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
-import '../styles/Monthly.scss';
+import '../styles/Monthly.module.scss';
 
 interface MonthlyProps {}
 
@@ -19,22 +20,18 @@ export const Monthly: React.FC<MonthlyProps> = () => {
 
     const customPrevHandler = useCallback(() => {
         const calendarApi = calendarRef.current.getApi();
-        const currentDate = calendarApi.getDate();
-
-        setTargetDate(
-            new Date(currentDate.setMonth(currentDate.getMonth() - 1))
-        );
         calendarApi.prev();
+
+        const currentDate = calendarApi.getDate();
+        setTargetDate(currentDate);
     }, []);
 
     const customNextHandler = useCallback(() => {
         const calendarApi = calendarRef.current.getApi();
-        const currentDate = calendarApi.getDate();
-
-        setTargetDate(
-            new Date(currentDate.setMonth(currentDate.getMonth() + 1))
-        );
         calendarApi.next();
+
+        const currentDate = calendarApi.getDate();
+        setTargetDate(currentDate);
     }, []);
 
     const targetBudgetList = useSelector((state: RootState) =>
@@ -52,66 +49,47 @@ export const Monthly: React.FC<MonthlyProps> = () => {
         [history]
     );
 
+    // カレンダーに掲載するデータを取得
     let eventList: {
         title: string;
         date: string;
         typenum: BalanceType;
         dateStr: string;
     }[] = [];
-    for (let day = 1; day <= 31; day++) {
-        let fullDate = `${targetDate.getFullYear()}-${
-            targetDate.getMonth() + 1
-        }-${day}`;
-        const index = targetBudgetList.findIndex(
-            ({ date }) => date === fullDate
-        );
 
-        if (index !== -1) {
-            const targetBudget = getTargetDateList(
+    if (targetBudgetList.length) {
+        targetBudgetList.forEach((data) => {
+            const date = `${getYear(data.date)}-${getMonth(data.date).padStart(
+                2,
+                '0'
+            )}-${getDate(data.date).padStart(2, '0')}`;
+
+            const targetDayList = getTargetDateList(
                 targetBudgetList,
                 [0, 0],
-                fullDate
+                data.date
+            );
+            const sum = sumAmount(targetDayList, data.balanceType);
+            const index = eventList.findIndex(
+                ({ dateStr, typenum }) =>
+                    dateStr === data.date && typenum === data.balanceType
             );
 
-            const outgoSum = sumAmount(targetBudget, 0);
-            const incomeSum = sumAmount(targetBudget, 1);
-
-            if (outgoSum !== 0) {
+            if (index === -1 && sum !== 0) {
                 eventList = [
                     ...eventList,
                     {
-                        title: `${outgoSum}`,
-                        date: `${targetDate.getFullYear()}-${
-                            targetDate.getMonth() + 1
-                        }-${day.toString().padStart(2, '0')} 00:00:00`,
-                        typenum: 0,
-                        dateStr: fullDate,
+                        title: `${sum}`,
+                        date:
+                            data.balanceType === 0
+                                ? date + ' 00:00:00'
+                                : date + ' 00:00:10',
+                        typenum: data.balanceType,
+                        dateStr: data.date,
                     },
                 ];
             }
-            if (incomeSum !== 0) {
-                eventList = [
-                    {
-                        title: `${incomeSum}`,
-                        date: `${targetDate.getFullYear()}-${
-                            targetDate.getMonth() + 1
-                        }-${day.toString().padStart(2, '0')} 00:00:10`,
-                        typenum: 1,
-                        dateStr: fullDate,
-                    },
-
-                    ...eventList,
-                ];
-            }
-
-            // balanceType.forEach((type) => {
-            //     const sum = sumAmount(targetBudget, type.typenum);
-            //     console.log(sum);
-
-            //     if (sum !== 0) {
-            //     }
-            // });
-        }
+        });
     }
 
     // 結果数値
@@ -123,11 +101,10 @@ export const Monthly: React.FC<MonthlyProps> = () => {
                     : balanceType[1].type
             }
         >
-            ¥
             <span className="sign">
                 {eventInfo.event.extendedProps.typenum === 0 ? '-' : '+'}
             </span>
-            {eventInfo.event.title}
+            <span className="amount">{eventInfo.event.title}</span>
         </span>
     );
 

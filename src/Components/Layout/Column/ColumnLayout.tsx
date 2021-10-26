@@ -1,4 +1,4 @@
-import '../../../styles/ColumnLayout.scss';
+import '../../../styles/ColumnLayout.module.scss';
 
 interface ColumnLayoutProp {
     children: [React.ReactElement, React.ReactElement];
@@ -14,7 +14,7 @@ export const ColumnLayout: React.FC<ColumnLayoutProp> = ({ children, width }) =>
                 className="rightColumn"
                 style={{
                     width: `${width[1]}%`,
-                    marginLeft: '10px',
+                    marginLeft: '20px',
                 }}
             >
                 {children[1]}

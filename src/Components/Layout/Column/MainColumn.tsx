@@ -12,10 +12,10 @@ export const MainColumn: React.FC = () => {
             <Switch>
                 <Route exact path="/">
                     <ContentLayout title="直近のレポート">
-                        <RecentGraph />
-                    </ContentLayout>
-                    <ContentLayout>
-                        <RecentReport />
+                        <>
+                            <RecentGraph />
+                            <RecentReport />
+                        </>
                     </ContentLayout>
                 </Route>
                 <Route exact path="/monthly">

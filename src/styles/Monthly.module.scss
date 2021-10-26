@@ -1,0 +1,287 @@
+@import './Base//variable';
+$calendarBtnScale: 3px;
+
+:global {
+    .fc {
+        background-color: #ffffff;
+
+        .fc-header-toolbar.fc-toolbar {
+            padding: 12px 10px;
+            margin-bottom: 0;
+            background-color: $baseColor;
+
+            .fc-button.fc-button-primary {
+                &.fc-customPrev-button,
+                &.fc-customNext-button {
+                    overflow: hidden;
+                    text-indent: 60px;
+                    white-space: nowrap;
+                    position: relative;
+                    transition: $transitionSpeed;
+
+                    &::before,
+                    &::after {
+                        display: inline-block;
+                        position: absolute;
+                        content: '';
+                        width: 4px;
+                        height: 12px;
+                        top: 50%;
+                        left: 50%;
+                        background-color: $baseColor;
+                        margin-top: -6px;
+                        margin-left: -2px;
+                        transition: $transitionSpeed;
+                    }
+                }
+
+                &.fc-customPrev-button {
+                    &::before {
+                        transform: translateY($calendarBtnScale) rotate(-45deg);
+                    }
+                    &::after {
+                        transform: translateY(-$calendarBtnScale) rotate(45deg);
+                    }
+                }
+                &.fc-customNext-button {
+                    &::before {
+                        transform: translateY($calendarBtnScale) rotate(45deg);
+                    }
+                    &::after {
+                        transform: translateY(-$calendarBtnScale) rotate(-45deg);
+                    }
+                }
+
+                &:hover {
+                    background-color: #ffe6cc;
+                    border: 0;
+
+                    &.fc-customPrev-button {
+                        &::before,
+                        &::after {
+                            margin-left: -5px;
+                        }
+                    }
+                    &.fc-customNext-button {
+                        &::before,
+                        &::after {
+                            margin-left: 1px;
+                        }
+                    }
+                }
+                &:active,
+                &:focus {
+                    background-color: #ffe6cc;
+                    border: 0 solid #ffffff00;
+                    box-shadow: 0 0;
+                    outline: 0;
+                }
+            }
+        }
+        .fc-toolbar-title {
+            color: #ffffff;
+            font-weight: normal;
+        }
+        .fc-button-primary {
+            background-color: #ffffff;
+            color: $baseColor;
+            border: 0;
+
+            &:nth-of-type(1) {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        .fc-scrollgrid-section.fc-scrollgrid-section-header {
+            background-color: #fafafa;
+            .fc-col-header-cell.fc-day {
+                font-weight: normal;
+                padding: 6px 0;
+
+                &.fc-day-sun a {
+                    color: #d91a1a;
+                }
+                &.fc-day-sat a {
+                    color: #0f50e3;
+                }
+            }
+        }
+        .fc-scrollgrid-section.fc-scrollgrid-section-body.fc-scrollgrid-section-liquid {
+            .fc-daygrid-day-top {
+                justify-content: center;
+            }
+
+            a.fc-daygrid-event.fc-daygrid-dot-event.fc-event.fc-event-draggable {
+                position: relative;
+                font-size: 1.4rem;
+                justify-content: center;
+                margin: 0;
+                padding: 2px 2px 2px 18px;
+                white-space: normal;
+
+                .outgo,
+                .income {
+                    word-break: break-all;
+                }
+
+                .yen {
+                    font-size: 1.1rem;
+                    position: absolute;
+                    left: -8px;
+                    bottom: 2px;
+                }
+                .sign {
+                    position: absolute;
+                    display: inline-block;
+                    overflow: hidden;
+                    text-indent: 100%;
+                    white-space: nowrap;
+                    width: 14px;
+                    height: 14px;
+                    top: 50%;
+                    left: 4px;
+                    margin-top: -8px;
+                    margin-right: 2px;
+                    border-radius: 50%;
+                }
+                .outgo {
+                    .sign {
+                        background-color: $outgoColor;
+                        &::before {
+                            position: absolute;
+                            content: '';
+                            display: inline-block;
+                            background-color: #ffffff;
+                            width: 8px;
+                            height: 2px;
+                            top: 50%;
+                            left: 50%;
+                            margin-top: -1px;
+                            margin-left: -4px;
+                        }
+                    }
+                }
+                .income {
+                    .sign {
+                        background-color: $incomeColor;
+                        &::before,
+                        &::after {
+                            position: absolute;
+                            content: '';
+                            display: inline-block;
+                            background-color: #ffffff;
+                            width: 8px;
+                            height: 2px;
+                            top: 50%;
+                            left: 50%;
+                            margin-top: -1px;
+                            margin-left: -4px;
+                        }
+                        &::after {
+                            transform: rotate(90deg);
+                        }
+                    }
+                }
+                .amount {
+                    word-break: break-all;
+                }
+            }
+        }
+    }
+}
+
+.activeMonth {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 640px;
+    margin: 10px auto 0;
+
+    > button.changeMonthBtn {
+        position: relative;
+        color: #ffffff;
+        min-width: 100px;
+        background-color: #ff9d42;
+        border: 1px solid #ffc400;
+        border-radius: 4px;
+        padding: 4px 20px 4px;
+        cursor: pointer;
+        transition: 0.2s;
+
+        &.prev {
+            padding: 4px 20px 4px 36px;
+        }
+
+        &.next {
+            padding: 4px 36px 4px 20px;
+        }
+
+        &:hover,
+        :active {
+            background-color: #ffc082;
+            border: 1px solid #ffe695;
+        }
+
+        &::before,
+        &::after {
+            display: inline-block;
+            position: absolute;
+            content: '';
+            width: 3px;
+            height: 10px;
+            top: 50%;
+            background-color: #ffffff;
+            margin-top: -8px;
+        }
+        &::before {
+            transform: rotate(45deg);
+        }
+        &::after {
+            transform: rotate(-45deg);
+            margin-top: -10px;
+        }
+        &.prev::before,
+        &.prev::after {
+            left: 16px;
+        }
+        &.next::before,
+        &.next::after {
+            right: 16px;
+        }
+        &.prev::before {
+            margin-top: -8px;
+        }
+        &.prev::after {
+            margin-top: -2px;
+        }
+        &.next::before {
+            margin-top: -2px;
+        }
+        &.next::after {
+            margin-top: -8px;
+        }
+    }
+
+    > p.month {
+        font-size: 1.8rem;
+        font-weight: bold;
+        text-align: center;
+        min-width: 200px;
+    }
+}
+
+@media screen and (max-width: 760px) {
+    .activeMonth {
+        max-width: auto;
+
+        > button.changeMonthBtn {
+            min-width: 64px;
+            padding: 4px 8px;
+        }
+
+        > p.month {
+            min-width: 110px;
+        }
+    }
+}

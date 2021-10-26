@@ -21,7 +21,7 @@
     "chart.js": "^3.5.1",
     "class-validator": "^0.13.1",
     "react": "^17.0.2",
-    "react-chartjs-2": "^3.0.4",
+    "react-chartjs-2": "^3.2.0",
     "react-datepicker": "^4.2.1",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.5",
@@ -60,7 +60,7 @@
     "classnames": "^2.3.1",
     "gh-pages": "^3.2.3",
     "node": "^16.6.1",
-    "sass": "^1.39.0"
+    "sass": "^1.43.3"
   },
   "homepage": "https://yudai1995.github.io/budget-management-tool/"
 }

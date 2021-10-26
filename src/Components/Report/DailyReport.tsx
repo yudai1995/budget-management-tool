@@ -5,6 +5,7 @@ import { getTargetDateList } from '../../store/budgetListSlice';
 import { ContentLayout } from '../Layout/ContentLayout';
 import { ReportListLayout } from '../Layout/ReportListLayout';
 import { NoDateLayout } from '../Layout/NoDateLayout';
+import styles from '../../styles/DailyReport.module.scss';
 
 export const DailyReport: React.FC = () => {
     const path = useLocation().pathname;
@@ -17,9 +18,9 @@ export const DailyReport: React.FC = () => {
     return (
         <ContentLayout title={`${Date.replace(/-/g, '/')}のレポート`}>
             <NoDateLayout data={targetBudgetList}>
-                <ul>
+                <ul className={styles.dairyReportList}>
                     {targetBudgetList.map((data) => (
-                        <li key={data.id}>
+                        <li key={data.id} className={styles.dairyReport}>
                             <ReportListLayout budgetData={data} />
                         </li>
                     ))}
