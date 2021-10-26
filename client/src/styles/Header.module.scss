@@ -1,0 +1,84 @@
+@import './Base/variable';
+
+$grobalnavBorder: 2px;
+
+header.menuHeader {
+    margin-bottom: 40px;
+    border-bottom: 1px solid #e9e9e9;
+    box-shadow: 0 1px 2px 0 #e9e9e9;
+    padding: 0 18px;
+
+    .headerWrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        min-height: 56px;
+    }
+
+    a {
+        color: $defaultTextColor;
+        text-decoration: none;
+    }
+
+    h1.headerTitle {
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        font-size: 1.8rem;
+        font-weight: normal;
+        margin: 0;
+
+        .logo {
+            padding: 18px 6px;
+            img {
+                margin-right: 10px;
+            }
+        }
+    }
+
+    .grobalNavi {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+
+        .grobalNaviList {
+            a {
+                display: block;
+                font-size: 1.6rem;
+                padding: 10px 24px;
+                border-bottom: $grobalnavBorder solid #ffffff;
+                transition: $transitionSpeed;
+                &:hover {
+                    color: $baseColor;
+                    border-bottom: $grobalnavBorder solid $baseColor;
+                }
+
+                &.active {
+                    color: $baseColor;
+                    border-bottom: $grobalnavBorder solid $baseColor;
+                }
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 760px) {
+    header.menuHeader {
+        padding: 0 4px;
+
+        h1.headerTitle {
+            font-size: 1.6rem;
+        }
+
+        .grobalNavi {
+            margin-top: 6px;
+            .grobalNaviList {
+                a {
+                    font-size: 1.2rem;
+                    padding: 6px 10px;
+                }
+            }
+        }
+    }
+}
