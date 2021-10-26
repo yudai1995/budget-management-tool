@@ -79,6 +79,27 @@ li {
 main {
     display: block;
     min-height: calc(100vh - (109px + 108px));
+
+    .fetching {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        background-color: #7e7e7ec7;
+
+        h2.title {
+            text-align: center;
+            width: 240px;
+            max-width: 100%;
+            background-color: #ffffff;
+            border-radius: 6px;
+            padding: 30px 12px;
+        }
+    }
 }
 
 .iconBtn {

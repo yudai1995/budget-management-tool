@@ -20,7 +20,7 @@ pool.query(sql, (error, results, fields) => {
 });
 
 exports.createBudget = (req, res, next) => {
-    const reqData = req.body.newData;
+  const reqData = req.body.newData;
   const newBudget = new Budget(
     reqData.id,
     reqData.amount,

@@ -63,7 +63,9 @@ const App: React.FC = () => {
 
                 <main>
                     {isFetching ? (
-                        <h2>取得中です</h2>
+                        <div className="fetching">
+                            <h2 className="title">取得中です...</h2>
+                        </div>
                     ) : (
                         <div className="inner">
                             <Switch>
