@@ -17,7 +17,12 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                ignoredActions: ['budgetList/addBudget'],
+                ignoredActions: [
+                    'budgetList/addBudget',
+                    'budgetList/RequestData',
+                    'budgetList/RequestDataSuccess',
+                    'budgetList/RequestDataFailed',
+                ],
             },
         }),
 });

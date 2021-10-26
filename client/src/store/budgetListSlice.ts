@@ -1,72 +1,21 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from './index';
 import { Budget, BalanceType, getRandomID } from '../Model/budget.model';
-import {
-    getYear,
-    getMonth,
-    hyphenToSlash,
-    getDate,
-} from '../Model/Date.model';
+import { getYear, getMonth, hyphenToSlash, getDate } from '../Model/Date.model';
 
 const initialState: {
+    isFetching: boolean;
     data: Budget[];
 } = {
+    isFetching: false,
     data: [
         {
             id: getRandomID(),
-            amount: 100000,
-            balanceType: 0,
-            content: '初期値初期値初期値',
-            date: '2021-10-24',
-            categoryId: 1,
-        },
-        {
-            id: getRandomID(),
-            amount: 5000,
-            balanceType: 1,
-            content: '初期値初期値初期値',
-            date: '2021-10-23',
-            categoryId: 1,
-        },
-        {
-            id: getRandomID(),
-            amount: 70000,
-            balanceType: 1,
-            content: '初期値初期値初期値',
-            date: '2021-10-25',
-            categoryId: 1,
-        },
-        {
-            id: getRandomID(),
-            amount: 1000,
+            amount: 2000,
             balanceType: 0,
             content: '夕飯',
-            date: '2021-10-25',
+            date: '2021-10-4',
             categoryId: 1,
-        },
-        {
-            id: getRandomID(),
-            amount: 10000,
-            balanceType: 1,
-            content: 'その他',
-            date: '2021-10-24',
-            categoryId: 7,
-        },
-        {
-            id: getRandomID(),
-            amount: 10000,
-            balanceType: 1,
-            content: 'その他',
-            date: '2021-9-24',
-            categoryId: 7,
-        },
-        {
-            id: getRandomID(),
-            amount: 10000,
-            balanceType: 1,
-            content: 'その他',
-            date: '2021-11-24',
-            categoryId: 7,
         },
     ],
 };
@@ -77,7 +26,7 @@ export const budgetListSlice = createSlice({
     reducers: {
         addBudget: (state, action) => {
             const newItem = new Budget(
-                getRandomID(),
+                action.payload.newId,
                 action.payload.newAmount,
                 action.payload.newType,
                 action.payload.newContent,
@@ -85,6 +34,15 @@ export const budgetListSlice = createSlice({
                 action.payload.newCategory
             );
             state.data = [newItem, ...state.data];
+        },
+        RequestData: (state, action) => {
+            state.isFetching = true;
+        },
+        RequestDataSuccess: (state, action) => {
+            state.isFetching = false;
+        },
+        RequestDataFailed: (state, action) => {
+            state.isFetching = false;
         },
     },
 });
@@ -277,7 +235,8 @@ export const getFormatRecentBudgetList = <T extends RootState | Budget[]>(
 };
 
 // actionをexport
-export const { addBudget } = budgetListSlice.actions;
+export const { addBudget, RequestData, RequestDataSuccess, RequestDataFailed } =
+    budgetListSlice.actions;
 // state情報をexport
 export const budgetList = (state: RootState) => state.budgetList;
 // reducerをexport → storeへ

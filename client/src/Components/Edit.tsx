@@ -14,6 +14,7 @@ import {
 } from '../Model/budget.model';
 import { DateModel, formatDate } from '../Model/Date.model';
 import { getTypeNumber } from '../Model/Category.model';
+import axios from 'axios';
 import { ContentLayout } from './Layout/ContentLayout';
 import { ColumnLayout } from './Layout/Column/ColumnLayout';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -50,17 +51,17 @@ export const Edit: React.FC = () => {
 
     const newItemSubmitHandler = (event: React.FormEvent) => {
         event.preventDefault();
-        const newAmount = +amountInputRef.current!.value;
-        const newContent = contentInputRef.current!.value;
-        const newType = balanceType.findIndex(
-            (type) => type.typename === activeTab
-        );
-        const newCategory = selectCategory;
+        const newID = getRandomID(),
+            newAmount = +amountInputRef.current!.value,
+            newContent = contentInputRef.current!.value,
+            newType = balanceType.findIndex(
+                (type) => type.typename === activeTab
+            ),
+            newCategory = selectCategory,
+            newDate = formatDate(targetDate, DateModel.YY_MM_DD);
 
-        const newDate = formatDate(targetDate, DateModel.YY_MM_DD);
-
-        const newItem = new Budget(
-            getRandomID(),
+        const newData = new Budget(
+            newID,
             newAmount,
             newType,
             newContent,
@@ -68,21 +69,38 @@ export const Edit: React.FC = () => {
             newCategory
         );
 
-        validate(newItem)
+        // バリデーション
+        validate(newData)
             .then((errors) => {
                 if (errors.length > 0) {
                     throw errors;
                 }
-                dispatch(
-                    addBudget({
-                        newAmount,
-                        newType,
-                        newContent,
-                        newDate,
-                        newCategory,
+
+                // POSTリクエスト
+                axios
+                    .post('/api', {
+                        newData,
                     })
-                );
+                    .then((response) => {
+                        dispatch(
+                            addBudget({
+                                newID,
+                                newAmount,
+                                newType,
+                                newContent,
+                                newDate,
+                                newCategory,
+                            })
+                        );
+                        amountInputRef.current!.value = '';
+                        contentInputRef.current!.value = '';
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
             })
+
+            // バリエーションエラーハンドラ
             .catch((err) => {
                 if (err.length > 0) {
                     err.forEach((err: any) => {
@@ -96,9 +114,6 @@ export const Edit: React.FC = () => {
                     });
                 }
             });
-
-        amountInputRef.current!.value = '';
-        contentInputRef.current!.value = '';
     };
 
     // タブに付与するclassの切り替え
