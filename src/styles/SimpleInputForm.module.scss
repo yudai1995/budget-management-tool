@@ -196,28 +196,3 @@ form.editForm {
     }
 }
 
-@media screen and (max-width: 760px) {
-    .content {
-        width: 100%;
-        margin-left: 0;
-        form.editForm {
-            width: 100%;
-
-            ul.tabList {
-                li {
-                    min-width: 40%;
-                    padding: 6px 8px;
-                }
-            }
-
-            .input {
-                > label {
-                    width: 60px;
-                }
-                > input {
-                    width: calc(100% - 60px);
-                }
-            }
-        }
-    }
-}

@@ -15,7 +15,9 @@ export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
             {data.length ? (
                 children
             ) : (
-                <h2>{text ? { text } : 'データがありません'}</h2>
+                <h2 style={{ textAlign: 'center', color: '#9a9a9a' }}>
+                    {text ? { text } : 'データがありません'}
+                </h2>
             )}
         </>
     );

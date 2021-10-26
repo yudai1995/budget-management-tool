@@ -202,7 +202,7 @@ form.editForm {
                 padding: 10px 0;
 
                 li.category {
-                    width: calc(100% / 3 - 20px);
+                    width: calc((100% - 20px) / 3);
                     margin-left: 10px;
                     overflow: hidden;
 
@@ -236,25 +236,13 @@ form.editForm {
 }
 
 @media screen and (max-width: 760px) {
-    .content {
-        width: 100%;
-        margin-left: 0;
-        form.editForm {
-            width: 100%;
-
-            ul.tabList {
-                li {
-                    min-width: 40%;
-                    padding: 6px 8px;
-                }
-            }
-
-            .input {
-                > label {
-                    width: 60px;
-                }
-                > input {
-                    width: calc(100% - 60px);
+    form.editForm {
+        :global {
+            .columnWrapper {
+                .leftColumn {
+                    width: 100% !important;
+                    margin-bottom: 20px;
+                    display: block;
                 }
             }
         }

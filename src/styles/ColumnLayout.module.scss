@@ -1,13 +1,19 @@
 @media screen and (max-width: 760px) {
-    .columnWrapper {
-        display: block !important;
+    :global {
+        .columnWrapper {
+            display: block !important;
 
-        .mainColumn {
-            width: 100% !important;
-        }
+            
+            .rightColumn {
+                width: 100% !important;
+                margin-left: 0!important;
+            }
 
-        .subColumn {
-            width: 100% !important;
+            .leftColumn {
+                width: 100% !important;
+                margin-bottom: 20px;
+                display: none;
+            }
         }
     }
 }
