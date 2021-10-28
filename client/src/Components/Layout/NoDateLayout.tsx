@@ -5,6 +5,8 @@ interface NoDateLayoutProp {
     data: Budget[];
     text?: string;
 }
+
+const style = { textAlign: 'center' as 'center', color: '#9a9a9a' };
 export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
     children,
     data,
@@ -15,9 +17,18 @@ export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
             {data.length ? (
                 children
             ) : (
-                <h2 style={{ textAlign: 'center', color: '#9a9a9a' }}>
-                    {text ? { text } : 'データがありません'}
-                </h2>
+                <>
+                    {text ? (
+                        <h2 style={{ textAlign: 'center', color: '#9a9a9a' }}>
+                            {text}
+                        </h2>
+                    ) : (
+                        <>
+                            <h2 style={style}>入力データがございません</h2>
+                            <p style={style}>収支をご入力ください</p>
+                        </>
+                    )}
+                </>
             )}
         </>
     );

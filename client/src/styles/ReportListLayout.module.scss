@@ -1,9 +1,12 @@
 @import './Base/variable';
 $categoryWidth: 100px;
 $amountWidth: 100px;
+$setBtnSize: 24px;
 
 .reportWrapper {
     display: flex;
+    position: relative;
+    padding-right: 40px;
 
     .category {
         display: flex;
@@ -28,7 +31,7 @@ $amountWidth: 100px;
         display: flex;
         align-items: center;
         font-size: 1.4rem;
-        width: calc(100% - $categoryWidth + $categoryWidth);
+        width: calc(100% - $categoryWidth + $categoryWidth - $setBtnSize);
         margin-left: 10px;
     }
     .amount {
@@ -40,5 +43,44 @@ $amountWidth: 100px;
         width: $amountWidth;
         margin-left: 10px;
         word-break: break-all;
+    }
+    .setBtn {
+        position: absolute;
+        display: block;
+        background-color: #ffb0b0;
+        top: 50%;
+        right: 0;
+        margin-top: -$setBtnSize/2;
+        border: 0;
+        border-radius: 4px;
+        padding: 0;
+        min-width: $setBtnSize;
+        width: $setBtnSize;
+        height: $setBtnSize;
+        transition: $transitionSpeed;
+
+        &:hover {
+            background-color: #c40000;
+        }
+
+        &::before,
+        &::after {
+            position: absolute;
+            display: inline-block;
+            content: '';
+            background-color: #ffffff;
+            width: 16px;
+            height: 3px;
+            top: 50%;
+            left: 50%;
+            margin-top: -1.5px;
+            margin-left: -8px;
+        }
+        &::before {
+            transform: rotate(45deg);
+        }
+        &::after {
+            transform: rotate(-45deg);
+        }
     }
 }

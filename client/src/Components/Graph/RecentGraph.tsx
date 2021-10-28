@@ -108,7 +108,7 @@ export const RecentGraph: React.FC = () => {
                         if (maxNum >= threshold) {
                             return unitFormat(label * threshold) + '円';
                         } else {
-                            return unitFormat(label * threshold) + '円';
+                            return unitFormat(label) + '円';
                         }
                     },
                 },
@@ -120,14 +120,12 @@ export const RecentGraph: React.FC = () => {
             tooltip: {
                 callbacks: {
                     label: (tooltipItem: { raw: number }) => {
-                        if (tooltipItem.raw < 1) {
+                        if (maxNum >= threshold) {
                             return (
                                 unitFormat(tooltipItem.raw * threshold) + '円'
                             );
                         } else {
-                            return (
-                                unitFormat(tooltipItem.raw * threshold) + '円'
-                            );
+                            return unitFormat(tooltipItem.raw) + '円';
                         }
                     },
                 },

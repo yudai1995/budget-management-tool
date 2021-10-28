@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from './index';
-import { Budget, BalanceType, getRandomID } from '../Model/budget.model';
+import { Budget, BalanceType } from '../Model/budget.model';
 import { getYear, getMonth, hyphenToSlash, getDate } from '../Model/Date.model';
 
 const initialState: {
@@ -8,16 +8,7 @@ const initialState: {
     data: Budget[];
 } = {
     isFetching: false,
-    data: [
-        {
-            id: getRandomID(),
-            amount: 2000,
-            balanceType: 0,
-            content: '夕飯',
-            date: '2021-10-4',
-            categoryId: 1,
-        },
-    ],
+    data: [],
 };
 
 export const budgetListSlice = createSlice({
@@ -26,7 +17,7 @@ export const budgetListSlice = createSlice({
     reducers: {
         addBudget: (state, action) => {
             const newItem = new Budget(
-                action.payload.newId,
+                action.payload.newID,
                 action.payload.newAmount,
                 action.payload.newType,
                 action.payload.newContent,
@@ -34,6 +25,11 @@ export const budgetListSlice = createSlice({
                 action.payload.newCategory
             );
             state.data = [newItem, ...state.data];
+        },
+        deleteBudget: (state, action) => {
+            state.data = state.data.filter(
+                (data) => data.id !== action.payload.id
+            );
         },
         RequestData: (state, action) => {
             state.isFetching = true;
@@ -235,8 +231,13 @@ export const getFormatRecentBudgetList = <T extends RootState | Budget[]>(
 };
 
 // actionをexport
-export const { addBudget, RequestData, RequestDataSuccess, RequestDataFailed } =
-    budgetListSlice.actions;
+export const {
+    addBudget,
+    deleteBudget,
+    RequestData,
+    RequestDataSuccess,
+    RequestDataFailed,
+} = budgetListSlice.actions;
 // state情報をexport
 export const budgetList = (state: RootState) => state.budgetList;
 // reducerをexport → storeへ

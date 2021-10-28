@@ -1,10 +1,11 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const path = require("path");
 const port = process.env.PORT || 3001;
 
 const json = require("body-parser");
-app.use(json());
+app.use(bodyParser.json());
 
 const todoRoutes = require("./routes/budget");
 

@@ -19,6 +19,7 @@ export const store = configureStore({
             serializableCheck: {
                 ignoredActions: [
                     'budgetList/addBudget',
+                    'budgetList/deleteBudget',
                     'budgetList/RequestData',
                     'budgetList/RequestDataSuccess',
                     'budgetList/RequestDataFailed',

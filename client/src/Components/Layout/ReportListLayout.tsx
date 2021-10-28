@@ -1,8 +1,10 @@
 import { Budget, BalanceType } from '../../Model/budget.model';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
+import { deleteBudget } from '../../store/budgetListSlice';
 import { getCategoryName } from '../../store/CategoryListSlice';
 import classNames from 'classnames/bind';
+import axios from 'axios';
 import styles from '../../styles/ReportListLayout.module.scss';
 
 interface ReportListLayoutProp {
@@ -15,6 +17,24 @@ export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
         getCategoryName(state, budgetData.categoryId, budgetData.balanceType)
     );
 
+    const dispatch = useDispatch();
+    const onClickSetHandler = (
+        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+        id: string
+    ) => {
+        event.preventDefault();
+        axios
+            .delete(`/api/${id}`, {
+                data: { id: id },
+            })
+            .then((response) => {
+                dispatch(deleteBudget({ id }));
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    };
+
     const cx = classNames.bind(styles);
     const signClass = (type: BalanceType) => {
         return cx({
@@ -23,6 +43,7 @@ export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
             income: type === 1,
         });
     };
+
     return (
         <div className={styles.reportWrapper}>
             <div className={styles.category}>
@@ -37,6 +58,10 @@ export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
                 }`}</span>
                 {budgetData.amount.toLocaleString()}
             </span>
+            <button
+                className={styles.setBtn}
+                onClick={(e) => onClickSetHandler(e, budgetData.id)}
+            ></button>
         </div>
     );
 };

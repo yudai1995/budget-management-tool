@@ -31,7 +31,8 @@ const App: React.FC = () => {
                 const budgetData = response.data.budget;
 
                 (budgetData as Budget[]).forEach((data: Budget) => {
-                    const newAmount = data.amount,
+                    const newID = data.id,
+                        newAmount = data.amount,
                         newType = data.balanceType,
                         newContent = data.content,
                         newDate = data.date,
@@ -39,6 +40,7 @@ const App: React.FC = () => {
 
                     dispatch(
                         addBudget({
+                            newID,
                             newAmount,
                             newType,
                             newContent,
