@@ -1,7 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { addBudget } from '../store/budgetListSlice';
+import {
+    addBudget,
+    RequestData,
+    RequestDataSuccess,
+    RequestDataFailed,
+} from '../store/budgetListSlice';
 import { validate } from 'class-validator';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ja from 'date-fns/locale/ja';
@@ -76,6 +81,7 @@ export const Edit: React.FC = () => {
                     throw errors;
                 }
 
+                dispatch(RequestData({}));
                 // POSTリクエスト
                 axios
                     .post('/api', {
@@ -94,9 +100,11 @@ export const Edit: React.FC = () => {
                         );
                         amountInputRef.current!.value = '';
                         contentInputRef.current!.value = '';
+                        dispatch(RequestDataSuccess({}));
                     })
                     .catch((err) => {
                         console.log(err);
+                        dispatch(RequestDataFailed({}));
                     });
             })
 
