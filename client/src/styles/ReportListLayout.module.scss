@@ -1,4 +1,6 @@
+@use 'sass:math';
 @import './Base/variable';
+
 $categoryWidth: 100px;
 $amountWidth: 100px;
 $setBtnSize: 24px;
@@ -50,7 +52,7 @@ $setBtnSize: 24px;
         background-color: #ffb0b0;
         top: 50%;
         right: 0;
-        margin-top: -$setBtnSize/2;
+        margin-top: math.div(-$setBtnSize, 2);
         border: 0;
         border-radius: 4px;
         padding: 0;
