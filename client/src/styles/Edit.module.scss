@@ -225,7 +225,7 @@ form.editForm {
                         &:hover,
                         &.isActive {
                             background-color: $baseColor;
-                            color: #ffffff;
+                            color: #ffffff!important;
                             border: 1px solid $baseColor;
                         }
                     }

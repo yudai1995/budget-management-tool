@@ -267,6 +267,7 @@ export const Edit: React.FC = () => {
                                                     className={categoryClass(
                                                         category.categoryId
                                                     )}
+                                                    style={{color: `${category.color}`}}
                                                 >
                                                     {category.name}
                                                 </button>
