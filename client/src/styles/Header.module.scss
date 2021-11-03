@@ -63,20 +63,55 @@ header.menuHeader {
     }
 }
 
-@media screen and (max-width: 760px) {
+@include mq(md) {
     header.menuHeader {
+        margin-bottom: 20px;
         padding: 0 4px;
+
+        .headerWrapper {
+            flex-direction: column;
+            align-items: baseline;
+            flex-wrap: nowrap;
+            height: 80px;
+            @include mq(sm) {
+                height: 65px;
+            }
+        }
 
         h1.headerTitle {
             font-size: 1.6rem;
+            padding: 6px 0 4px;
+            @include mq(sm) {
+                font-size: 1.2rem;
+                padding: 4px 0 0;
+
+                img {
+                    width: 16px;
+                    height: 16px;
+                }
+            }
+
+            .logo {
+                padding: 4px 6px;
+                img {
+                    margin-right: 4px;
+                }
+            }
         }
 
         .grobalNavi {
-            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            margin-top: 2px;
+
             .grobalNaviList {
                 a {
                     font-size: 1.2rem;
                     padding: 6px 10px;
+
+                    @include mq(sm) {
+                        font-size: 1rem;
+                    }
                 }
             }
         }

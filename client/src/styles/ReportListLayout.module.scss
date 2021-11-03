@@ -4,6 +4,7 @@
 $categoryWidth: 100px;
 $amountWidth: 100px;
 $setBtnSize: 24px;
+$setBtnSMSize: 18px;
 
 .reportWrapper {
     display: flex;
@@ -33,7 +34,7 @@ $setBtnSize: 24px;
         display: flex;
         align-items: center;
         font-size: 1.4rem;
-        width: calc(100% - $categoryWidth + $categoryWidth - $setBtnSize);
+        width: calc(100% - $categoryWidth - $amountWidth - $setBtnSize);
         margin-left: 10px;
     }
     .amount {
@@ -83,6 +84,76 @@ $setBtnSize: 24px;
         }
         &::after {
             transform: rotate(-45deg);
+        }
+    }
+}
+
+@include mq(sm) {
+    .reportWrapper {
+        position: relative;
+        padding-right: 0;
+        padding-top: 24px;
+
+        .category {
+            position: absolute;
+            display: inline-block;
+            font-size: 1rem;
+            min-width: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+
+            .categoryIcon {
+                position: relative;
+                width: 100%;
+                text-align: center;
+                vertical-align: middle;
+                background-color: #ffffff00;
+                padding: 0 0 0 10px;
+                border: 0;
+                border-radius: 0;
+                opacity: 0.7;
+
+                &::before {
+                    position: absolute;
+                    display: inline-block;
+                    content: '●';
+                    color: inherit;
+                    width: auto;
+                    height: auto;
+                    top: 0;
+                    left: 0;
+                    transform: scale(0.6);
+                }
+            }
+        }
+        .content {
+            width: 60%;
+            margin-left: 0;
+        }
+        .amount {
+            align-items: flex-end;
+            font-size: 1.6rem;
+            width: 40%;
+            margin-left: 6px;
+        }
+        .setBtn {
+            top: 12px;
+            margin-top: math.div(-$setBtnSMSize, 2);
+            border: 0;
+            border-radius: 3px;
+            padding: 0;
+            min-width: $setBtnSMSize;
+            width: $setBtnSMSize;
+            height: $setBtnSMSize;
+
+            &::before,
+            &::after {
+                width: 10px;
+                height: 2px;
+                margin-top: -1px;
+                margin-left: -5px;
+            }
         }
     }
 }

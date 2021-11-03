@@ -76,6 +76,10 @@ form.editForm {
         margin: 0 auto;
         padding: 0 10px;
 
+        @include mq(md) {
+            padding: 0 4px;
+        }
+
         .label {
             display: block;
             font-size: 1.2rem;
@@ -225,7 +229,7 @@ form.editForm {
                         &:hover,
                         &.isActive {
                             background-color: $baseColor;
-                            color: #ffffff!important;
+                            color: #ffffff !important;
                             border: 1px solid $baseColor;
                         }
                     }
@@ -235,7 +239,7 @@ form.editForm {
     }
 }
 
-@media screen and (max-width: 760px) {
+@include mq(md) {
     form.editForm {
         :global {
             .columnWrapper {
@@ -243,6 +247,28 @@ form.editForm {
                     width: 100% !important;
                     margin-bottom: 20px;
                     display: block;
+                }
+            }
+        }
+    }
+
+    form.editForm {
+        .inputCategory.input {
+            min-height: 250px;
+            .categoryList {
+                &.editArea {
+                    li.category {
+                        width: calc((100% - 8px) / 3);
+                        margin-left: 4px;
+
+                        &:nth-of-type(3n + 1) {
+                            margin-left: 0;
+                        }
+
+                        &:nth-of-type(n + 4) {
+                            margin-top: 4px;
+                        }
+                    }
                 }
             }
         }
