@@ -32,8 +32,8 @@ export const Header: React.FC = () => {
                             <img
                                 src={Logo}
                                 alt="家計簿管理ツール"
-                                width="32"
-                                height="32"
+                                width="24"
+                                height="24"
                             />
                             家計簿管理ツール
                         </NavLink>

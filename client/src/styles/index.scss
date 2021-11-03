@@ -1,29 +1,6 @@
 @import './Base/variable';
 $iconScale: 3px;
 
-//@use 'sass:map';
-$breakpoints: (
-    'sm': '(min-width: 577px)',
-    'md': '(min-width: 760px)',
-    'lg': '(min-width: 1080px)',
-);
-
-@mixin mq($breakpoint) {
-    @media screen and #{map.get($breakpoints, $breakpoint)} {
-        @content;
-    }
-}
-//@use './index.scss';
-// @include mixins.mq(md) {
-//     body {
-//         min-width: auto;
-//     }
-//     .inner {
-//         padding: 0 8px;
-//         max-width: 100%;
-//     }
-// }
-
 * {
     box-sizing: border-box;
 }
@@ -144,13 +121,3 @@ main {
         }
     }
 }
-
-// @media screen and (max-width: 760px) {
-//     body {
-//         min-width: auto;
-//     }
-//     .inner {
-//         padding: 0 8px;
-//         max-width: 100%;
-//     }
-// }

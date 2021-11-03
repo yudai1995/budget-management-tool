@@ -19,7 +19,7 @@ export const MainColumn: React.FC = () => {
                     </ContentLayout>
                 </Route>
                 <Route exact path="/monthly">
-                    <ContentLayout>
+                    <ContentLayout title={false} option="monthly">
                         <Monthly />
                     </ContentLayout>
                 </Route>

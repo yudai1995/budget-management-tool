@@ -1,4 +1,5 @@
-$defaultColor: #525252;
+@import './Base/variable';
+
 .content {
     background-color: #FFF7F0;
     border-radius: 6px;
@@ -8,11 +9,19 @@ $defaultColor: #525252;
         text-align: center;
         font-size: 1.8rem;
         font-weight: bold;
-        color: $defaultColor;
+        color: $defaultTextColor;
         margin: 6px 0 16px;
     }
 
     &+ .content {
         margin-top: 20px;
+    }
+}
+
+@include mq(md) {
+    .monthly {
+        background-color: #ffffff;
+        border-radius: 0;
+        padding: 0;
     }
 }

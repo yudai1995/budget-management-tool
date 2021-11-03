@@ -48,7 +48,7 @@ export const ReportGraph: React.FC<ReportGraphProp> = ({
     };
 
     return (
-        <ContentLayout>
+        <ContentLayout title={false}>
             <div
                 className={classNames('doughnutWrapper', {
                     noData:
