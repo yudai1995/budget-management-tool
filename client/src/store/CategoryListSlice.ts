@@ -96,7 +96,7 @@ const isState = (data: any): data is RootState => {
  * @param {BalanceType} type
  * @return {string}
  */
-export const getCategoryName = <T extends RootState | Category[][]>(
+export const getCategoryData = <T extends RootState | Category[][]>(
     data: T,
     id: number,
     type: BalanceType
@@ -111,7 +111,7 @@ export const getCategoryName = <T extends RootState | Category[][]>(
         ({ categoryId }) => categoryId === id
     );
 
-    return dataList[type][index].name;
+    return dataList[type][index];
 };
 
 // actionをexport

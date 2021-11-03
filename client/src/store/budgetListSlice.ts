@@ -8,7 +8,16 @@ const initialState: {
     data: Budget[];
 } = {
     isFetching: false,
-    data: [],
+    data: [
+        {
+            id: '1',
+            amount: 2000,
+            categoryId: 1,
+            date: '2021-11-3',
+            balanceType: 0,
+            content: 'sample',
+        },
+    ],
 };
 
 export const budgetListSlice = createSlice({

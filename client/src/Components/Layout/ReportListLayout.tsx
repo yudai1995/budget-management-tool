@@ -7,7 +7,7 @@ import {
     RequestDataSuccess,
     RequestDataFailed,
 } from '../../store/budgetListSlice';
-import { getCategoryName } from '../../store/CategoryListSlice';
+import { getCategoryData } from '../../store/CategoryListSlice';
 import classNames from 'classnames/bind';
 import axios from 'axios';
 import styles from '../../styles/ReportListLayout.module.scss';
@@ -18,8 +18,8 @@ interface ReportListLayoutProp {
 export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
     budgetData,
 }) => {
-    const categoryName = useSelector((state: RootState) =>
-        getCategoryName(state, budgetData.categoryId, budgetData.balanceType)
+    const categoryData = useSelector((state: RootState) =>
+        getCategoryData(state, budgetData.categoryId, budgetData.balanceType)
     );
 
     const dispatch = useDispatch();
@@ -55,7 +55,12 @@ export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
     return (
         <div className={styles.reportWrapper}>
             <div className={styles.category}>
-                <span className={styles.categoryIcon}>{categoryName}</span>
+                <span
+                    className={styles.categoryIcon}
+                    style={{ color: `${categoryData.color}` }}
+                >
+                    {categoryData.name}
+                </span>
             </div>
             <span className={styles.content}>
                 {budgetData.content ? `${budgetData.content}` : ''}
