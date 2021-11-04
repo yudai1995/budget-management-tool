@@ -2,7 +2,7 @@
 @import './Base/variable';
 
 $categoryWidth: 100px;
-$amountWidth: 100px;
+$amountWidth: 30%;
 $setBtnSize: 24px;
 $setBtnSMSize: 18px;
 
@@ -34,7 +34,7 @@ $setBtnSMSize: 18px;
         display: flex;
         align-items: center;
         font-size: 1.4rem;
-        width: calc(100% - $categoryWidth - $amountWidth - $setBtnSize);
+        width: calc(100% - $amountWidth - $categoryWidth - $setBtnSize);
         margin-left: 10px;
     }
     .amount {

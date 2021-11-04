@@ -24,12 +24,8 @@ export const MainColumn: React.FC = () => {
                     </ContentLayout>
                 </Route>
                 <Route exact path="/report">
-                    <ContentLayout title="月間レポート">
-                        <Report target="Monthly" />
-                    </ContentLayout>
-
-                    <ContentLayout title="年間レポート">
-                        <Report target="Annual" />
+                    <ContentLayout title={false}>
+                        <Report />
                     </ContentLayout>
                 </Route>
                 <Route path="/report/:date" component={DailyReport} />

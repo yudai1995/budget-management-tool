@@ -24,7 +24,7 @@ form.editForm {
             font-size: 1.6rem;
             color: #ffffff;
             top: 0;
-            left: 52%;
+            left: calc(50% + $tabMarginPX);
             width: calc(50% - $tabMarginPX);
             height: calc(100% - $tabMarginPX * 2);
             margin: $tabMarginPX 0;
