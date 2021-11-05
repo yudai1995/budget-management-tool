@@ -66,7 +66,7 @@ exports.getBudget = (req, res, next) => {
         throw error;
       }
 
-      res.status(202).json({ budget: results });
+      res.status(200).json({ budget: results });
 
       connection.release();
       if (error) throw error;
@@ -102,7 +102,7 @@ exports.updateBudget = (req, res, next) => {
           throw error;
         }
         res
-          .status(203)
+          .status(200)
           .json({ message: "updated Budget", updatedBudget: updateBudget });
 
         connection.release();
@@ -124,7 +124,7 @@ exports.deleteBudget = (req, res, next) => {
           console.log(`deleteBudget Error: ${error}`);
           throw error;
         }
-        res.status(204).json({ message: "Deleted Budget" });
+        res.status(200).json({ message: "Deleted Budget" });
 
         connection.release();
         if (error) throw error;
