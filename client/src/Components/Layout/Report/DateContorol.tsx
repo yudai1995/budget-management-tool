@@ -2,13 +2,20 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { typeList } from '../../../Model/Date.model';
 import { RootState } from '../../../store';
-import { setTargetMonth, setTargetYear } from '../../../store/ReportStateSlice';
+import {
+    setTargetDate,
+    setTargetMonth,
+    setTargetYear,
+} from '../../../store/ReportStateSlice';
 
 import styles from '../../../styles/Report/DateContorol.module.scss';
 
 export const DateContorol: React.FC = () => {
     const reportType = useSelector(
         (state: RootState) => state.ReportState.reportType
+    );
+    const targetDate = useSelector(
+        (state: RootState) => state.ReportState.targetDate
     );
     const targetMonth = useSelector(
         (state: RootState) => state.ReportState.targetMonth
@@ -19,6 +26,11 @@ export const DateContorol: React.FC = () => {
 
     const dispatch = useDispatch();
     const onClickPrevMonthBtn = () => {
+        const newDate = new Date(
+            targetDate.setMonth(targetDate.getMonth() - 1)
+        );
+        dispatch(setTargetDate({ targetDate: newDate }));
+
         const newMonth = new Date(
             targetMonth.setMonth(targetMonth.getMonth() - 1)
         );
@@ -26,6 +38,11 @@ export const DateContorol: React.FC = () => {
     };
 
     const onClickNextMonthBtn = () => {
+        const newDate = new Date(
+            targetDate.setMonth(targetDate.getMonth() + 1)
+        );
+        dispatch(setTargetDate({ targetDate: newDate }));
+
         const newMonth = new Date(
             targetMonth.setMonth(targetMonth.getMonth() + 1)
         );
@@ -33,6 +50,11 @@ export const DateContorol: React.FC = () => {
     };
 
     const onClickPrevYearBtn = () => {
+        const newDate = new Date(
+            targetDate.setFullYear(targetDate.getFullYear() - 1)
+        );
+        dispatch(setTargetDate({ targetDate: newDate }));
+
         const newYear = new Date(
             targetYear.setFullYear(targetYear.getFullYear() - 1)
         );
@@ -40,6 +62,11 @@ export const DateContorol: React.FC = () => {
     };
 
     const onClickNextYearBtn = () => {
+        const newDate = new Date(
+            targetDate.setFullYear(targetDate.getFullYear() + 1)
+        );
+        dispatch(setTargetDate({ targetDate: newDate }));
+
         const newYear = new Date(
             targetYear.setFullYear(targetYear.getFullYear() + 1)
         );
@@ -55,8 +82,8 @@ export const DateContorol: React.FC = () => {
                         className={`${styles.changeDateBtn} iconBtn prev`}
                     ></button>
                     <p className={styles.date}>
-                        {`${targetMonth.getFullYear()}年${
-                            targetMonth.getMonth() + 1
+                        {`${targetDate.getFullYear()}年${
+                            targetDate.getMonth() + 1
                         }月`}
                     </p>
 
@@ -72,7 +99,7 @@ export const DateContorol: React.FC = () => {
                         className={`${styles.changeDateBtn} iconBtn prev`}
                     ></button>
                     <p className={styles.date}>
-                        {`${targetYear.getFullYear()}年`}
+                        {`${targetDate.getFullYear()}年`}
                     </p>
 
                     <button

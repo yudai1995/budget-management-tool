@@ -26,6 +26,7 @@ export const store = configureStore({
                     'budgetList/RequestDataSuccess',
                     'budgetList/RequestDataFailed',
                     'ReportState/setReportType',
+                    'ReportState/setTargetDate',
                     'ReportState/setTargetMonth',
                     'ReportState/setTargetYear',
                 ],
