@@ -1,26 +1,17 @@
 const Budget = require("../models/budget.ts");
 
 const mysql = require("mysql");
-// const CLEARDB_URL = process.env.CLEARDB_DATABASE_URL;
-// const params = CLEARDB_URL.replace("mysql://", "").split(/[:@/?]/);
+const CLEARDB_URL = process.env.CLEARDB_DATABASE_URL;
+const params = CLEARDB_URL.replace("mysql://", "").split(/[:@/?]/);
 
 //Database Connection
-// const pool = mysql.createPool({
-//   host: params[2],
-//   user: params[0],
-//   password: params[1],
-//   database: params[3],
-//   port: "3306",
-// });
-
 const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Osanm11031112",
-  database: "express_db",
+  host: params[2],
+  user: params[0],
+  password: params[1],
+  database: params[3],
   port: "3306",
 });
-
 
 const sql =
   "CREATE TABLE IF NOT EXISTS budget_list (id VARCHAR(255) NOT NULL PRIMARY KEY, amount INT NOT NULL, balanceType INT NOT NULL, content VARCHAR(255) NOT NULL, date VARCHAR(255) NOT NULL, categoryId INT NOT NULL)";
