@@ -58,6 +58,8 @@ export class Budget {
     }
 }
 
+export type labelType = BalanceTypes['typename'][] | string[];
+
 /**
  * ランダム値
  * @param {number?} myStrong

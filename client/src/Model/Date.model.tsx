@@ -2,6 +2,10 @@ export enum DateModel {
     YY_MM_DD = 'YYYY-MM-DD',
     MM_DD = 'MM-DD',
 }
+
+export type ReportType = '月間' | '年間';
+export const typeList: ReportType[] = ['月間', '年間'];
+
 /**
  * YYYY-MM-DD, MM-DDにフォーマットする
  * @param {Date} date

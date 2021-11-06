@@ -6,10 +6,12 @@ import {
 } from 'react-redux';
 import budgetListReducer from './budgetListSlice';
 import CategoryListReducer from './CategoryListSlice';
+import ReportStateReducer from './ReportStateSlice';
 
 const reducer = combineReducers({
     budgetList: budgetListReducer,
     CategoryList: CategoryListReducer,
+    ReportState: ReportStateReducer,
 });
 
 export const store = configureStore({
@@ -23,6 +25,9 @@ export const store = configureStore({
                     'budgetList/RequestData',
                     'budgetList/RequestDataSuccess',
                     'budgetList/RequestDataFailed',
+                    'ReportState/setReportType',
+                    'ReportState/setTargetMonth',
+                    'ReportState/setTargetYear',
                 ],
             },
         }),

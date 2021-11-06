@@ -8,8 +8,8 @@ import styles from '../../styles/TodayReport.module.scss';
 export const TodayReport: React.FC = () => {
     const today = new Date();
 
-    const todayBudgetList = useSelector((state) =>
-        getTargetDateList(state as RootState, [
+    const todayBudgetList = useSelector((state: RootState) =>
+        getTargetDateList(state, [
             today.getFullYear(),
             today.getMonth() + 1,
             today.getDate(),
@@ -34,7 +34,10 @@ export const TodayReport: React.FC = () => {
 
             <div className={styles.reportWrapper}>
                 {balanceType.map((type) => (
-                    <section className={`${styles.todayReport} ${type.type}`} key={type.type}>
+                    <section
+                        className={`${styles.todayReport} ${type.type}`}
+                        key={type.type}
+                    >
                         <h3
                             className={styles.reportTitle}
                             style={{ color: type.color }}
@@ -43,7 +46,9 @@ export const TodayReport: React.FC = () => {
                         </h3>
                         <p className={styles.reportContent}>
                             <span className={styles.yen}>¥</span>
-                            {type.typenum === 0 ? todayOutcome.toLocaleString() : todayIncome.toLocaleString()}
+                            {type.typenum === 0
+                                ? todayOutcome.toLocaleString()
+                                : todayIncome.toLocaleString()}
                         </p>
                     </section>
                 ))}

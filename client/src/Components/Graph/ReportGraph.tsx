@@ -1,6 +1,6 @@
 import { Doughnut } from 'react-chartjs-2';
 import { sumAmount } from '../../store/budgetListSlice';
-import { balanceType, Budget } from '../../Model/budget.model';
+import { Budget, balanceType } from '../../Model/budget.model';
 import { ContentLayout } from '../Layout/ContentLayout';
 import '../../styles/Graph.module.scss';
 import classNames from 'classnames';
@@ -13,8 +13,8 @@ export const ReportGraph: React.FC<ReportGraphProp> = ({
     targetBudgetList,
 }) => {
     const data = {
+        //labels: [balanceType[0].typename, balanceType[1].typename],
         labels: [balanceType[0].typename, balanceType[1].typename],
-        //labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
         datasets: [
             {
                 label: 'Dataset',
