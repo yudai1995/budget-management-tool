@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import {
@@ -28,14 +28,16 @@ import { useLocation } from 'react-router';
 
 export const Edit: React.FC = () => {
     const location = useLocation();
-    const amountInputRef = useRef<HTMLInputElement>(null);
-    const contentInputRef = useRef<HTMLInputElement>(null);
+    const [inputAmount, setInputAmount] = useState('');
+    const [inputContent, setInputContent] = useState('');
+
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
 
     const [targetDate, setTargetDate] = useState(
         location.state ? (location.state as { date: Date }).date : new Date()
     );
     const [selectCategory, setSelectCategory] = useState(0);
+
     registerLocale('ja', ja);
 
     const categoryList = useSelector(
@@ -57,11 +59,11 @@ export const Edit: React.FC = () => {
     const newItemSubmitHandler = (event: React.FormEvent) => {
         event.preventDefault();
         const newID = getRandomID(),
-            newAmount = +amountInputRef.current!.value,
-            newContent = contentInputRef.current!.value,
+            newAmount = +inputAmount,
             newType = balanceType.findIndex(
                 (type) => type.typename === activeTab
             ),
+            newContent = inputContent,
             newCategory = selectCategory,
             newDate = formatDate(targetDate, DateModel.YY_MM_DD);
 
@@ -98,8 +100,8 @@ export const Edit: React.FC = () => {
                                 newCategory,
                             })
                         );
-                        amountInputRef.current!.value = '';
-                        contentInputRef.current!.value = '';
+                        setInputAmount('');
+                        setInputContent('');
                         dispatch(RequestDataSuccess({}));
                     })
                     .catch((err) => {
@@ -207,11 +209,14 @@ export const Edit: React.FC = () => {
                                     <input
                                         type="number"
                                         id="amount"
-                                        ref={amountInputRef}
                                         placeholder="金額をご入力ください"
                                         min={1}
                                         max={100000000}
                                         className={styles.editArea}
+                                        value={inputAmount}
+                                        onChange={(e) =>
+                                            setInputAmount(e.target.value)
+                                        }
                                     />
                                 </div>
 
@@ -229,9 +234,12 @@ export const Edit: React.FC = () => {
                                     <input
                                         type="text"
                                         id="content"
-                                        ref={contentInputRef}
                                         placeholder="内容をご入力ください(任意)"
                                         className={styles.editArea}
+                                        value={inputContent}
+                                        onChange={(e) =>
+                                            setInputContent(e.target.value)
+                                        }
                                     />
                                 </div>
                             </>
@@ -267,7 +275,9 @@ export const Edit: React.FC = () => {
                                                     className={categoryClass(
                                                         category.categoryId
                                                     )}
-                                                    style={{color: `${category.color}`}}
+                                                    style={{
+                                                        color: `${category.color}`,
+                                                    }}
                                                 >
                                                     {category.name}
                                                 </button>

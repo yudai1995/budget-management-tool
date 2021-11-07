@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import {
@@ -7,6 +7,7 @@ import {
     RequestDataSuccess,
     RequestDataFailed,
 } from '../store/budgetListSlice';
+import { setSelectCategory } from '../store/CategoryListSlice';
 import { Link } from 'react-router-dom';
 import { validate } from 'class-validator';
 import DatePicker, { registerLocale } from 'react-datepicker';
@@ -25,29 +26,36 @@ import 'react-datepicker/dist/react-datepicker.css';
 import styles from '../styles/SimpleInputForm.module.scss';
 
 export const SimpleInputForm: React.FC = () => {
-    // useRefを実行、このrefを使用しinputDOMオブジェクトにrefオブジェクトを割り当てる
-    const amountInputRef = useRef<HTMLInputElement>(null);
-    const contentInputRef = useRef<HTMLInputElement>(null);
-    const categorySelectRef = useRef<HTMLSelectElement>(null);
+    //state
+    const [inputAmount, setInputAmount] = useState('');
+    const [inputContent, setInputContent] = useState('');
     const [activeTab, setActiveaTab] = useState(balanceType[0].typename);
     const [targetDate, setTargetDate] = useState(new Date());
     registerLocale('ja', ja);
 
+    // カテゴリの取得
+    //カテゴリのリスト
     const categoryList = useSelector(
         (state: RootState) => state.CategoryList.data
     );
+    //選択中
+    const selectCategory = useSelector(
+        (state: RootState) => state.CategoryList.selectedCategory
+    );
 
+    useEffect(() => {}, [inputAmount, inputContent]);
+
+    // submit時のイベントハンドラ
     const dispatch = useDispatch();
-
     const newItemSubmitHandler = (event: React.FormEvent) => {
-        event.preventDefault();
         const newID = getRandomID(),
-            newAmount = +amountInputRef.current!.value,
-            newContent = contentInputRef.current!.value,
+            newAmount = +inputAmount,
+            newContent = inputContent,
             newType = getTypeNumber(activeTab),
-            newCategory = +categorySelectRef.current!.value,
+            newCategory = selectCategory,
             newDate = formatDate(targetDate, DateModel.YY_MM_DD);
 
+        event.preventDefault();
         const newData = new Budget(
             newID,
             newAmount,
@@ -81,8 +89,6 @@ export const SimpleInputForm: React.FC = () => {
                                 newCategory,
                             })
                         );
-                        amountInputRef.current!.value = '';
-                        contentInputRef.current!.value = '';
                         dispatch(RequestDataSuccess({}));
                     })
                     .catch((err) => {
@@ -105,6 +111,14 @@ export const SimpleInputForm: React.FC = () => {
                     });
                 }
             });
+    };
+
+    const categorySelecedHandler = (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        dispatch(
+            setSelectCategory({ selectedCategory: +event.currentTarget.value })
+        );
     };
 
     // タブに付与するclassの切り替え
@@ -147,11 +161,12 @@ export const SimpleInputForm: React.FC = () => {
                 <input
                     type="number"
                     id="amount"
-                    ref={amountInputRef}
                     placeholder="金額をご入力ください"
                     min={1}
                     max={100000000}
                     className={styles.editArea}
+                    value={inputAmount}
+                    onChange={(e) => setInputAmount(e.target.value)}
                 />
             </div>
             <div className={classNames(`${styles.inputDate} ${styles.input}`)}>
@@ -178,8 +193,10 @@ export const SimpleInputForm: React.FC = () => {
                 <select
                     name="category"
                     id="category"
-                    ref={categorySelectRef}
+                    //ref={categorySelectRef}
                     className={styles.editArea}
+                    onChange={(e) => categorySelecedHandler(e)}
+                    defaultValue={selectCategory}
                 >
                     {categoryList[getTypeNumber(activeTab)].map((category) => (
                         <option
@@ -201,9 +218,10 @@ export const SimpleInputForm: React.FC = () => {
                 <input
                     type="text"
                     id="content"
-                    ref={contentInputRef}
                     placeholder="内容をご入力ください(任意)"
                     className={styles.editArea}
+                    value={inputContent}
+                    onChange={(e) => setInputContent(e.target.value)}
                 />
             </div>
             <div className={styles.buttonWrapper}>

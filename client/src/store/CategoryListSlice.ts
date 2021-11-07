@@ -31,8 +31,10 @@ const incomeTypes = [
 
 const initialState: {
     data: Category[][];
+    selectedCategory: number;
 } = {
     data: [[], []],
+    selectedCategory: 0,
 };
 
 const outgoNumber = BalanceType['Outgo'];
@@ -79,6 +81,9 @@ export const categoryListSlice = createSlice({
                 ];
             }
         },
+        setSelectCategory: (state, action) => {
+            state.selectedCategory = action.payload.selectedCategory;
+        },
     },
 });
 
@@ -115,8 +120,8 @@ export const getCategoryData = <T extends RootState | Category[][]>(
 };
 
 // actionをexport
-export const { addCategory } = categoryListSlice.actions;
+export const { addCategory, setSelectCategory } = categoryListSlice.actions;
 // state情報をexport
-export const categoryList = (state: RootState) => state.budgetList;
+export const categoryList = (state: RootState) => state.CategoryList;
 // reducerをexport → storeへ
 export default categoryListSlice.reducer;
