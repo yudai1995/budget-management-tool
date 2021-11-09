@@ -1,8 +1,9 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { balanceType } from '../../../Model/budget.model';
+import { useDispatch, useSelector } from 'react-redux';
+import { BalanceType, balanceType } from '../../../Model/budget.model';
 import { RootState } from '../../../store';
 import { sumAmount } from '../../../store/budgetListSlice';
+import { setTotalValueID } from '../../../store/ReportStateSlice';
 import {
     getTargetDateList,
     getTargetAnnulaList,
@@ -10,8 +11,10 @@ import {
 import { Budget } from '../../../Model/budget.model';
 import { typeList } from '../../../Model/Date.model';
 import styles from '../../../styles/Report/TotalValueReport.module.scss';
+import classNames from 'classnames/bind';
 
 export const TotalValueReport: React.FC = () => {
+    const dispatch = useDispatch();
     const budgetList = useSelector((state: RootState) => state.budgetList.data);
     const reportType = useSelector(
         (state: RootState) => state.ReportState.reportType
@@ -36,10 +39,28 @@ export const TotalValueReport: React.FC = () => {
     const sumOutcome = sumAmount(targetBudgetList, 0),
         sumIncome = sumAmount(targetBudgetList, 1),
         sumAll = sumAmount(targetBudgetList);
+    const totalValueType = useSelector(
+        (state: RootState) => state.ReportState.totalValueID
+    );
+
+    // タブのclass
+    const cx = classNames.bind(styles);
+    const tabclass = (type: BalanceType | 2) => {
+        return cx({
+            totalValueReport: true,
+            isActive: type === totalValueType,
+            all: type === 2,
+            outgo: type === balanceType[0].typenum,
+            income: type === balanceType[1].typenum,
+        });
+    };
 
     return (
         <>
-            <section className={`${styles.totalValueReport} ${styles.All}`}>
+            <section
+                className={classNames(tabclass(2))}
+                onClick={() => dispatch(setTotalValueID({ totalValueID: 2 }))}
+            >
                 <h3 className={styles.reportTitle} style={{ color: '#FF9D42' }}>
                     収支
                 </h3>
@@ -52,8 +73,15 @@ export const TotalValueReport: React.FC = () => {
             <div className={styles.totalValueReportWrapper}>
                 {balanceType.map((type) => (
                     <section
-                        className={`${styles.totalValueReport} ${type.type}`}
+                        className={classNames(tabclass(type.typenum))}
                         key={type.type}
+                        onClick={() =>
+                            dispatch(
+                                setTotalValueID({
+                                    totalValueID: type.typenum,
+                                })
+                            )
+                        }
                     >
                         <h3
                             className={styles.reportTitle}

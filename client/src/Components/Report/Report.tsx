@@ -25,14 +25,29 @@ export const Report: React.FC = () => {
         (state: RootState) => state.ReportState.targetYear
     );
 
-    let targetBudgetList: Budget[] = [];
+    // 月次か年次かによって切り分け
+    let BudgetListBYDate: Budget[] = [];
     if (reportType === typeList[0]) {
-        targetBudgetList = getTargetDateList(budgetList, [
+        BudgetListBYDate = getTargetDateList(budgetList, [
             targetMonth.getFullYear(),
             targetMonth.getMonth() + 1,
         ]);
     } else if (reportType === typeList[1]) {
-        targetBudgetList = getTargetAnnulaList(budgetList, targetYear);
+        BudgetListBYDate = getTargetAnnulaList(budgetList, targetYear);
+    }
+
+    const totalValueType = useSelector(
+        (state: RootState) => state.ReportState.totalValueID
+    );
+
+    // 全収支か支出、収入かで切り分け
+    let targetBudgetList: Budget[] = [];
+    if (totalValueType === 2) {
+        targetBudgetList = BudgetListBYDate;
+    } else {
+        targetBudgetList = BudgetListBYDate.filter(
+            (data) => data.balanceType === totalValueType
+        );
     }
 
     return (

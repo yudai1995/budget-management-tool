@@ -4,6 +4,8 @@ import { Budget, balanceType } from '../../Model/budget.model';
 import { ContentLayout } from '../Layout/ContentLayout';
 import '../../styles/Graph.module.scss';
 import classNames from 'classnames';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface ReportGraphProp {
     targetBudgetList: Budget[];
@@ -12,21 +14,41 @@ interface ReportGraphProp {
 export const ReportGraph: React.FC<ReportGraphProp> = ({
     targetBudgetList,
 }) => {
+    const totalValueType = useSelector(
+        (state: RootState) => state.ReportState.totalValueID
+    );
+    const categoryList = useSelector(
+        (state: RootState) => state.CategoryList.data
+    );
+
+    // 円グラフに渡すデータの取得
+    let labels: string[], reportData: number[], bgColor: string[];
+    if (totalValueType === 2) {
+        labels = [balanceType[0].typename, balanceType[1].typename];
+        reportData = [
+            sumAmount(targetBudgetList, 0),
+            sumAmount(targetBudgetList, 1),
+        ];
+        bgColor = [balanceType[0].color, balanceType[1].color];
+    } else {
+        labels = categoryList[totalValueType].map((category) => category.name);
+        reportData = categoryList[totalValueType].map((category) => {
+            const filterList = targetBudgetList.filter(
+                (data) => data.categoryId === category.categoryId
+            );
+            return sumAmount(filterList);
+        });
+        bgColor = categoryList[totalValueType].map(
+            (category) => category.color
+        );
+    }
+
     const data = {
-        //labels: [balanceType[0].typename, balanceType[1].typename],
-        labels: [balanceType[0].typename, balanceType[1].typename],
+        labels: labels,
         datasets: [
             {
-                label: 'Dataset',
-                data: [
-                    sumAmount(targetBudgetList, 0),
-                    sumAmount(targetBudgetList, 1),
-                ],
-                backgroundColor: [balanceType[0].color, balanceType[1].color],
-                borderColor: [
-                    balanceType[0].borderColor,
-                    balanceType[1].borderColor,
-                ],
+                data: reportData,
+                backgroundColor: bgColor,
                 borderWidth: 1,
             },
         ],
@@ -35,10 +57,8 @@ export const ReportGraph: React.FC<ReportGraphProp> = ({
     const options = {
         plugins: {
             legend: {
+                display: false,
                 position: 'bottom' as 'bottom',
-                labels: {
-                    padding: 20,
-                },
                 title: {
                     display: false,
                     text: '収支グラフ',

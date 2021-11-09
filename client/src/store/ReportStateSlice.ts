@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { ReportType, typeList } from '../Model/Date.model';
+import { BalanceType } from '../Model/budget.model';
 import { RootState } from './index';
 
 const initialState: {
@@ -7,11 +8,13 @@ const initialState: {
     targetMonth: Date;
     targetYear: Date;
     reportType: ReportType;
+    totalValueID: BalanceType | 2;
 } = {
     targetDate: new Date(),
     targetMonth: new Date(),
     targetYear: new Date(),
     reportType: typeList[0],
+    totalValueID: 2,
 };
 
 export const ReportStateSlice = createSlice({
@@ -30,12 +33,20 @@ export const ReportStateSlice = createSlice({
         setReportType: (state, action) => {
             state.reportType = action.payload.reportType;
         },
+        setTotalValueID: (state, action) => {
+            state.totalValueID = action.payload.totalValueID;
+        },
     },
 });
 
 // actionをexport
-export const { setTargetDate, setTargetMonth, setTargetYear, setReportType } =
-    ReportStateSlice.actions;
+export const {
+    setTargetDate,
+    setTargetMonth,
+    setTargetYear,
+    setReportType,
+    setTotalValueID,
+} = ReportStateSlice.actions;
 // state情報をexport
 export const ReportState = (state: RootState) => state.ReportState;
 // reducerをexport → storeへ

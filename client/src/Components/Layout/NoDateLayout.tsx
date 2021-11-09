@@ -24,7 +24,7 @@ export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
                         </h2>
                     ) : (
                         <>
-                            <h2 style={style}>入力データがございません</h2>
+                            <h2 style={style}>該当データがございません</h2>
                             <p style={style}>収支をご入力ください</p>
                         </>
                     )}

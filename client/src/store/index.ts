@@ -30,6 +30,7 @@ export const store = configureStore({
                     'ReportState/setTargetMonth',
                     'ReportState/setTargetYear',
                     'categoryList/setSelectCategory',
+                    'ReportState/setTotalValueID',
                 ],
             },
         }),
