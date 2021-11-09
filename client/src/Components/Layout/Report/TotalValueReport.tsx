@@ -9,9 +9,9 @@ import {
 } from '../../../store/budgetListSlice';
 import { Budget } from '../../../Model/budget.model';
 import { typeList } from '../../../Model/Date.model';
-import styles from '../../../styles/Report/SumReport.module.scss';
+import styles from '../../../styles/Report/TotalValueReport.module.scss';
 
-export const SumReport: React.FC = () => {
+export const TotalValueReport: React.FC = () => {
     const budgetList = useSelector((state: RootState) => state.budgetList.data);
     const reportType = useSelector(
         (state: RootState) => state.ReportState.reportType
@@ -39,7 +39,7 @@ export const SumReport: React.FC = () => {
 
     return (
         <>
-            <section className={`${styles.sumReport} ${styles.All}`}>
+            <section className={`${styles.totalValueReport} ${styles.All}`}>
                 <h3 className={styles.reportTitle} style={{ color: '#FF9D42' }}>
                     収支
                 </h3>
@@ -49,10 +49,10 @@ export const SumReport: React.FC = () => {
                 </p>
             </section>
 
-            <div className={styles.sumReportWrapper}>
+            <div className={styles.totalValueReportWrapper}>
                 {balanceType.map((type) => (
                     <section
-                        className={`${styles.sumReport} ${type.type}`}
+                        className={`${styles.totalValueReport} ${type.type}`}
                         key={type.type}
                     >
                         <h3

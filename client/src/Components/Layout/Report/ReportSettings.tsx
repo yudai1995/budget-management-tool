@@ -1,7 +1,7 @@
 import React from 'react';
 import { ReportTypeTab } from './ReportTypeTab';
 import { DateContorol } from './DateContorol';
-import { SumReport } from './SumReport';
+import { TotalValueReport } from './TotalValueReport';
 import styles from '../../../styles/Report/ReportSettings.module.scss';
 
 export const ReportSettings: React.FC = () => {
@@ -9,7 +9,7 @@ export const ReportSettings: React.FC = () => {
         <div className={styles.settings}>
             <ReportTypeTab />
             <DateContorol />
-            <SumReport />
+            <TotalValueReport />
         </div>
     );
 };

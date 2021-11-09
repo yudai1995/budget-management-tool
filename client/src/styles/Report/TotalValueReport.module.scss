@@ -1,4 +1,4 @@
-.sumReport {
+.totalValueReport {
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -28,11 +28,11 @@
     }
 }
 
-.sumReportWrapper {
+.totalValueReportWrapper {
     display: flex;
     margin-top: 20px;
 
-    .sumReport {
+    .totalValueReport {
         display: flex;
         align-items: center;
         width: calc(50% - 10px);
