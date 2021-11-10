@@ -19,21 +19,18 @@ export const TotalValueReport: React.FC = () => {
     const reportType = useSelector(
         (state: RootState) => state.ReportState.reportType
     );
-    const targetMonth = useSelector(
-        (state: RootState) => state.ReportState.targetMonth
-    );
-    const targetYear = useSelector(
-        (state: RootState) => state.ReportState.targetYear
-    );
 
+    const targetDate = useSelector(
+        (state: RootState) => state.ReportState.targetDate
+    );
     let targetBudgetList: Budget[] = [];
     if (reportType === typeList[0]) {
         targetBudgetList = getTargetDateList(budgetList, [
-            targetMonth.getFullYear(),
-            targetMonth.getMonth() + 1,
+            targetDate.getFullYear(),
+            targetDate.getMonth() + 1,
         ]);
     } else {
-        targetBudgetList = getTargetAnnulaList(budgetList, targetYear);
+        targetBudgetList = getTargetAnnulaList(budgetList, targetDate);
     }
 
     const sumOutcome = sumAmount(targetBudgetList, 0),
