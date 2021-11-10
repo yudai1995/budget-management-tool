@@ -18,22 +18,19 @@ export const Report: React.FC = () => {
     const reportType = useSelector(
         (state: RootState) => state.ReportState.reportType
     );
-    const targetMonth = useSelector(
-        (state: RootState) => state.ReportState.targetMonth
-    );
-    const targetYear = useSelector(
-        (state: RootState) => state.ReportState.targetYear
+    const targetDate = useSelector(
+        (state: RootState) => state.ReportState.targetDate
     );
 
     // 月次か年次かによって切り分け
     let BudgetListBYDate: Budget[] = [];
     if (reportType === typeList[0]) {
         BudgetListBYDate = getTargetDateList(budgetList, [
-            targetMonth.getFullYear(),
-            targetMonth.getMonth() + 1,
+            targetDate.getFullYear(),
+            targetDate.getMonth() + 1,
         ]);
     } else if (reportType === typeList[1]) {
-        BudgetListBYDate = getTargetAnnulaList(budgetList, targetYear);
+        BudgetListBYDate = getTargetAnnulaList(budgetList, targetDate);
     }
 
     const totalValueType = useSelector(
