@@ -30,7 +30,7 @@ export const ReportListLayout: React.FC<ReportListLayoutProp> = ({
         event.preventDefault();
         dispatch(RequestData({}));
         axios
-            .delete(`/api/${id}`, {
+            .delete(`/api/budget/${id}`, {
                 data: { id: id },
             })
             .then((response) => {
