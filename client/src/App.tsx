@@ -26,7 +26,7 @@ const App: React.FC = () => {
     useEffect(() => {
         dispatch(RequestData({}));
         axios
-            .get('/api')
+            .get('/api/budget')
             .then((response) => {
                 const budgetData = response.data.budget;
 

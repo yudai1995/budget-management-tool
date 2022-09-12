@@ -2,7 +2,7 @@
   "name": "react-ts-budget-tool",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@fullcalendar/core": "^5.10.0",
     "@fullcalendar/daygrid": "^5.10.0",

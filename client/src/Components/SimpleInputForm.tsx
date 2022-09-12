@@ -75,7 +75,7 @@ export const SimpleInputForm: React.FC = () => {
                 dispatch(RequestData({}));
                 // POSTリクエスト
                 axios
-                    .post('/api', {
+                    .post('/api/budget', {
                         newData,
                     })
                     .then((response) => {
