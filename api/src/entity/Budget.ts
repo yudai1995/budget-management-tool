@@ -30,9 +30,6 @@ export class Budget {
   @Column()
   date: string;
 
-  @PrimaryGeneratedColumn('uuid')
-  uuid: string;
-
   @CreateDateColumn({ update: false })
   createdDate: Date;
 
