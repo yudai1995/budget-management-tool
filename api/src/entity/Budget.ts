@@ -5,14 +5,14 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   CreateDateColumn,
-  Generated,
+  PrimaryColumn,
 } from 'typeorm';
 
 @Entity({
   name: 'budget_list',
 })
 export class Budget {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn({ type: 'varchar' })
   id: string;
 
   @Column({ type: 'int' })
