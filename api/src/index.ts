@@ -33,15 +33,15 @@ AppDataSource.initialize()
           if (result instanceof Promise) {
             result
               .then((result) => {
-                console.log(result);
                 if (result !== null) {
                   res.send({ budget: result });
                 } else if (result !== undefined) {
                   // TODO: error handling
                   res.status(200).send('success');
+                } else {
+                  console.log('error');
+                  res.status(404).send('Something broke!');
                 }
-                console.error('error');
-                res.status(404).send('Something broke!');
               })
               .catch((err) => {
                 throw err;
@@ -53,6 +53,18 @@ AppDataSource.initialize()
       );
     });
 
+    router.get('/api', (req, res) => {
+      res
+        .status(404)
+        .sendFile(path.join(__dirname, '../../client/build/index.html'));
+    });
+
+    router.get('/api/*', (req, res) => {
+      res
+        .status(404)
+        .sendFile(path.join(__dirname, '../../client/build/index.html'));
+    });
+
     router.get('*', (req, res) => {
       res.sendFile(path.join(__dirname, '../../client/build/index.html'));
     });
@@ -61,9 +73,13 @@ AppDataSource.initialize()
 
     // start express server
     app.listen(port);
+    app.timeout = 1000 * 60 * 0.05;
 
     console.log(
       `Express server has started on port ${port}. Open http://localhost:${port}/api to see results`
     );
   })
-  .catch((error) => console.log(error));
+  .catch((error) => {
+    console.log('Error:');
+    console.log(error);
+  });

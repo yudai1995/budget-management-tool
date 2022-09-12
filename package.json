@@ -5,11 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm ",
-    "start": "node api/src/index.ts",
+    "build": "cd api && tsc",
+    "start": "node api/build/index.js",
     "dev": "ts-node api/src/index.ts",
-    "front-dev": "",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd api && tsc && cd ../client && npm install && npm run build"
   },
   "author": "",
   "license": "ISC",
