@@ -12,7 +12,7 @@ import {
   name: 'budget_list',
 })
 export class Budget {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column({ type: 'int' })
