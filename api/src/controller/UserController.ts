@@ -16,7 +16,12 @@ export class UserController {
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
-    return this.userRepository.findOne(request.params.id);
+    console.log(request.params.id);
+    const userId = request.params.id;
+    const user = await this.userRepository.findOneBy({
+      userId,
+    });
+    return user;
   }
 
   async save(request: Request, response: Response, next: NextFunction) {
@@ -40,7 +45,7 @@ export class UserController {
     const password =
       userId === 'Guest' ? process.env.GUEST_PASSWORD : request.body.password;
     const loginUser = await this.userRepository.findOneBy({
-      userId: userId,
+      userId,
     });
     if (loginUser) {
       const compared = await bcrypt.compare(password, loginUser.password);
