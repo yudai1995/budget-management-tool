@@ -47,12 +47,10 @@ AppDataSource.initialize()
           result
             .then((result) => {
               if (result === errorModel.AUTHENTICATION_FAILD) {
-                res
-                  .status(401)
-                  .send({
-                    result: 'failed',
-                    message: errorModel.AUTHENTICATION_FAILD,
-                  });
+                res.status(401).send({
+                  result: 'failed',
+                  message: errorModel.AUTHENTICATION_FAILD,
+                });
               } else if (result === errorModel.NOT_FOUND) {
                 res
                   .status(403)
@@ -64,7 +62,10 @@ AppDataSource.initialize()
               }
             })
             .catch((err) => {
-              throw err;
+              console.log(err);
+              res
+                .status(500)
+                .send({ result: 'error', message: 'Something broken' });
             });
         } else if (result !== null && result !== undefined) {
           res.json(result);
@@ -74,7 +75,7 @@ AppDataSource.initialize()
 
     app.post(logoutRouter.route, (req, res) => {
       req.session.login = undefined;
-      res.redirect('/');
+      res.redirect('/login');
     });
 
     // register express routes from defined application routes
@@ -101,7 +102,10 @@ AppDataSource.initialize()
                 }
               })
               .catch((err) => {
-                throw err;
+                console.log(err);
+                res
+                  .status(500)
+                  .send({ result: 'error', message: 'Something broken' });
               });
           } else if (result !== null && result !== undefined) {
             res.json(result);
@@ -123,17 +127,31 @@ AppDataSource.initialize()
             result
               .then((result) => {
                 if (result !== null) {
+                  if (route.action === 'all') {
+                    result.map((user) => {
+                      delete user.password;
+                      return user;
+                    });
+                  } else if (route.action === 'one') {
+                    delete result.password;
+                  }
                   res.send({ user: result });
-                } else if (result !== undefined) {
-                  // TODO: error handling
-                  res.status(200).send('success');
+                } else if (result === null) {
+                  res
+                    .status(401)
+                    .send({ result: 'Faild', message: 'not found' });
                 } else {
                   console.log('error');
-                  res.status(404).send('Something broke!');
+                  res
+                    .status(404)
+                    .send({ result: 'Faild', message: 'not found' });
                 }
               })
               .catch((err) => {
-                throw err;
+                console.log(err);
+                res
+                  .status(500)
+                  .send({ result: 'error', message: 'Something broken' });
               });
           } else if (result !== null && result !== undefined) {
             res.json(result);
