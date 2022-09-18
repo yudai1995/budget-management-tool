@@ -67,10 +67,10 @@
             }
 
             .toBack {
-                background-color: #9a9a9a;
+                background-color: $grayButtonColor;
 
                 &:hover {
-                    background-color: #b4b4b4;
+                    background-color: $hoverGrayButtonColor;
                 }
             }
 
