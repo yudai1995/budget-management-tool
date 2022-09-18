@@ -225,7 +225,10 @@ export const SimpleInputForm: React.FC = () => {
                 />
             </div>
             <div className={styles.buttonWrapper}>
-                <button type="submit" className={styles.submitBtn}>
+                <button
+                    type="submit"
+                    className={`${styles.submitBtn} iconBtn next`}
+                >
                     追加する
                 </button>
                 <Link to="/edit" className={`${styles.toEditBtn} iconBtn next`}>

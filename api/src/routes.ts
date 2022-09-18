@@ -1,6 +1,7 @@
 import { BudgetController } from './controller/BudgetController';
+import { UserController } from './controller/UserController';
 
-export const Routes = [
+export const budgetRoutes = [
   {
     method: 'get',
     route: '/api/budget',
@@ -33,3 +34,49 @@ export const Routes = [
     action: 'remove',
   },
 ];
+
+export const userRoutes = [
+  {
+    method: 'get',
+    route: '/api/user',
+    controller: UserController,
+    action: 'all',
+  },
+  {
+    method: 'get',
+    route: '/api/user/:id',
+    controller: UserController,
+    action: 'one',
+  },
+  {
+    method: 'post',
+    route: '/api/user',
+    controller: UserController,
+    action: 'save',
+  },
+  // TODO: add PUT ACTION
+  {
+    method: 'put',
+    route: '/api/user/:id',
+    controller: UserController,
+    action: 'save',
+  },
+  {
+    method: 'delete',
+    route: '/api/user/:id',
+    controller: UserController,
+    action: 'remove',
+  },
+];
+
+export const loginRouter = {
+  method: 'post',
+  route: '/api/login',
+  controller: UserController,
+  action: 'login',
+};
+
+export const logoutRouter = {
+  method: 'post',
+  route: '/api/logout',
+};

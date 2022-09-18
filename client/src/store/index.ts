@@ -7,11 +7,13 @@ import {
 import budgetListReducer from './budgetListSlice';
 import CategoryListReducer from './CategoryListSlice';
 import ReportStateReducer from './ReportStateSlice';
+import LoginStateReducer from './LoginStateSlice';
 
 const reducer = combineReducers({
     budgetList: budgetListReducer,
     CategoryList: CategoryListReducer,
     ReportState: ReportStateReducer,
+    LoginState: LoginStateReducer,
 });
 
 export const store = configureStore({
@@ -31,6 +33,9 @@ export const store = configureStore({
                     'ReportState/setTargetYear',
                     'categoryList/setSelectCategory',
                     'ReportState/setTotalValueID',
+                    'LoginState/setLogin',
+                    'LoginState/setLogout',
+                    'LoginState/setLoginMessage',
                 ],
             },
         }),

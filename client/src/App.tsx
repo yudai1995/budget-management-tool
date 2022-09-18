@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './store';
 import {
@@ -10,13 +10,9 @@ import {
 } from './store/budgetListSlice';
 import axios from 'axios';
 import { Header } from './Components/Header';
-import { ColumnLayout } from './Components/Layout/Column/ColumnLayout';
-import { SubColumn } from './Components/Layout/Column/SubColumn';
-import { MainColumn } from './Components/Layout/Column/MainColumn';
-import { Edit } from './Components/Edit';
-import { NotFound } from './Components/NotFound';
 import { Footer } from './Components/Footer';
 import { Budget } from './Model/budget.model';
+import { BudgetAppRouter } from './Route/BudgetAppRouter';
 
 const App: React.FC = () => {
     const isFetching = useSelector(
@@ -62,7 +58,6 @@ const App: React.FC = () => {
         <div className="App">
             <BrowserRouter>
                 <Header />
-
                 <main>
                     {isFetching ? (
                         <div className="fetching">
@@ -70,26 +65,7 @@ const App: React.FC = () => {
                         </div>
                     ) : (
                         <div className="inner">
-                            <Switch>
-                                <Route exact path="/edit">
-                                    <Edit />
-                                </Route>
-                                <Route exact path={['/', '/monthly']}>
-                                    <ColumnLayout width={[40, 60]}>
-                                        <SubColumn />
-                                        <MainColumn />
-                                    </ColumnLayout>
-                                </Route>
-                                <Route path="/report">
-                                    <ColumnLayout width={[40, 60]}>
-                                        <SubColumn />
-                                        <MainColumn />
-                                    </ColumnLayout>
-                                </Route>
-                                <Route>
-                                    <NotFound />
-                                </Route>
-                            </Switch>
+                            <BudgetAppRouter />
                         </div>
                     )}
                 </main>
