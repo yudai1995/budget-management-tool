@@ -1,3 +1,5 @@
 {
-    "prettier.requireConfig": true
+    "prettier.requireConfig": true,
+    "debug.javascript.usePreview": false,
+    "debug.allowBreakpointsEverywhere": true
 }
