@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { addBudget } from '../store/budgetListSlice';
 import {
-    addBudget,
     RequestData,
     RequestDataSuccess,
     RequestDataFailed,
-} from '../store/budgetListSlice';
+} from '../store/FetchingStateSlice';
 import { setSelectCategory } from '../store/CategoryListSlice';
 import { Link } from 'react-router-dom';
 import { validate } from 'class-validator';

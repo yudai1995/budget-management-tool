@@ -1,14 +1,37 @@
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
-import { getRecentData } from '../../store/budgetListSlice';
+import { getBudget, getRecentData } from '../../store/budgetListSlice';
+import {
+    RequestData,
+    RequestDataSuccess,
+    RequestDataFailed,
+} from '../../store/FetchingStateSlice';
 import { Link } from 'react-router-dom';
 import { Budget } from '../../Model/budget.model';
 import { hyphenToSlash } from '../../Model/Date.model';
 import { ReportListLayout } from '../Layout/ReportListLayout';
 import { NoDateLayout } from '../Layout/NoDateLayout';
 import styles from '../../styles/RecentReport.module.scss';
+import axios from 'axios';
 
 export const RecentReport: React.FC = () => {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(RequestData({}));
+        axios
+            .get('/api/budget')
+            .then((response) => {
+                const budgetData = response.data.budget;
+                dispatch(getBudget({ budgetData }));
+                dispatch(RequestDataSuccess({}));
+            })
+            .catch((err) => {
+                console.error(new Error(err));
+                dispatch(RequestDataFailed({}));
+            });
+    }, [dispatch]);
+
     const recentBudgetList = useSelector((state: RootState) =>
         getRecentData(state)
     );

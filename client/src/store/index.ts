@@ -8,12 +8,14 @@ import budgetListReducer from './budgetListSlice';
 import CategoryListReducer from './CategoryListSlice';
 import ReportStateReducer from './ReportStateSlice';
 import LoginStateReducer from './LoginStateSlice';
+import FetchingStateReducer from './FetchingStateSlice';
 
 const reducer = combineReducers({
     budgetList: budgetListReducer,
     CategoryList: CategoryListReducer,
     ReportState: ReportStateReducer,
     LoginState: LoginStateReducer,
+    FetchingState: FetchingStateReducer,
 });
 
 export const store = configureStore({
@@ -22,11 +24,12 @@ export const store = configureStore({
         getDefaultMiddleware({
             serializableCheck: {
                 ignoredActions: [
+                    'budgetList/getBudget',
                     'budgetList/addBudget',
                     'budgetList/deleteBudget',
-                    'budgetList/RequestData',
-                    'budgetList/RequestDataSuccess',
-                    'budgetList/RequestDataFailed',
+                    'FetchingState/RequestData',
+                    'FetchingState/RequestDataSuccess',
+                    'FetchingState/RequestDataFailed',
                     'ReportState/setReportType',
                     'ReportState/setTargetDate',
                     'ReportState/setTargetMonth',

@@ -44,7 +44,7 @@ export const userRoutes = [
   },
   {
     method: 'get',
-    route: '/api/user/:id',
+    route: '/api/user/:userId',
     controller: UserController,
     action: 'one',
   },
@@ -57,13 +57,13 @@ export const userRoutes = [
   // TODO: add PUT ACTION
   {
     method: 'put',
-    route: '/api/user/:id',
+    route: '/api/user/:userId',
     controller: UserController,
     action: 'save',
   },
   {
     method: 'delete',
-    route: '/api/user/:id',
+    route: '/api/user/:userId',
     controller: UserController,
     action: 'remove',
   },
