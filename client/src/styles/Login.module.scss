@@ -18,7 +18,7 @@
         padding: 20px;
 
         .title {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
         }
 
         .loginForm {
@@ -48,6 +48,7 @@
                 }
 
                 .input {
+                    font-size: 1.6rem;
                     width: 100%;
                     background-color: #ffffff !important;
                     border: 0;
@@ -87,6 +88,11 @@
                 background-color: $hoverBaseColor;
             }
 
+            &:disabled {
+                background-color: $hoverBaseColor;
+                cursor: auto;
+            }
+
             &.submitGusetBtn {
                 background-color: $grayButtonColor;
                 margin-top: 10px;
@@ -94,6 +100,27 @@
                 &:hover,
                 :active {
                     background-color: $hoverGrayButtonColor;
+                }
+            }
+        }
+        .submitBtn:disabled {
+            :global {
+                .iconBtn {
+                    padding-right: 40px;
+
+                    &.next::before,
+                    &.next::after {
+                        right: 24px;
+                        transition: none;
+                    }
+
+                    &:hover,
+                    &:active {
+                        &.next::before,
+                        &.next::after {
+                            right: 24px;
+                        }
+                    }
                 }
             }
         }

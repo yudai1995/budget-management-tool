@@ -43,6 +43,6 @@ export const getLoginMessage = (state: RootState) => {
 // actionをexport
 export const { setLogin, setLogout, setLoginMessage } = LoginStateSlice.actions;
 // state情報をexport
-export const loginState = (state: RootState) => state.ReportState;
+export const loginState = (state: RootState) => state.LoginState;
 // reducerをexport → storeへ
 export default LoginStateSlice.reducer;

@@ -1,12 +1,12 @@
 import React from 'react';
 import styles from '../styles/Login.module.scss';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
     RequestData,
     RequestDataFailed,
     RequestDataSuccess,
-} from '../store/budgetListSlice';
+} from '../store/FetchingStateSlice';
 import axios from 'axios';
 import {
     setLogin,
@@ -21,10 +21,17 @@ export const Login: React.FC = () => {
     const history = useHistory();
     const inputUserIdRef = useRef<HTMLInputElement>(null);
     const inputPasswordRef = useRef<HTMLInputElement>(null);
+    const [disabled, setDisabled] = useState<boolean>(true);
     const dispatch = useDispatch();
     const loginMessage = useSelector((state: RootState) =>
         getLoginMessage(state)
     );
+
+    const onChangeInputHandler = () => {
+        const userId = inputUserIdRef.current!.value;
+        const password = inputPasswordRef.current!.value;
+        setDisabled(userId && password ? false : true);
+    };
 
     const onSubmitLoginHandler = (event: React.FormEvent) => {
         event.preventDefault();
@@ -47,6 +54,7 @@ export const Login: React.FC = () => {
                     history.push({ pathname: '/' });
                 })
                 .catch((err) => {
+                    console.log(err);
                     loginErrorHandler(err);
                     dispatch(RequestDataFailed({}));
                 });
@@ -83,14 +91,15 @@ export const Login: React.FC = () => {
 
     const loginErrorHandler = (error: any) => {
         const errorData = error.response.data;
+        const message = errorData.message
+            ? errorMessage[errorData.message]
+            : 'サーバーが応答しておりません';
         dispatch(
             setLoginMessage({
-                message: errorMessage[errorData.message],
+                message,
             })
         );
     };
-
-
 
     return (
         <>
@@ -106,6 +115,7 @@ export const Login: React.FC = () => {
                                 type="text"
                                 placeholder="ユーザー名を入力してください"
                                 autoComplete="off"
+                                onChange={onChangeInputHandler}
                             />
                             <label htmlFor="userId" className={styles.label}>
                                 ユーザー名
@@ -119,6 +129,7 @@ export const Login: React.FC = () => {
                                 type="password"
                                 placeholder="パスワードを入力してください"
                                 autoComplete="off"
+                                onChange={onChangeInputHandler}
                             />
                             <label htmlFor="password" className={styles.label}>
                                 パスワード
@@ -127,6 +138,7 @@ export const Login: React.FC = () => {
                         <button
                             onClick={onSubmitLoginHandler}
                             className={`${styles.submitBtn} iconBtn next`}
+                            disabled={disabled}
                         >
                             ログインする
                         </button>

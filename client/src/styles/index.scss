@@ -72,13 +72,18 @@ li {
         margin: 0 auto;
         padding: 0 10px;
     }
+
+    &.fetching {
+        max-height: 100vh;
+        overflow: hidden;
+    }
 }
 main {
     display: block;
     min-height: calc(100vh - (103px + 108px));
 
-    .fetching {
-        position: absolute;
+    .fetchingWrapper {
+        position: fixed;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -87,6 +92,7 @@ main {
         top: 0;
         left: 0;
         background-color: #7e7e7ec7;
+        z-index: 10000;
 
         h2.title {
             text-align: center;

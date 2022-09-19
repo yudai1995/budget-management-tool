@@ -16,8 +16,7 @@ export class UserController {
   }
 
   async one(request: Request, response: Response, next: NextFunction) {
-    console.log(request.params.id);
-    const userId = request.params.id;
+    const userId = request.params.userId;
     const user = await this.userRepository.findOneBy({
       userId,
     });
@@ -25,7 +24,7 @@ export class UserController {
   }
 
   async save(request: Request, response: Response, next: NextFunction) {
-    const userId = request.body.userId;
+    const userId = request.params.userId;
     const userName = request.body.userName;
     const preHashPassword = request.body.password;
     const password = await bcrypt.hash(preHashPassword, 10);

@@ -74,8 +74,11 @@ AppDataSource.initialize()
     );
 
     app.post(logoutRouter.route, (req, res) => {
+      if (req.session.login === undefined) {
+        res.status(403).send({ result: 'error', message: 'Auth Error' });
+      }
       req.session.login = undefined;
-      res.redirect('/login');
+      res.status(200).send({ result: 'success', message: 'logout success' });
     });
 
     // register express routes from defined application routes
@@ -88,6 +91,9 @@ AppDataSource.initialize()
             res,
             next
           );
+          if (req.session.login === undefined) {
+            res.status(403).send({ result: 'error', message: 'Auth Error' });
+          }
           if (result instanceof Promise) {
             result
               .then((result) => {
@@ -123,6 +129,9 @@ AppDataSource.initialize()
             res,
             next
           );
+          if (req.session.login === undefined) {
+            res.status(403).send({ result: 'error', message: 'Auth Error' });
+          }
           if (result instanceof Promise) {
             result
               .then((result) => {

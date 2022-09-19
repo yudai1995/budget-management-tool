@@ -11,9 +11,9 @@ import { useSelector, RootState } from '../store/index';
 import { useDispatch } from 'react-redux';
 import {
     RequestData,
-    RequestDataFailed,
     RequestDataSuccess,
-} from '../store/budgetListSlice';
+    RequestDataFailed,
+} from '../store/FetchingStateSlice';
 import axios from 'axios';
 
 const grobalNavi = [

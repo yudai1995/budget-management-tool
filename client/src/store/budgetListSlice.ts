@@ -4,10 +4,8 @@ import { Budget, BalanceType } from '../Model/budget.model';
 import { getYear, getMonth, hyphenToSlash, getDate } from '../Model/Date.model';
 
 const initialState: {
-    isFetching: boolean;
     data: Budget[];
 } = {
-    isFetching: false,
     data: [],
 };
 
@@ -15,6 +13,21 @@ export const budgetListSlice = createSlice({
     name: 'budgetList',
     initialState,
     reducers: {
+        getBudget: (state, action) => {
+            let newData: any = [];
+            action.payload.budgetData.forEach((data: Budget) => {
+                const newItem = new Budget(
+                    data.id,
+                    data.amount,
+                    data.balanceType,
+                    data.content,
+                    data.date,
+                    data.categoryId
+                );
+                newData = [...newData, newItem];
+            });
+            state.data = newData;
+        },
         addBudget: (state, action) => {
             const newItem = new Budget(
                 action.payload.newID,
@@ -24,21 +37,12 @@ export const budgetListSlice = createSlice({
                 action.payload.newDate,
                 action.payload.newCategory
             );
-            state.data = [newItem, ...state.data];
+            state.data = [...state.data, newItem];
         },
         deleteBudget: (state, action) => {
             state.data = state.data.filter(
                 (data) => data.id !== action.payload.id
             );
-        },
-        RequestData: (state, action) => {
-            state.isFetching = true;
-        },
-        RequestDataSuccess: (state, action) => {
-            state.isFetching = false;
-        },
-        RequestDataFailed: (state, action) => {
-            state.isFetching = false;
         },
     },
 });
@@ -232,11 +236,9 @@ export const getFormatRecentBudgetList = <T extends RootState | Budget[]>(
 
 // actionをexport
 export const {
+    getBudget,
     addBudget,
     deleteBudget,
-    RequestData,
-    RequestDataSuccess,
-    RequestDataFailed,
 } = budgetListSlice.actions;
 // state情報をexport
 export const budgetList = (state: RootState) => state.budgetList;

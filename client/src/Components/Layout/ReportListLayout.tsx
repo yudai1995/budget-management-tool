@@ -1,12 +1,12 @@
 import { Budget, BalanceType } from '../../Model/budget.model';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
+import { deleteBudget } from '../../store/budgetListSlice';
 import {
-    deleteBudget,
     RequestData,
     RequestDataSuccess,
     RequestDataFailed,
-} from '../../store/budgetListSlice';
+} from '../../store/FetchingStateSlice';
 import { getCategoryData } from '../../store/CategoryListSlice';
 import classNames from 'classnames/bind';
 import axios from 'axios';
