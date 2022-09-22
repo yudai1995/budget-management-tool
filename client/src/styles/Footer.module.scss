@@ -1,3 +1,5 @@
+@import './Base/variable';
+
 footer.footerMenu {
     display: flex;
     align-items: center;
@@ -7,4 +9,9 @@ footer.footerMenu {
     min-height: 50px;
     margin-top: 30px;
     padding: 10px 10px;
+
+    @include mq(md) {
+        min-height: 40px;
+        margin-top: 20px;
+    }
 }

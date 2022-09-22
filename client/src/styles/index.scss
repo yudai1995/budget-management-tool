@@ -17,6 +17,7 @@ body {
     font-size: 1.2rem;
     color: $defaultTextColor;
     margin: 0;
+    min-height: -webkit-fill-available;
 }
 a {
     //color: $defaultTextColor;
@@ -62,8 +63,8 @@ li {
     .fc .fc-scrollgrid-section-footer table {
         height: 100%;
     }
-    .fc .fc-view-harness{
-        height: calc(100vh - 180px) !important;
+    .fc .fc-view-harness {
+        height: calc(100vh - (140px + 80px)) !important;
     }
 }
 @include mq(md) {
@@ -77,9 +78,13 @@ li {
 
 .App {
     .inner {
-        max-width: 1000px;
+        max-width: 1600px;
         margin: 0 auto;
-        padding: 0 10px;
+        padding: 0 5px;
+
+        @include mq(mmxl) {
+            padding: 0 10px;
+        }
     }
 
     &.fetching {
@@ -89,10 +94,11 @@ li {
 }
 main {
     display: block;
-    min-height: calc(100vh - 80px);
+    min-height: calc(100vh - (64px + 80px));
     padding-top: 20px;
     @include mq(md) {
         padding-top: 20px;
+        min-height: calc(100vh - (100px + 60px));
     }
 
     .fetchingWrapper {

@@ -2,8 +2,10 @@
 
 .content {
     background-color: #fff7f0;
-    border-radius: 6px;
     padding: 12px 16px 20px;
+    @include mq(mmxl) {
+        border-radius: 6px;
+    }
 
     h2.headTitle {
         text-align: center;
