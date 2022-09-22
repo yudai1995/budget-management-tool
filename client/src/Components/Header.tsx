@@ -15,25 +15,8 @@ import {
     RequestDataFailed,
 } from '../store/FetchingStateSlice';
 import axios from 'axios';
-
-const grobalNavi = [
-    {
-        text: 'ホーム',
-        link: '',
-    },
-    {
-        text: 'カレンダー',
-        link: 'monthly',
-    },
-    {
-        text: 'レポート',
-        link: 'report',
-    },
-    {
-        text: '入力',
-        link: 'edit',
-    },
-];
+import { guest } from '../Model/User.model';
+import { grobalNavi } from '../Model/navigation.model';
 
 export const Header: React.FC = () => {
     const dispatch = useDispatch();
@@ -73,7 +56,13 @@ export const Header: React.FC = () => {
                         {isLogin ? (
                             <div className={`${styles.loginWrapper} sp-only`}>
                                 <p className={`${styles.loginUser}`}>
-                                    {loginUser ? loginUser : '未ログイン'}
+                                    {loginUser
+                                        ? `${
+                                              guest['guest-en'] === loginUser
+                                                  ? guest['guest-ja']
+                                                  : loginUser
+                                          }さん`
+                                        : '未ログイン'}
                                 </p>
                                 <button
                                     className={`${styles.logoutBtn}`}
@@ -94,13 +83,19 @@ export const Header: React.FC = () => {
                                         link={navi.link}
                                         key={navi.link}
                                     >
-                                        {navi.text}
+                                        {navi.title}
                                     </GrobalNaviList>
                                 ))}
                             </ul>
                             <div className={`${styles.loginWrapper} pc-only`}>
                                 <p className={`${styles.loginUser}`}>
-                                    {loginUser ? loginUser : '未ログイン'}
+                                    {loginUser
+                                        ? `${
+                                              guest['guest-en'] === loginUser
+                                                  ? guest['guest-ja']
+                                                  : loginUser
+                                          }さん`
+                                        : '未ログイン'}
                                 </p>
                                 <button
                                     className={`${styles.logoutBtn}`}

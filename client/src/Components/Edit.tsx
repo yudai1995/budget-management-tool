@@ -25,6 +25,8 @@ import { ColumnLayout } from './Layout/Column/ColumnLayout';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '../styles/Edit.module.scss';
 import { useLocation } from 'react-router';
+import { Helmet } from 'react-helmet';
+import { pageTitle } from '../Model/navigation.model';
 
 export const Edit: React.FC = () => {
     const location = useLocation();
@@ -143,9 +145,23 @@ export const Edit: React.FC = () => {
             isActive: categoryId === selectCategory,
         });
     };
+    const title = pageTitle.Edit;
 
     return (
         <>
+            <Helmet>
+                <meta
+                    name="description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <meta name="keywords" content={`家計簿, 支出管理, ${title}`} />
+                <meta property="og:title" content={`${title} | 家計簿管理`} />
+                <meta
+                    property="og:description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <title>{`${title} | 家計簿管理`}</title>
+            </Helmet>
             <ContentLayout title="収支の入力">
                 <form
                     onSubmit={newItemSubmitHandler}

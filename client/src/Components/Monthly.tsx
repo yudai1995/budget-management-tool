@@ -11,6 +11,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import allLocales from '@fullcalendar/core/locales-all';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import '../styles/Monthly.module.scss';
+import { Helmet } from 'react-helmet';
+import { pageTitle } from '../Model/navigation.model';
 
 interface MonthlyProps {}
 
@@ -107,44 +109,60 @@ export const Monthly: React.FC<MonthlyProps> = () => {
             <span className="amount">{eventInfo.event.title}</span>
         </span>
     );
+    const title = pageTitle.Monthly;
 
     return (
-        <div>
-            <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                locales={allLocales}
-                locale="ja"
-                events={eventList}
-                eventContent={renderReportContent}
-                eventClick={(e) =>
-                    history.push(`/report/${e.event.extendedProps.dateStr}`)
-                }
-                dateClick={dateClickHandler}
-                selectable={true}
-                titleFormat={{
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                }}
-                customButtons={{
-                    customPrev: {
-                        text: '<',
-                        click: customPrevHandler,
-                    },
-                    customNext: {
-                        text: '>',
-                        click: customNextHandler,
-                    },
-                }}
-                headerToolbar={{
-                    start: 'customPrev',
-                    center: 'title',
-                    end: 'customNext',
-                }}
-                ref={calendarRef}
-                editable={true}
-            />
-        </div>
+        <>
+            <Helmet>
+                <meta
+                    name="description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <meta name="keywords" content={`家計簿, 支出管理, ${title}`} />
+                <meta property="og:title" content={`${title} | 家計簿管理`} />
+                <meta
+                    property="og:description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <title>{`${title} | 家計簿管理`}</title>
+            </Helmet>
+            <div>
+                <FullCalendar
+                    plugins={[dayGridPlugin, interactionPlugin]}
+                    initialView="dayGridMonth"
+                    locales={allLocales}
+                    locale="ja"
+                    events={eventList}
+                    eventContent={renderReportContent}
+                    eventClick={(e) =>
+                        history.push(`/report/${e.event.extendedProps.dateStr}`)
+                    }
+                    dateClick={dateClickHandler}
+                    selectable={true}
+                    titleFormat={{
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                    }}
+                    customButtons={{
+                        customPrev: {
+                            text: '<',
+                            click: customPrevHandler,
+                        },
+                        customNext: {
+                            text: '>',
+                            click: customNextHandler,
+                        },
+                    }}
+                    headerToolbar={{
+                        start: 'customPrev',
+                        center: 'title',
+                        end: 'customNext',
+                    }}
+                    ref={calendarRef}
+                    editable={true}
+                />
+            </div>
+        </>
     );
 };

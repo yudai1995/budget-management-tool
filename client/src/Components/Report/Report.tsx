@@ -12,6 +12,8 @@ import { ReportListLayout } from '../Layout/ReportListLayout';
 import { NoDateLayout } from '../Layout/NoDateLayout';
 import { ReportGraph } from '../Graph/ReportGraph';
 import styles from '../../styles/Report.module.scss';
+import { Helmet } from 'react-helmet';
+import { pageTitle } from '../../Model/navigation.model';
 
 export const Report: React.FC = () => {
     const budgetList = useSelector((state: RootState) => state.budgetList.data);
@@ -46,9 +48,23 @@ export const Report: React.FC = () => {
             (data) => data.balanceType === totalValueType
         );
     }
+    const title = pageTitle.Report;
 
     return (
         <>
+            <Helmet>
+                <meta
+                    name="description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <meta name="keywords" content={`家計簿, 支出管理, ${title}`} />
+                <meta property="og:title" content={`${title} | 家計簿管理`} />
+                <meta
+                    property="og:description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <title>{`${title} | 家計簿管理`}</title>
+            </Helmet>
             <ReportSettings />
             <NoDateLayout data={targetBudgetList}>
                 <>
