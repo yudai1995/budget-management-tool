@@ -4,7 +4,10 @@ interface ColumnLayoutProp {
     children: [React.ReactElement, React.ReactElement];
     width: [number, number];
 }
-export const ColumnLayout: React.FC<ColumnLayoutProp> = ({ children, width }) => {
+export const ColumnLayout: React.FC<ColumnLayoutProp> = ({
+    children,
+    width,
+}) => {
     return (
         <div className="columnWrapper" style={{ display: 'flex' }}>
             <div className="leftColumn" style={{ width: `${width[0]}%` }}>
@@ -14,7 +17,6 @@ export const ColumnLayout: React.FC<ColumnLayoutProp> = ({ children, width }) =>
                 className="rightColumn"
                 style={{
                     width: `${width[1]}%`,
-                    marginLeft: '20px',
                 }}
             >
                 {children[1]}

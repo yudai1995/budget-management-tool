@@ -18,15 +18,16 @@ $tabSpeed: 0.2s;
 $transitionSpeed: 0.3s;
 
 $breakpoints: (
-  "sm": 570px,
-  "md": 761px,
-  "lg": 1080px,
-  "xl": 1200px,
-  "xxl": 1400px
+    'sm': 570px,
+    'md': 761px,
+    'lg': 1080px,
+    'xl': 1200px,
+    'xxl': 1400px,
+    'mxxl': 1000px,
 );
 
 @mixin mq($size) {
-  @media screen and (max-width: #{map-get($breakpoints, $size)}) {
-    @content;
-  }
+    @media screen and (max-width: #{map-get($breakpoints, $size)}) {
+        @content;
+    }
 }
