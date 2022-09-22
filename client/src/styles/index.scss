@@ -92,7 +92,7 @@ main {
     min-height: calc(100vh - 80px);
     padding-top: 20px;
     @include mq(md) {
-        padding-top: 100px;
+        padding-top: 20px;
     }
 
     .fetchingWrapper {

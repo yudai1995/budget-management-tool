@@ -98,7 +98,6 @@ header.menuHeader {
 
 @include mq(md) {
     header.menuHeader {
-        position: fixed;
         padding: 0 4px;
 
         .headerWrapper {

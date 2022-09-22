@@ -24,9 +24,7 @@ export const Header: React.FC = () => {
     const dispatch = useDispatch();
     const isLogin = useSelector((state: RootState) => getIsLoginAuth(state));
     const loginUser = useSelector((state: RootState) => getLoginUser(state));
-    const [headerStyle, setHeaderStyle] = useState({
-        transition: 'all 200ms ease-in',
-    });
+    const [headerStyle, setHeaderStyle] = useState({});
 
     const logoutHandler = (event: React.FormEvent) => {
         event.preventDefault();
@@ -47,9 +45,9 @@ export const Header: React.FC = () => {
         ({ prevPos, currPos }) => {
             const isVisible = currPos.y > prevPos.y;
             const shouldBeStyle = {
-                visibility: isVisible ? 'visible' : 'hidden',
-                transition: `all ${isVisible ? '200ms' : '400ms'} ${isVisible ? 'ease-in' : 'ease-out'}`,
-                transform: isVisible ? 'none' : 'translate(0, -100%)',
+                transition: `all ${isVisible ? '20ms' : '20ms'} ${
+                    isVisible ? 'ease-in' : 'ease-out'
+                }`,
             };
 
             if (JSON.stringify(shouldBeStyle) === JSON.stringify(headerStyle))
