@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import styles from '../styles/Header.module.scss';
 import Logo from '../img/common/icon-logo.png';
 import {
@@ -17,11 +18,15 @@ import {
 import axios from 'axios';
 import { guest } from '../Model/User.model';
 import { grobalNavi } from '../Model/navigation.model';
+import { useState } from 'react';
 
 export const Header: React.FC = () => {
     const dispatch = useDispatch();
     const isLogin = useSelector((state: RootState) => getIsLoginAuth(state));
     const loginUser = useSelector((state: RootState) => getLoginUser(state));
+    const [headerStyle, setHeaderStyle] = useState({
+        transition: 'all 200ms ease-in',
+    });
 
     const logoutHandler = (event: React.FormEvent) => {
         event.preventDefault();
@@ -37,8 +42,24 @@ export const Header: React.FC = () => {
                 dispatch(RequestDataFailed({}));
             });
     };
+
+    useScrollPosition(
+        ({ prevPos, currPos }) => {
+            const isVisible = currPos.y > prevPos.y;
+            const shouldBeStyle = {
+                visibility: isVisible ? 'visible' : 'hidden',
+                transition: `all ${isVisible ? '200ms' : '400ms'} ${isVisible ? 'ease-in' : 'ease-out'}`,
+                transform: isVisible ? 'none' : 'translate(0, -100%)',
+            };
+
+            if (JSON.stringify(shouldBeStyle) === JSON.stringify(headerStyle))
+                return;
+            setHeaderStyle(shouldBeStyle);
+        },
+        [headerStyle]
+    );
     return (
-        <header className={styles.menuHeader}>
+        <header className={`${styles.menuHeader}`} style={{ ...headerStyle }}>
             <div className="inner">
                 <div className={styles.headerWrapper}>
                     <div className={styles.headerTitleWrapper}>
