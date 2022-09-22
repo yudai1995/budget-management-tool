@@ -2,7 +2,7 @@
     .columnWrapper {
         .leftColumn,
         .rightColumn {
-            max-height: calc(100vh - 80px);
+            max-height: calc(100vh - (64px + 100px));
             overflow-y: scroll;
             -webkit-overflow-scrolling: touch;
             border-radius: 6px;
