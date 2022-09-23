@@ -1,6 +1,6 @@
 @import './Base/variable';
 
-$grobalnavBorder: 2px;
+$grobalnavBorder: 3px;
 
 header.menuHeader {
     background-color: #ffffff;
@@ -42,31 +42,6 @@ header.menuHeader {
     .headerlinksWrapper {
         display: flex;
         justify-content: space-between;
-
-        .grobalNavi {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-
-            .grobalNaviList {
-                a {
-                    display: block;
-                    font-size: 1.6rem;
-                    padding: 10px 24px;
-                    border-bottom: $grobalnavBorder solid #ffffff;
-                    transition: $transitionSpeed;
-                    &:hover {
-                        color: $baseColor;
-                        border-bottom: $grobalnavBorder solid $baseColor;
-                    }
-
-                    &.active {
-                        color: $baseColor;
-                        border-bottom: $grobalnavBorder solid $baseColor;
-                    }
-                }
-            }
-        }
     }
 
     .loginWrapper {
@@ -144,27 +119,6 @@ header.menuHeader {
 
         .headerlinksWrapper {
             width: 100%;
-
-            .grobalNavi {
-                display: flex;
-                align-items: center;
-                text-align: center;
-                width: 100%;
-                margin-top: 2px;
-
-                .grobalNaviList {
-                    width: calc(100% / 4);
-                    a {
-                        width: 100%;
-                        font-size: 1.2rem;
-                        padding: 6px 10px;
-
-                        @include mq(sm) {
-                            font-size: 1rem;
-                        }
-                    }
-                }
-            }
         }
     }
 }

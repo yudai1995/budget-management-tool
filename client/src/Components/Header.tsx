@@ -17,8 +17,8 @@ import {
 } from '../store/FetchingStateSlice';
 import axios from 'axios';
 import { guest } from '../Model/User.model';
-import { grobalNavi } from '../Model/navigation.model';
 import { useState } from 'react';
+import { GrobalNaviList } from './Layout/GrobalNaviList';
 
 export const Header: React.FC = () => {
     const dispatch = useDispatch();
@@ -65,11 +65,11 @@ export const Header: React.FC = () => {
                             <NavLink to="/" className={styles.logo}>
                                 <img
                                     src={Logo}
-                                    alt="家計簿管理ツール"
+                                    alt="家計簿管理"
                                     width="24"
                                     height="24"
                                 />
-                                家計簿管理ツール
+                                家計簿管理
                             </NavLink>
                         </h1>
                         {isLogin ? (
@@ -96,16 +96,7 @@ export const Header: React.FC = () => {
                     </div>
                     {isLogin ? (
                         <div className={styles.headerlinksWrapper}>
-                            <ul className={styles.grobalNavi}>
-                                {grobalNavi.map((navi) => (
-                                    <GrobalNaviList
-                                        link={navi.link}
-                                        key={navi.link}
-                                    >
-                                        {navi.title}
-                                    </GrobalNaviList>
-                                ))}
-                            </ul>
+                            <GrobalNaviList></GrobalNaviList>
                             <div className={`${styles.loginWrapper} pc-only`}>
                                 <p className={`${styles.loginUser}`}>
                                     {loginUser
@@ -133,26 +124,3 @@ export const Header: React.FC = () => {
     );
 };
 
-interface grobalNaviListProp {
-    children: string;
-    link: string;
-}
-
-export const GrobalNaviList: React.FC<grobalNaviListProp> = ({
-    children,
-    link,
-}) => {
-    return (
-        <li className={styles.grobalNaviList} key={link}>
-            {link === 'report' ? (
-                <NavLink activeClassName={styles.active} to={`/${link}`}>
-                    {children}
-                </NavLink>
-            ) : (
-                <NavLink activeClassName={styles.active} to={`/${link}`} exact>
-                    {children}
-                </NavLink>
-            )}
-        </li>
-    );
-};
