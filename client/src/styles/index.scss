@@ -8,6 +8,7 @@ $iconScale: 3px;
 html {
     -webkit-text-size-adjust: 100%;
     font-size: 62.5%;
+    height: -webkit-fill-available;
 }
 body {
     line-height: 1.5;
