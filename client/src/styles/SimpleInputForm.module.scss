@@ -83,6 +83,7 @@ form.editForm {
         .editArea {
             display: block;
             color: $defaultTextColor;
+            font-size: 1.6rem;
             text-align: left;
             margin-top: 4px;
             border: 0;
@@ -161,7 +162,7 @@ form.editForm {
 
             &:hover,
             :active {
-                background-color: #ffc082;
+                background-color: $hoverBaseColor;
             }
         }
 
@@ -170,7 +171,7 @@ form.editForm {
             font-size: 1.8rem;
             text-align: center;
             color: #ffffff;
-            background-color: #9a9a9a;
+            background-color: $grayButtonColor;
             width: 240px;
             margin: 16px auto 0;
             border: 0;
@@ -180,7 +181,7 @@ form.editForm {
 
             &:hover,
             :active {
-                background-color: #b4b4b4;
+                background-color: $hoverGrayButtonColor;
             }
         }
         :global {
@@ -195,4 +196,3 @@ form.editForm {
         }
     }
 }
-

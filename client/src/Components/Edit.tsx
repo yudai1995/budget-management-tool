@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { addBudget } from '../store/budgetListSlice';
 import {
-    addBudget,
     RequestData,
     RequestDataSuccess,
     RequestDataFailed,
-} from '../store/budgetListSlice';
+} from '../store/FetchingStateSlice';
 import { validate } from 'class-validator';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import ja from 'date-fns/locale/ja';
@@ -25,6 +25,8 @@ import { ColumnLayout } from './Layout/Column/ColumnLayout';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from '../styles/Edit.module.scss';
 import { useLocation } from 'react-router';
+import { Helmet } from 'react-helmet';
+import { pageTitle } from '../Model/navigation.model';
 
 export const Edit: React.FC = () => {
     const location = useLocation();
@@ -86,7 +88,7 @@ export const Edit: React.FC = () => {
                 dispatch(RequestData({}));
                 // POSTリクエスト
                 axios
-                    .post('/api', {
+                    .post('/api/budget', {
                         newData,
                     })
                     .then((response) => {
@@ -143,9 +145,23 @@ export const Edit: React.FC = () => {
             isActive: categoryId === selectCategory,
         });
     };
+    const title = pageTitle.Edit;
 
     return (
         <>
+            <Helmet>
+                <meta
+                    name="description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <meta name="keywords" content={`家計簿, 支出管理, ${title}`} />
+                <meta property="og:title" content={`${title} | 家計簿管理`} />
+                <meta
+                    property="og:description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <title>{`${title} | 家計簿管理`}</title>
+            </Helmet>
             <ContentLayout title="収支の入力">
                 <form
                     onSubmit={newItemSubmitHandler}

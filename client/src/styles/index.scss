@@ -8,6 +8,7 @@ $iconScale: 3px;
 html {
     -webkit-text-size-adjust: 100%;
     font-size: 62.5%;
+    height: -webkit-fill-available;
 }
 body {
     line-height: 1.5;
@@ -17,11 +18,17 @@ body {
     font-size: 1.2rem;
     color: $defaultTextColor;
     margin: 0;
+    min-height: -webkit-fill-available;
 }
 a {
     //color: $defaultTextColor;
     color: #333;
     text-decoration: none;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+button {
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
 }
 img {
     max-width: 100%;
@@ -46,19 +53,58 @@ li {
     padding: 0;
     display: block;
 }
+.pc-only {
+    display: block;
+}
+.sp-only {
+    display: none;
+}
+@include mq(md) {
+    .fc .fc-scrollgrid-section-body table,
+    .fc .fc-scrollgrid-section-footer table {
+        height: 100%;
+    }
+    .fc .fc-view-harness {
+        height: calc(100vh - (140px + 80px)) !important;
+    }
+}
+@include mq(md) {
+    .pc-only {
+        display: none;
+    }
+    .sp-only {
+        display: block;
+    }
+}
+
 .App {
     .inner {
-        max-width: 1200px;
+        max-width: 1600px;
         margin: 0 auto;
-        padding: 0 10px;
+        padding: 0 5px;
+
+        @include mq(mmxl) {
+            padding: 0 10px;
+        }
+    }
+
+    &.fetching {
+        max-height: 100vh;
+        overflow: hidden;
     }
 }
 main {
     display: block;
-    min-height: calc(100vh - (109px + 108px));
+    min-height: calc(100vh - (64px + 80px));
+    padding-top: 20px;
+    @include mq(md) {
+        padding-top: 20px;
+        min-height: calc(100vh - (100px + 60px));
+        min-height: -webkit-fill-available;
+    }
 
-    .fetching {
-        position: absolute;
+    .fetchingWrapper {
+        position: fixed;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -67,6 +113,7 @@ main {
         top: 0;
         left: 0;
         background-color: #7e7e7ec7;
+        z-index: 10000;
 
         h2.title {
             text-align: center;

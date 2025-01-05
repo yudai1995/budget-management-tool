@@ -1,97 +1,54 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from './store';
-import {
-    addBudget,
-    RequestData,
-    RequestDataSuccess,
-    RequestDataFailed,
-} from './store/budgetListSlice';
-import axios from 'axios';
+import React from 'react';
+import { useSelector, RootState } from './store/index';
+import { getFetchingState } from './store/FetchingStateSlice';
+import { BrowserRouter } from 'react-router-dom';
 import { Header } from './Components/Header';
-import { ColumnLayout } from './Components/Layout/Column/ColumnLayout';
-import { SubColumn } from './Components/Layout/Column/SubColumn';
-import { MainColumn } from './Components/Layout/Column/MainColumn';
-import { Edit } from './Components/Edit';
-import { NotFound } from './Components/NotFound';
+import { BudgetAppRouter } from './Route/BudgetAppRouter';
 import { Footer } from './Components/Footer';
-import { Budget } from './Model/budget.model';
+import { Helmet } from 'react-helmet';
+import { getLoginUser } from './store/LoginStateSlice';
+import { pageTitle } from './Model/navigation.model';
+import { guest } from './Model/User.model';
 
 const App: React.FC = () => {
-    const isFetching = useSelector(
-        (state: RootState) => state.budgetList.isFetching
+    const isFetching = useSelector((state: RootState) =>
+        getFetchingState(state)
     );
-    const dispatch = useDispatch();
-    useEffect(() => {
-        dispatch(RequestData({}));
-        axios
-            .get('/api')
-            .then((response) => {
-                const budgetData = response.data.budget;
-
-                (budgetData as Budget[]).forEach((data: Budget) => {
-                    const newID = data.id,
-                        newAmount = data.amount,
-                        newType = data.balanceType,
-                        newContent = data.content,
-                        newDate = data.date,
-                        newCategory = data.categoryId;
-
-                    dispatch(
-                        addBudget({
-                            newID,
-                            newAmount,
-                            newType,
-                            newContent,
-                            newDate,
-                            newCategory,
-                        })
-                    );
-                });
-
-                dispatch(RequestDataSuccess({}));
-            })
-            .catch((err) => {
-                console.error(new Error(err));
-                dispatch(RequestDataFailed({}));
-            });
-    }, [dispatch]);
+    const loginUser = useSelector((state: RootState) => getLoginUser(state));
+    const title = pageTitle.Home;
 
     return (
-        <div className="App">
+        <div className={isFetching ? `fetching App` : `App`}>
+            <Helmet>
+                <meta
+                    name="description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <meta name="keywords" content={`家計簿, 支出管理, ${title}`} />
+                <meta property="og:title" content={`${title} | 家計簿管理`} />
+                <meta
+                    property="og:description"
+                    content={`家計簿管理の${title}画面です`}
+                />
+                <title>{`${
+                    guest['guest-en'] === loginUser
+                        ? guest['guest-ja']
+                        : loginUser
+                }さん | 家計簿管理`}</title>
+            </Helmet>
             <BrowserRouter>
                 <Header />
-
                 <main>
                     {isFetching ? (
-                        <div className="fetching">
+                        <div className="fetchingWrapper">
                             <h2 className="title">処理中です...</h2>
                         </div>
                     ) : (
-                        <div className="inner">
-                            <Switch>
-                                <Route exact path="/edit">
-                                    <Edit />
-                                </Route>
-                                <Route exact path={['/', '/monthly']}>
-                                    <ColumnLayout width={[40, 60]}>
-                                        <SubColumn />
-                                        <MainColumn />
-                                    </ColumnLayout>
-                                </Route>
-                                <Route path="/report">
-                                    <ColumnLayout width={[40, 60]}>
-                                        <SubColumn />
-                                        <MainColumn />
-                                    </ColumnLayout>
-                                </Route>
-                                <Route>
-                                    <NotFound />
-                                </Route>
-                            </Switch>
-                        </div>
+                        <></>
                     )}
+                    <div className="inner">
+                        <BudgetAppRouter />
+                    </div>
                 </main>
 
                 <Footer />
