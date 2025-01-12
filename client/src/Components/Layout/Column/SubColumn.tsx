@@ -1,6 +1,6 @@
-import { ContentLayout } from '../ContentLayout';
-import { TodayReport } from '../../Report/TodayReport';
-import { SimpleInputForm } from '../../SimpleInputForm';
+import { ContentLayout } from '../ContentLayout'
+import { TodayReport } from '../../Report/TodayReport'
+import { SimpleInputForm } from '../../SimpleInputForm'
 
 export const SubColumn: React.FC = () => {
     return (
@@ -13,5 +13,5 @@ export const SubColumn: React.FC = () => {
                 <SimpleInputForm />
             </ContentLayout>
         </>
-    );
-};
+    )
+}
