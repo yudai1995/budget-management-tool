@@ -1,4 +1,4 @@
-@import './Base/variable';
+@use './Base/variable' as *;
 .notFound {
     display: flex;
     align-items: center;

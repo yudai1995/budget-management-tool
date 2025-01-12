@@ -1,4 +1,4 @@
-@import './Base/variable';
+@use './Base/variable' as *;
 
 form.editForm {
     .typeTab {
@@ -121,8 +121,7 @@ form.editForm {
                     height: 16px;
                     top: 50%;
                     right: 20px;
-                    background: url('../img/common/icon-schedule.png') no-repeat
-                        0 0/16px 16px #ffffff;
+                    background: url('../img/common/icon-schedule.png') no-repeat 0 0/16px 16px #ffffff;
                     margin-top: -8px;
                     cursor: pointer;
 

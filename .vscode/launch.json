@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "プログラムの起動",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/api/src/index.ts",
+            "outFiles": [
+                "${workspaceFolder}/api/build/**/*.js"
+            ],
+            "preLaunchTask": "build",
+            "sourceMaps": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/api/src/**/*.ts",
+                "${workspaceFolder}/api/build/**/*.js"
+            ]
+        }
+    ]
+}
