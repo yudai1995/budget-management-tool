@@ -1,10 +1,10 @@
-import { Switch, Route } from 'react-router-dom';
-import { ContentLayout } from '../ContentLayout';
-import { RecentReport } from '../../Report/RecentReport';
-import { Monthly } from '../../Monthly';
-import { DailyReport } from '../../Report/DailyReport';
-import { RecentGraph } from '../../Graph/RecentGraph';
-import { Report } from '../../Report/Report';
+import { Switch, Route } from 'react-router-dom'
+import { ContentLayout } from '../ContentLayout'
+import { RecentReport } from '../../Report/RecentReport'
+import { Monthly } from '../../Monthly'
+import { DailyReport } from '../../Report/DailyReport'
+import { RecentGraph } from '../../Graph/RecentGraph'
+import { Report } from '../../Report/Report'
 
 export const MainColumn: React.FC = () => {
     return (
@@ -31,5 +31,5 @@ export const MainColumn: React.FC = () => {
                 <Route path="/report/:date" component={DailyReport} />
             </Switch>
         </>
-    );
-};
+    )
+}

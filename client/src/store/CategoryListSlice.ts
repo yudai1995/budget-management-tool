@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from './index';
-import { BalanceType } from '../Model/budget.model';
-import { Category } from '../Model/Category.model';
+import { createSlice } from '@reduxjs/toolkit'
+import { RootState } from './index'
+import { BalanceType } from '../Model/budget.model'
+import { Category } from '../Model/Category.model'
 
 export const outgoTypes = [
     { name: '未分類', color: '#333333' },
@@ -16,7 +16,7 @@ export const outgoTypes = [
     { name: '衣類', color: '#10D100' },
     { name: '趣味', color: '#BE8529' },
     { name: 'その他', color: '#FF9D42' },
-];
+]
 
 const incomeTypes = [
     { name: '未分類', color: '#333333' },
@@ -27,72 +27,54 @@ const incomeTypes = [
     { name: '年金', color: '#865AFF' },
     { name: 'おこづかい', color: '#D9BB69' },
     { name: 'その他', color: '#FF9D42' },
-];
+]
 
 const initialState: {
-    data: Category[][];
-    selectedCategory: number;
+    data: Category[][]
+    selectedCategory: number
 } = {
     data: [[], []],
     selectedCategory: 0,
-};
+}
 
-const outgoNumber = BalanceType['Outgo'];
+const outgoNumber = BalanceType['Outgo']
 outgoTypes.forEach((outgoType) => {
     initialState.data[outgoNumber] = [
         ...initialState.data[outgoNumber],
-        new Category(
-            initialState.data[outgoNumber].length,
-            outgoType.name,
-            outgoType.color,
-            true
-        ),
-    ];
-});
+        new Category(initialState.data[outgoNumber].length, outgoType.name, outgoType.color, true),
+    ]
+})
 
-const incomeNumber = BalanceType['Income'];
+const incomeNumber = BalanceType['Income']
 incomeTypes.forEach((outgoType) => {
     initialState.data[incomeNumber] = [
         ...initialState.data[incomeNumber],
-        new Category(
-            initialState.data[incomeNumber].length,
-            outgoType.name,
-            outgoType.color,
-            true
-        ),
-    ];
-});
+        new Category(initialState.data[incomeNumber].length, outgoType.name, outgoType.color, true),
+    ]
+})
 
 export const categoryListSlice = createSlice({
     name: 'categoryList',
     initialState,
     reducers: {
         addCategory: (state, action) => {
-            const newCategory = new Category(
-                action.payload.newCategoryId,
-                action.payload.newName,
-                action.payload.newColor,
-                true
-            );
+            const newCategory = new Category(action.payload.newCategoryId, action.payload.newName, action.payload.newColor, true)
             if (action.payload.newType === 0) {
-                state.data[action.payload.newType] = [
-                    newCategory,
-                    ...state.data[action.payload.newType],
-                ];
+                state.data[action.payload.newType] = [newCategory, ...state.data[action.payload.newType]]
             }
         },
         setSelectCategory: (state, action) => {
-            state.selectedCategory = action.payload.selectedCategory;
+            state.selectedCategory = action.payload.selectedCategory
         },
     },
-});
+})
 
 /**
  *  Type Guard
  * */
 const isState = (data: any): data is RootState => {
-    return data.CategoryList !== undefined;
-};
+    return data.CategoryList !== undefined
+}
 
 /**
  * カテゴリIDからカテゴリ名を取得する
@@ -101,27 +83,21 @@ const isState = (data: any): data is RootState => {
  * @param {BalanceType} type
  * @return {string}
  */
-export const getCategoryData = <T extends RootState | Category[][]>(
-    data: T,
-    id: number,
-    type: BalanceType
-) => {
-    let dataList;
+export const getCategoryData = <T extends RootState | Category[][]>(data: T, id: number, type: BalanceType) => {
+    let dataList
     if (isState(data)) {
-        dataList = data.CategoryList.data;
+        dataList = data.CategoryList.data
     } else {
-        dataList = data;
+        dataList = data
     }
-    const index = dataList[type].findIndex(
-        ({ categoryId }) => categoryId === id
-    );
+    const index = dataList[type].findIndex(({ categoryId }) => categoryId === id)
 
-    return dataList[type][index];
-};
+    return dataList[type][index]
+}
 
 // actionをexport
-export const { addCategory, setSelectCategory } = categoryListSlice.actions;
+export const { addCategory, setSelectCategory } = categoryListSlice.actions
 // state情報をexport
-export const categoryList = (state: RootState) => state.CategoryList;
+export const categoryList = (state: RootState) => state.CategoryList
 // reducerをexport → storeへ
-export default categoryListSlice.reducer;
+export default categoryListSlice.reducer

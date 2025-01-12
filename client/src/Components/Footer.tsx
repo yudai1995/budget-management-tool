@@ -1,5 +1,5 @@
-import React from 'react';
-import styles from '../styles/Footer.module.scss';
+import React from 'react'
+import styles from '../styles/Footer.module.scss'
 
 export const Footer: React.FC = () => {
     return (
@@ -8,5 +8,5 @@ export const Footer: React.FC = () => {
                 <small>&copy; 2021 YUDAI1995</small>
             </div>
         </footer>
-    );
-};
+    )
+}

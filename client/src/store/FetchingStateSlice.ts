@@ -1,36 +1,35 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from './index';
+import { createSlice } from '@reduxjs/toolkit'
+import { RootState } from './index'
 
 const initialState: {
-    isFetching: boolean;
+    isFetching: boolean
 } = {
     isFetching: false,
-};
+}
 
 export const FetchingStateSlice = createSlice({
     name: 'FetchingState',
     initialState,
     reducers: {
         RequestData: (state, action) => {
-            state.isFetching = true;
+            state.isFetching = true
         },
         RequestDataSuccess: (state, action) => {
-            state.isFetching = false;
+            state.isFetching = false
         },
         RequestDataFailed: (state, action) => {
-            state.isFetching = false;
+            state.isFetching = false
         },
     },
-});
+})
 
 export const getFetchingState = (state: RootState) => {
-    return state.FetchingState.isFetching;
-};
+    return state.FetchingState.isFetching
+}
 
 // actionをexport
-export const { RequestData, RequestDataSuccess, RequestDataFailed } =
-    FetchingStateSlice.actions;
+export const { RequestData, RequestDataSuccess, RequestDataFailed } = FetchingStateSlice.actions
 // state情報をexport
-export const fetchingState = (state: RootState) => state.FetchingState;
+export const fetchingState = (state: RootState) => state.FetchingState
 // reducerをexport → storeへ
-export default FetchingStateSlice.reducer;
+export default FetchingStateSlice.reducer

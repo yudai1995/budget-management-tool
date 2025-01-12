@@ -1,8 +1,8 @@
-import React from 'react';
-import { Login } from '../Components/Login';
-import { Switch, Route } from 'react-router-dom';
-import { AuthenticationGuard } from '../Guard/AuthenticationGuard';
-import { AuthenticatedRoute } from './AuthenticatedRoute';
+import React from 'react'
+import { Login } from '../Components/Login'
+import { Switch, Route } from 'react-router-dom'
+import { AuthenticationGuard } from '../Guard/AuthenticationGuard'
+import { AuthenticatedRoute } from './AuthenticatedRoute'
 
 export const BudgetAppRouter: React.FC = () => {
     return (
@@ -14,5 +14,5 @@ export const BudgetAppRouter: React.FC = () => {
                 <AuthenticatedRoute />
             </AuthenticationGuard>
         </Switch>
-    );
-};
+    )
+}

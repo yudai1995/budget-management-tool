@@ -1,13 +1,10 @@
-import '../../../styles/ColumnLayout.module.scss';
+import '../../../styles/ColumnLayout.module.scss'
 
 interface ColumnLayoutProp {
-    children: [React.ReactElement, React.ReactElement];
-    width: [number, number];
+    children: [React.ReactElement, React.ReactElement]
+    width: [number, number]
 }
-export const ColumnLayout: React.FC<ColumnLayoutProp> = ({
-    children,
-    width,
-}) => {
+export const ColumnLayout: React.FC<ColumnLayoutProp> = ({ children, width }) => {
     return (
         <div className="columnWrapper" style={{ display: 'flex' }}>
             <div className="leftColumn" style={{ width: `${width[0]}%` }}>
@@ -22,5 +19,5 @@ export const ColumnLayout: React.FC<ColumnLayoutProp> = ({
                 {children[1]}
             </div>
         </div>
-    );
-};
+    )
+}

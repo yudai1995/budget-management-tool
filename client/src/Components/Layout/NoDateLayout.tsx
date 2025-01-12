@@ -1,17 +1,13 @@
-import { Budget } from '../../Model/budget.model';
+import { Budget } from '../../Model/budget.model'
 
 interface NoDateLayoutProp {
-    children: React.ReactElement;
-    data: Budget[];
-    text?: string;
+    children: React.ReactElement
+    data: Budget[]
+    text?: string
 }
 
-const style = { textAlign: 'center' as 'center', color: '#9a9a9a' };
-export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
-    children,
-    data,
-    text,
-}) => {
+const style = { textAlign: 'center' as 'center', color: '#9a9a9a' }
+export const NoDateLayout: React.FC<NoDateLayoutProp> = ({ children, data, text }) => {
     return (
         <>
             {data.length ? (
@@ -19,9 +15,7 @@ export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
             ) : (
                 <>
                     {text ? (
-                        <h2 style={{ textAlign: 'center', color: '#9a9a9a' }}>
-                            {text}
-                        </h2>
+                        <h2 style={{ textAlign: 'center', color: '#9a9a9a' }}>{text}</h2>
                     ) : (
                         <>
                             <h2 style={style}>該当データがございません</h2>
@@ -31,5 +25,5 @@ export const NoDateLayout: React.FC<NoDateLayoutProp> = ({
                 </>
             )}
         </>
-    );
-};
+    )
+}

@@ -22,4 +22,4 @@ export const grobalNavi = [
         title: pageTitle.Edit,
         link: 'edit',
     },
-];
+]

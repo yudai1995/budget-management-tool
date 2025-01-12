@@ -1,9 +1,9 @@
-import { Route, Switch } from 'react-router-dom';
-import { ColumnLayout } from '../Components/Layout/Column/ColumnLayout';
-import { SubColumn } from '../Components/Layout/Column/SubColumn';
-import { MainColumn } from '../Components/Layout/Column/MainColumn';
-import { Edit } from '../Components/Edit';
-import { NotFound } from '../Components/NotFound';
+import { Route, Switch } from 'react-router-dom'
+import { ColumnLayout } from '../Components/Layout/Column/ColumnLayout'
+import { SubColumn } from '../Components/Layout/Column/SubColumn'
+import { MainColumn } from '../Components/Layout/Column/MainColumn'
+import { Edit } from '../Components/Edit'
+import { NotFound } from '../Components/NotFound'
 
 export const AuthenticatedRoute: React.FC = () => {
     return (
@@ -27,5 +27,5 @@ export const AuthenticatedRoute: React.FC = () => {
                 <NotFound />
             </Route>
         </Switch>
-    );
-};
+    )
+}

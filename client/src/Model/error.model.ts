@@ -6,4 +6,4 @@ export enum errorModel {
 export const errorMessage: { [key: string]: string } = {
     authenticationFailed: 'パスワードが正しくありません',
     notFound: 'ユーザーが登録されていません',
-};
+}

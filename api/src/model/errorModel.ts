@@ -1,4 +1,4 @@
 export enum errorModel {
-  'AUTHENTICATION_FAILD' = 'authenticationFailed',
-  'NOT_FOUND' = 'notFound',
+    'AUTHENTICATION_FAILD' = 'authenticationFailed',
+    'NOT_FOUND' = 'notFound',
 }
