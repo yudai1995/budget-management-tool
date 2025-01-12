@@ -1,122 +1,102 @@
-import React from 'react';
-import styles from '../styles/Login.module.scss';
-import { useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import {
-    RequestData,
-    RequestDataFailed,
-    RequestDataSuccess,
-} from '../store/FetchingStateSlice';
-import axios from 'axios';
-import {
-    setLogin,
-    getLoginMessage,
-    setLoginMessage,
-} from '../store/LoginStateSlice';
-import { useHistory } from 'react-router-dom';
-import { errorMessage } from '../Model/error.model';
-import { useSelector, RootState } from '../store/index';
-import { Helmet } from 'react-helmet';
-import { pageTitle } from '../Model/navigation.model';
+import axios from 'axios'
+import React, { useRef, useState } from 'react'
+import { Helmet } from 'react-helmet'
+import { useDispatch } from 'react-redux'
+import { useHistory } from 'react-router-dom'
+import { errorMessage } from '../Model/error.model'
+import { pageTitle } from '../Model/navigation.model'
+import { RequestData, RequestDataFailed, RequestDataSuccess } from '../store/FetchingStateSlice'
+import { RootState, useSelector } from '../store/index'
+import { getLoginMessage, setLogin, setLoginMessage } from '../store/LoginStateSlice'
+import styles from '../styles/Login.module.scss'
 
 export const Login: React.FC = () => {
-    const history = useHistory();
-    const inputUserIdRef = useRef<HTMLInputElement>(null);
-    const inputPasswordRef = useRef<HTMLInputElement>(null);
-    const [disabled, setDisabled] = useState<boolean>(true);
-    const dispatch = useDispatch();
-    const loginMessage = useSelector((state: RootState) =>
-        getLoginMessage(state)
-    );
+    const history = useHistory()
+    const inputUserIdRef = useRef<HTMLInputElement>(null)
+    const inputPasswordRef = useRef<HTMLInputElement>(null)
+    const [disabled, setDisabled] = useState<boolean>(true)
+    const dispatch = useDispatch()
+    const loginMessage = useSelector((state: RootState) => getLoginMessage(state))
 
     const onChangeInputHandler = () => {
-        const userId = inputUserIdRef.current!.value;
-        const password = inputPasswordRef.current!.value;
-        setDisabled(userId && password ? false : true);
-    };
+        const userId = inputUserIdRef.current!.value
+        const password = inputPasswordRef.current!.value
+        setDisabled(userId && password ? false : true)
+    }
 
     const onSubmitLoginHandler = (event: React.FormEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
-        clearTimeout();
-        const userId = inputUserIdRef.current!.value;
-        const password = inputPasswordRef.current!.value;
+        event.preventDefault()
+        event.stopPropagation()
+        const userId = inputUserIdRef.current!.value
+        const password = inputPasswordRef.current!.value
 
         if (userId && password) {
-            dispatch(RequestData({}));
+            dispatch(RequestData({}))
             axios
                 .post('/api/login', {
                     userId,
                     password,
                 })
                 .then((response) => {
-                    dispatch(setLogin({ userId: response.data.userId }));
-                    dispatch(RequestDataSuccess({}));
+                    dispatch(setLogin({ userId: response.data.userId }))
+                    dispatch(RequestDataSuccess({}))
 
-                    history.push({ pathname: '/' });
+                    history.push({ pathname: '/' })
                 })
                 .catch((err) => {
-                    console.log(err);
-                    loginErrorHandler(err);
-                    dispatch(RequestDataFailed({}));
-                });
+                    console.log(err)
+                    loginErrorHandler(err)
+                    dispatch(RequestDataFailed({}))
+                })
 
-            inputUserIdRef.current!.value = '';
-            inputPasswordRef.current!.value = '';
+            inputUserIdRef.current!.value = ''
+            inputPasswordRef.current!.value = ''
         }
-    };
+    }
 
     const onSubmitGuestHandler = (event: React.FormEvent) => {
-        event.preventDefault();
-        event.stopPropagation();
+        event.preventDefault()
+        event.stopPropagation()
 
-        dispatch(RequestData({}));
+        dispatch(RequestData({}))
         axios
             .post('/api/login', {
                 userId: 'Guest',
             })
             .then((response) => {
-                dispatch(setLogin({ userId: response.data.userId }));
-                dispatch(RequestDataSuccess({}));
+                dispatch(setLogin({ userId: response.data.userId }))
+                dispatch(RequestDataSuccess({}))
 
-                history.push({ pathname: '/' });
+                history.push({ pathname: '/' })
             })
             .catch((err) => {
-                console.log(err);
-                loginErrorHandler(err);
-                dispatch(RequestDataFailed({}));
-            });
+                console.log(err)
+                loginErrorHandler(err)
+                dispatch(RequestDataFailed({}))
+            })
 
-        inputUserIdRef.current!.value = '';
-        inputPasswordRef.current!.value = '';
-    };
+        inputUserIdRef.current!.value = ''
+        inputPasswordRef.current!.value = ''
+    }
 
     const loginErrorHandler = (error: any) => {
-        const errorData = error.response.data;
-        const message = errorData.message
-            ? errorMessage[errorData.message]
-            : 'サーバーが応答しておりません';
+        const errorData = error.response.data
+        const message = errorData.message ? errorMessage[errorData.message] : 'サーバーが応答しておりません'
         dispatch(
             setLoginMessage({
                 message,
             })
-        );
-    };
-    const title = pageTitle.Login;
+        )
+    }
+    const title = pageTitle.Login
 
     return (
         <>
             <Helmet>
-                <meta
-                    name="description"
-                    content={`家計簿管理の${title}画面です`}
-                />
+                <meta name="description" content={`家計簿管理の${title}画面です`} />
                 <meta name="keywords" content={`家計簿, 支出管理, ${title}`} />
                 <meta property="og:title" content={`${title} | 家計簿管理`} />
-                <meta
-                    property="og:description"
-                    content={`家計簿管理の${title}画面です`}
-                />
+                <meta property="og:description" content={`家計簿管理の${title}画面です`} />
                 <title>{`${title} | 家計簿管理`}</title>
             </Helmet>
             <div className={styles.login}>
@@ -151,18 +131,11 @@ export const Login: React.FC = () => {
                                 パスワード
                             </label>
                         </div>
-                        <button
-                            onClick={onSubmitLoginHandler}
-                            className={`${styles.submitBtn} iconBtn next`}
-                            disabled={disabled}
-                        >
+                        <button onClick={onSubmitLoginHandler} className={`${styles.submitBtn} iconBtn next`} disabled={disabled}>
                             ログインする
                         </button>
                     </form>
-                    <button
-                        onClick={onSubmitGuestHandler}
-                        className={`${styles.submitBtn} ${styles.submitGusetBtn} iconBtn next`}
-                    >
+                    <button onClick={onSubmitGuestHandler} className={`${styles.submitBtn} ${styles.submitGusetBtn} iconBtn next`}>
                         ゲストユーザーはこちら
                     </button>
                 </section>
@@ -175,5 +148,5 @@ export const Login: React.FC = () => {
                 <></>
             )}
         </>
-    );
-};
+    )
+}

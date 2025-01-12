@@ -1,4 +1,4 @@
-@import './Base/variable';
+@use './Base/variable' as *;
 $iconScale: 3px;
 
 .graphWrapper {

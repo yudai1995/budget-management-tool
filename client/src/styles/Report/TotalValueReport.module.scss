@@ -1,4 +1,4 @@
-@import '../Base/variable';
+@use '../Base/variable' as *;
 
 .totalValueReport {
     display: flex;
@@ -17,7 +17,7 @@
         background-color: $baseColor;
 
         h3.reportTitle {
-            color: #ffffff!important;
+            color: #ffffff !important;
         }
     }
 

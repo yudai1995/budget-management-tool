@@ -1,4 +1,4 @@
-@import './Base//variable';
+@use './Base//variable' as *;
 $calendarBtnScale: 3px;
 
 :global {
@@ -108,22 +108,18 @@ $calendarBtnScale: 3px;
 
                     &.fc-customPrev-button {
                         &::before {
-                            transform: translateY($calendarBtnScale)
-                                rotate(-45deg);
+                            transform: translateY($calendarBtnScale) rotate(-45deg);
                         }
                         &::after {
-                            transform: translateY(-$calendarBtnScale)
-                                rotate(45deg);
+                            transform: translateY(-$calendarBtnScale) rotate(45deg);
                         }
                     }
                     &.fc-customNext-button {
                         &::before {
-                            transform: translateY($calendarBtnScale)
-                                rotate(45deg);
+                            transform: translateY($calendarBtnScale) rotate(45deg);
                         }
                         &::after {
-                            transform: translateY(-$calendarBtnScale)
-                                rotate(-45deg);
+                            transform: translateY(-$calendarBtnScale) rotate(-45deg);
                         }
                     }
 
@@ -204,8 +200,7 @@ $calendarBtnScale: 3px;
                     font-size: 1rem;
                     width: 16px;
                     height: 16px;
-                    background: url('../img/monthly/icon-pencil01.png')
-                        no-repeat 0 0/ 16px 16px #ffffff00;
+                    background: url('../img/monthly/icon-pencil01.png') no-repeat 0 0/ 16px 16px #ffffff00;
                     top: 2px;
                     right: 2px;
                     transition: $transitionSpeed;
@@ -306,7 +301,7 @@ $calendarBtnScale: 3px;
                                 @include mq(md) {
                                     width: 6px;
 
-                                margin-left: -3px;
+                                    margin-left: -3px;
                                 }
                             }
                             &::after {

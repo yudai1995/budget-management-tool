@@ -1,10 +1,6 @@
 {
-    // IntelliSense を使用して利用可能な属性を学べます。
-    // 既存の属性の説明をホバーして表示します。
-    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
         {
             "type": "node",
             "request": "launch",
@@ -12,9 +8,15 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\api\\src\\index.ts",
+            "program": "${workspaceFolder}/api/src/index.ts",
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/api/build/**/*.js"
+            ],
+            "preLaunchTask": "build",
+            "sourceMaps": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/api/src/**/*.ts",
+                "${workspaceFolder}/api/build/**/*.js"
             ]
         }
     ]

@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 $defaultTextColor: #525252;
 
 $baseColor: #ff9d42;
@@ -28,7 +30,7 @@ $breakpoints: (
 );
 
 @mixin mq($size) {
-    @media screen and (max-width: #{map-get($breakpoints, $size)}) {
+    @media screen and (max-width: #{map.get($breakpoints, $size)}) {
         @content;
     }
 }

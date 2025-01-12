@@ -1,4 +1,4 @@
-@import './Base/variable';
+@use './Base/variable' as *;
 
 .content {
     background-color: #fff7f0;

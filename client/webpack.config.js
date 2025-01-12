@@ -1,5 +1,6 @@
-const path = require('path');
-const Fiber = require('fibers');
+const path = require('path')
+const Fiber = require('fibers')
+const sass = require('sass')
 
 module.exports = {
     entry: './src/index.tsx',
@@ -10,21 +11,20 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.scss$ \.ts$/,
-                //test: /\.ts$/, //正規表現 .tsをで終わるファイルを指定する
-                exclude: /node_module/, //除外ファイル
+                test: /\.ts$/,
+                exclude: /node_modules/,
+                use: 'ts-loader',
+            },
+            {
+                test: /\.scss$/,
+                exclude: /node_modules/,
                 use: [
-                    { loader: 'ts-loader' },
-                    {
-                        loader: 'style-loader',
-                    },
-                    {
-                        loader: 'css-loader',
-                    },
+                    'style-loader',
+                    'css-loader',
                     {
                         loader: 'sass-loader',
                         options: {
-                            implementation: require('sass'),
+                            implementation: sass,
                             fiber: Fiber,
                         },
                     },
@@ -32,8 +32,7 @@ module.exports = {
             },
         ],
     },
-    // importしたファイルの拡張子の設定（デフォルトでは.js）
     resolve: {
-        extensions: ['.ts', '.js'], //importされたらこの拡張子のファイルを探し、一つのファイルにバンドルする
+        extensions: ['.ts', '.tsx', '.js'],
     },
-};
+}

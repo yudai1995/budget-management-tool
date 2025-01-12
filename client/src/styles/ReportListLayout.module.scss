@@ -1,5 +1,5 @@
 @use 'sass:math';
-@import './Base/variable';
+@use './Base/variable' as *;
 
 $categoryWidth: 100px;
 $amountWidth: 30%;
