@@ -1,3 +1,4 @@
+import 'chart.js/auto'
 import { Doughnut } from 'react-chartjs-2'
 import { sumAmount } from '../../store/budgetListSlice'
 import { Budget, balanceType } from '../../Model/budget.model'

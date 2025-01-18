@@ -1,9 +1,10 @@
+import 'chart.js/auto'
 import { Line } from 'react-chartjs-2'
 import { useSelector } from 'react-redux'
-import { RootState } from '../../store'
-import { sumAmount, getTargetDateList, getRecentData } from '../../store/budgetListSlice'
 import { balanceType, unitFormat } from '../../Model/budget.model'
 import { DateModel, formatDate } from '../../Model/Date.model'
+import { RootState } from '../../store'
+import { getRecentData, getTargetDateList, sumAmount } from '../../store/budgetListSlice'
 import '../../styles/Graph.module.scss'
 
 export const RecentGraph: React.FC = () => {
@@ -79,6 +80,7 @@ export const RecentGraph: React.FC = () => {
     const options: any = {
         scales: {
             x: {
+                type: 'category', // 'category' スケールを使用
                 grid: {
                     color: '#ffffff00',
                     borderColor: '#dfdfdf',
@@ -86,6 +88,7 @@ export const RecentGraph: React.FC = () => {
                 },
             },
             y: {
+                type: 'linear', // 'linear' スケールを使用
                 ticks: {
                     stepSize: stepSize,
                     callback: (label: number) => {
