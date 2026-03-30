@@ -1,6 +1,6 @@
 ---
 name: engineer-pull-request
-description: Produces a complete Pull Request body matching `.github/PULL_REQUEST_TEMPLATE.md`, fills every section including a detailed Serena Insight impact analysis, aligns the PR title with Conventional Commits, and incorporates PR protocol from `.cursorrules`. Use when @Engineer is asked to open or draft a PR, fill the team PR template, or emphasize Serena-backed impact scope for reviewers.
+description: Creates a complete Pull Request (title/body) matching `.github/PULL_REQUEST_TEMPLATE.md`, performs Serena-backed impact analysis, and (when needed) creates Conventional Commit-aligned commits via `engineer-conventional-commits`, pushes the branch, then creates the PR using `gh pr create`. Use when @Engineer is asked to open a PR covering existing changes and to fill all template sections, especially Serena Insight.
 ---
 
 # Engineer: PR 作成（テンプレート全項目＋ Serena Insight 詳細）
@@ -15,15 +15,54 @@ description: Produces a complete Pull Request body matching `.github/PULL_REQUES
 - **PR 本文の構造**: `.github/PULL_REQUEST_TEMPLATE.md`
 - **運用ルール**: `.cursorrules` の「PR プロトコル（Pull Request）」および「Git とバージョン管理プロトコル」（タイトル・コミットとの整合）
 
-## PR 作成前（必須）
+## 一連の実行（コミット→プッシュ→ gh PR 作成）
+
+このスキルでは、可能な限り以下を最後まで実行する。
+
+1. **必要ならコミット分割**（`engineer-conventional-commits` を参照）
+2. **ブランチをプッシュ**
+3. **`gh pr create` で PR 作成**
+
+※ もし `git push` / `gh` の実行に必要な情報（未設定リモート名や `gh` 認証など）が不足している場合は、コマンドに必要な前提を最小限で質問し、作業を止める。
+
+## PR 作成前（必須：事前確認）
 
 1. **変更がコミット済みか**確認する。未コミットのみの場合は、コミット規約に従った分割コミットを先に完了するか、ユーザーに確認する（`.cursorrules` のチェックポイント）。
 2. **セルフレビュー**: `find_referencing_symbols` / `search_for_pattern` / `get_symbols_overview` 等で見落としと影響を拾い、**PR 前に修正できる不備は修正**する（`.cursorrules` の「AI セルフレビュー」）。
-3. **リモートへプッシュ**可能な状態にする（`git push` の手順はユーザー環境に合わせて提示）。
+3. **ブランチが PR 用に用意されているか**確認する（無ければ作業ブランチを `ai/<機能・トピックの kebab-case>` で作成）。
+
+## 実行手順（ローカル→リモート→ PR）
+
+ここから先は、可能な限りコマンドで実行して完結させる。
+
+1. **（必要なら）コミット分割**
+   - `git status --porcelain` で未コミット/未ステージがあれば、`engineer-conventional-commits` に従って **意味のある単位に分割し commit** する。
+   - すでに意図したコミットが揃っている場合は、この手順をスキップする。
+
+2. **ブランチ/リモートの準備**
+   - 現在のブランチが PR 用でない場合、`ai/<機能・トピックの kebab-case>` を切り直す（既存があれば流用してよい）。
+   - `git remote -v` で `origin` があることを確認する。なければ `git push` のためにリモート名と URL をユーザーに確認する。
+   - `main` がベースになる前提で進める（`main` 以外のベースが必要なら事前に確認）。
+
+3. **プッシュ**
+   - `git push -u origin <branch>` を実行する。
+   - 失敗した場合（権限・認証・保護ブランチ等）は、エラー要約と対処方針を提示して作業を止める。
+
+4. **PR 本文（テンプレート全項目）を作成**
+   - `.github/PULL_REQUEST_TEMPLATE.md` の **Description / Traceability / Serena Insight / Verification** を **空欄なし**で作る。
+   - 特に **Serena Insight** は、変更・触れたシンボル、`find_referencing_symbols` 等の裏付け、影響範囲の抜粋、見落とし予防まで書く。
+
+5. **`gh` で PR 作成**
+   - `gh` が使える状態か確認する（必要なら `gh auth status` を案内）。
+   - 例（タイトルと本文は上で生成した値を差し込む）:
+     ```sh
+     gh pr create --title "$TITLE" --body "$BODY" --base main --head "$BRANCH"
+     ```
+   - `gh pr create` 実行後に返る **PR URL または PR number** を提示する。
 
 ## 出力の形
 
-次を **ユーザーが GitHub にそのまま使える**形で出す。
+まず次を生成し、その後に `gh pr create` で PR を作成する。
 
 1. **PR タイトル**（1 行）  
    - テンプレート冒頭コメントに従い、**Conventional Commits に近い形式**（例: `feat|fix|refactor: {簡潔な内容}`）。  
@@ -32,6 +71,9 @@ description: Produces a complete Pull Request body matching `.github/PULL_REQUES
 2. **PR 本文**  
    - `PULL_REQUEST_TEMPLATE.md` の **見出し・コメントは残してよい**が、**プレースホルダー（空の箇条書き）はすべて実値で埋める**。  
    - テンプレートに無い追記が必要でも、**セクションを省かない**。
+
+3. **PR 作成結果**
+   - `gh pr create` 実行後に返る **PR URL** または **PR number** を提示する。
 
 ### セクション別の埋め方
 
@@ -85,7 +127,7 @@ description: Produces a complete Pull Request body matching `.github/PULL_REQUES
 
 ## 提出後の案内（任意・短文）
 
-- ブランチ名、`git push -u origin <branch>`、GitHub 上で PR を開く手順、または `gh pr create` の例を **1ブロック**で足してよい。
+- ブランチ名、`git push -u origin <branch>`、`gh pr create` の使用コマンド（実行したもの）を **1ブロック**で足してよい。
 
 ## チェックリスト（出力直前）
 
