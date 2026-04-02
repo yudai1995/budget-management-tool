@@ -1,6 +1,6 @@
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { AppDataSource } from './data-source'
 import { budgetRoutes, userRoutes, loginRouter, logoutRouter } from './routes'
 const path = require('path')
@@ -36,7 +36,7 @@ AppDataSource.initialize()
         app.use(bodyParser.json())
         app.use(session(sessionOption))
 
-        app.post(loginRouter.route, (req: Request, res: Response, next: Function) => {
+        app.post(loginRouter.route, (req: Request, res: Response, next: NextFunction) => {
             const result = new (loginRouter.controller as any)()[loginRouter.action](req, res, next)
             if (result) {
                 req.session.login = req.body.userId
@@ -74,7 +74,7 @@ AppDataSource.initialize()
 
         // register express routes from defined application routes
         budgetRoutes.forEach((route) => {
-            ;(app as any)[route.method](route.route, (req: Request, res: Response, next: Function) => {
+            ;(app as any)[route.method](route.route, (req: Request, res: Response, next: NextFunction) => {
                 const result = new (route.controller as any)()[route.action](req, res, next)
                 if (req.session.login === undefined) {
                     res.status(403).send({ result: 'error', message: 'Auth Error' })
@@ -103,7 +103,7 @@ AppDataSource.initialize()
         })
 
         userRoutes.forEach((route) => {
-            ;(app as any)[route.method](route.route, (req: Request, res: Response, next: Function) => {
+            ;(app as any)[route.method](route.route, (req: Request, res: Response, next: NextFunction) => {
                 const result = new (route.controller as any)()[route.action](req, res, next)
                 if (req.session.login === undefined) {
                     res.status(403).send({ result: 'error', message: 'Auth Error' })
@@ -153,8 +153,8 @@ AppDataSource.initialize()
         app.use(express.static(path.join(__dirname, '../../client/build')), router)
 
         // start express server
-        app.listen(port)
-        app.timeout = 1000 * 60 * 0.05
+        const server = app.listen(port)
+        server.timeout = 1000 * 60 * 0.05
 
         console.log(`Express server has started on port ${port}. Open http://localhost:${port}/api to see results`)
     })
