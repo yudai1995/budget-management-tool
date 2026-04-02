@@ -1,0 +1,47 @@
+{
+  "name": "@budget/api",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "wait-on tcp:${DB_HOSTNAME:-127.0.0.1}:${DB_PORT:-3306} && PORT=3001 ts-node --files src/index.ts",
+    "build": "tsc",
+    "start": "node build/index.js",
+    "lint": "eslint .",
+    "db:docs": "ts-node --files scripts/generate-dbml.ts",
+    "db:share": "pnpm run db:docs && dbdocs build ../../docs/database/schema.dbml --public",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/data-source.ts",
+    "migration:run": "ts-node --files scripts/run-migrations.ts",
+    "migration:revert": "ts-node --files scripts/revert-migration.ts"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^1.20.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "mysql2": "^3.12.0",
+    "nodemon": "^3.1.9",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "0.3.20"
+  },
+  "devDependencies": {
+    "@dbml/cli": "^6.6.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.18.2",
+    "@types/node": "^20.19.37",
+    "dbdocs": "1.1.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "3.4.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "ts-node": "10.9.2",
+    "typeorm-to-dbml": "0.1.1",
+    "typeorm-ts-node-commonjs": "^0.3.20",
+    "typescript": "4.9.5",
+    "wait-on": "^9.0.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

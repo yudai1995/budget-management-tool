@@ -16,7 +16,7 @@ export class UserController {
     }
 
     async one(request: Request, response: Response, next: NextFunction) {
-        const userId = request.params.userId
+        const userId = String(request.params.userId)
         const user = await this.userRepository.findOneBy({
             userId,
         })
@@ -24,7 +24,7 @@ export class UserController {
     }
 
     async save(request: Request, response: Response, next: NextFunction) {
-        const userId = request.params.userId
+        const userId = String(request.params.userId ?? request.body.userId ?? '')
         const userName = request.body.userName
         const preHashPassword = request.body.password
         const password = await bcrypt.hash(preHashPassword, 10)
@@ -33,8 +33,9 @@ export class UserController {
     }
 
     async remove(request: Request, response: Response, next: NextFunction) {
+        const userId = String(request.params.userId)
         const userToRemove = await this.userRepository.findOneBy({
-            userId: request.params.userId,
+            userId,
         })
         await this.userRepository.remove(userToRemove)
     }

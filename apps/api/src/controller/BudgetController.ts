@@ -10,8 +10,9 @@ export class BudgetController {
     }
 
     async one(request: Request, response: Response, next: NextFunction) {
+        const id = String(request.params.id)
         return this.budgetRepository.findOne({
-            where: { id: request.params.id },
+            where: { id },
         })
     }
 
@@ -20,12 +21,13 @@ export class BudgetController {
     }
 
     async remove(request: Request, response: Response, next: NextFunction) {
+        const id = String(request.params.id)
         // TODO: delete
         // const budgetToRemove = await this.budgetRepository.findOneBy({
         //   id: request.params.id,
         // });
         // await this.budgetRepository.remove(budgetToRemove);
 
-        await AppDataSource.createQueryBuilder().delete().from(Budget).where('id = :id', { id: request.params.id }).execute()
+        await AppDataSource.createQueryBuilder().delete().from(Budget).where('id = :id', { id }).execute()
     }
 }
