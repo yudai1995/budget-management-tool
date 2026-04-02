@@ -3,3 +3,6 @@
 
 # production
 /api/build
+
+# development
+.serena
