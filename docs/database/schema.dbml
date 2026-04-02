@@ -1,0 +1,20 @@
+Table user_list {
+  userId varchar [pk]
+  userName varchar
+  password varchar
+}
+
+Table budget_list {
+  id varchar [pk]
+  amount integer
+  balanceType enum
+  userId varchar
+  categoryId integer [default: 1]
+  content varchar [null]
+  date varchar
+  createdDate datetime
+  updatedDate datetime
+  deletedDate datetime
+}
+
+Ref: budget_list.userId > user_list.userId
