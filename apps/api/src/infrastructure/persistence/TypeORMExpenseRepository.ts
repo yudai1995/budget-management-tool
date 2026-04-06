@@ -1,27 +1,27 @@
-import { DataSource } from 'typeorm'
-import { Expense } from '../../domain/models/Expense'
-import { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
-import { ExpenseDataModel } from './entity/ExpenseDataModel'
+import type { DataSource } from 'typeorm'
+import type { Expense } from '../../domain/models/Expense'
+import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
+import { BudgetDataModel } from './entity/BudgetDataModel'
 import { ExpenseMapper } from './mappers/ExpenseMapper'
 
 export class TypeORMExpenseRepository implements IExpenseRepository {
     constructor(private readonly dataSource: DataSource) {}
 
     async findAll(): Promise<Expense[]> {
-        const dataModels = await this.dataSource.getRepository(ExpenseDataModel).find()
+        const dataModels = await this.dataSource.getRepository(BudgetDataModel).find()
         return dataModels.map(ExpenseMapper.toDomain)
     }
 
     async findById(id: string): Promise<Expense | null> {
         const dataModel = await this.dataSource
-            .getRepository(ExpenseDataModel)
+            .getRepository(BudgetDataModel)
             .findOne({ where: { id } })
         return dataModel ? ExpenseMapper.toDomain(dataModel) : null
     }
 
     async save(expense: Expense): Promise<Expense> {
         const dataModel = ExpenseMapper.toDataModel(expense)
-        const saved = await this.dataSource.getRepository(ExpenseDataModel).save(dataModel)
+        const saved = await this.dataSource.getRepository(BudgetDataModel).save(dataModel)
         return ExpenseMapper.toDomain(saved)
     }
 
@@ -29,7 +29,7 @@ export class TypeORMExpenseRepository implements IExpenseRepository {
         await this.dataSource
             .createQueryBuilder()
             .delete()
-            .from(ExpenseDataModel)
+            .from(BudgetDataModel)
             .where('id = :id', { id })
             .execute()
     }

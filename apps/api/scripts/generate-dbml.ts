@@ -3,8 +3,8 @@ import * as path from 'node:path'
 import 'reflect-metadata'
 import { getMetadataArgsStorage } from 'typeorm'
 
-import { Budget } from '../src/domain/models/Budget'
-import { User } from '../src/domain/models/User'
+import { BudgetDataModel } from '../src/infrastructure/persistence/entity/BudgetDataModel'
+import { UserDataModel } from '../src/infrastructure/persistence/entity/UserDataModel'
 
 function main() {
     const projectRoot = path.resolve(__dirname, '..') // apps/api
@@ -15,13 +15,13 @@ function main() {
     mkdirSync(outDir, { recursive: true })
 
     // Ensure decorators are loaded
-    void Budget
-    void User
+    void BudgetDataModel
+    void UserDataModel
 
     const storage = getMetadataArgsStorage()
 
     const entities = storage.tables
-        .filter((t) => t.target === Budget || t.target === User)
+        .filter((t) => t.target === BudgetDataModel || t.target === UserDataModel)
         .map((t) => ({
             target: t.target as Function,
             name: (t as any).name || (t.target as any).name,
@@ -35,7 +35,7 @@ function main() {
         )
     }
 
-    const relations = storage.relations.filter((r) => r.target === Budget || r.target === User)
+    const relations = storage.relations.filter((r) => r.target === BudgetDataModel || r.target === UserDataModel)
     const joinColumns = storage.joinColumns
 
     const tableNameOf = (target: Function) => {

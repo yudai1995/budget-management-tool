@@ -1,41 +1,43 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, JoinColumn, PrimaryColumn, UpdateDateColumn } from 'typeorm'
-import { User } from './User'
-
-@Entity({
-    name: 'budget_list',
-})
-export class Budget {
-    @PrimaryColumn({ type: 'varchar', length: 255, name: 'id' })
+export interface BudgetProps {
     id: string
-
-    @Column({ type: 'int', name: 'amount' })
     amount: number
-
-    @Column({ type: 'enum', enum: [0, 1], name: 'balanceType' })
     balanceType: 0 | 1
-
-    @Column({ type: 'varchar', length: 255, name: 'userId' })
     userId: string
-
-    @ManyToOne(() => User, (user) => user.budgets, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'userId', referencedColumnName: 'userId' })
-    user: User
-
-    @Column({ type: 'int', default: 1, name: 'categoryId' })
     categoryId: number
-
-    @Column({ type: 'varchar', length: 255, nullable: true, name: 'content' })
-    content: string
-
-    @Column({ type: 'varchar', length: 255, name: 'date' })
+    content: string | null
     date: string
-
-    @CreateDateColumn({ type: 'datetime', precision: 6, update: false, name: 'createdDate' })
     createdDate: Date
-
-    @UpdateDateColumn({ type: 'datetime', precision: 6, name: 'updatedDate' })
     updatedDate: Date
+    deletedDate: Date | null
+}
 
-    @DeleteDateColumn({ type: 'datetime', precision: 6, name: 'deletedDate' })
-    deletedDate: Date
+/** budget_list に対応するドメインエンティティ（インフラ依存なし） */
+export class Budget {
+    readonly id: string
+    readonly amount: number
+    readonly balanceType: 0 | 1
+    readonly userId: string
+    readonly categoryId: number
+    readonly content: string | null
+    readonly date: string
+    readonly createdDate: Date
+    readonly updatedDate: Date
+    readonly deletedDate: Date | null
+
+    private constructor(props: BudgetProps) {
+        this.id = props.id
+        this.amount = props.amount
+        this.balanceType = props.balanceType
+        this.userId = props.userId
+        this.categoryId = props.categoryId
+        this.content = props.content
+        this.date = props.date
+        this.createdDate = props.createdDate
+        this.updatedDate = props.updatedDate
+        this.deletedDate = props.deletedDate
+    }
+
+    static reconstruct(props: BudgetProps): Budget {
+        return new Budget(props)
+    }
 }

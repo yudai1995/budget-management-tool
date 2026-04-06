@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from 'express'
-import { BudgetController } from '../controllers/BudgetController'
-import { ExpenseController } from '../controllers/ExpenseController'
-import { UserController } from '../controllers/UserController'
+import type { NextFunction, Request, Response } from 'express'
+import type { BudgetController } from '../controllers/BudgetController'
+import type { ExpenseController } from '../controllers/ExpenseController'
+import type { UserController } from '../controllers/UserController'
 
 export type AppRouteMethod = 'get' | 'post' | 'put' | 'delete'
 
@@ -9,6 +9,7 @@ export type AppRoute = {
     method: AppRouteMethod
     route: string
     action: string
+    // biome-ignore lint/suspicious/noExplicitAny: Expressハンドラの戻り値はPromise/void/任意の値を取るため意図的にany
     handler: (req: Request, res: Response, next: NextFunction) => any
 }
 

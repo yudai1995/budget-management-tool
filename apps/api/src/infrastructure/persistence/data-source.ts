@@ -1,9 +1,8 @@
 import 'reflect-metadata'
 import { DataSource } from 'typeorm'
 import * as path from 'node:path'
-import { Budget } from '../../domain/models/Budget'
-import { User } from '../../domain/models/User'
-import { ExpenseDataModel } from './entity/ExpenseDataModel'
+import { BudgetDataModel } from './entity/BudgetDataModel'
+import { UserDataModel } from './entity/UserDataModel'
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -18,7 +17,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME || 'budgetdb',
     synchronize: false,
     logging: true,
-    entities: [Budget, User, ExpenseDataModel],
+    entities: [BudgetDataModel, UserDataModel],
     migrations: [path.join(__dirname, 'migrations', '**/*{.ts,.js}')],
     migrationsTableName: 'migrations',
     subscribers: [],

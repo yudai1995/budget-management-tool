@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from 'express'
-import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
+import type { NextFunction, Request, Response } from 'express'
+import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 
 export class BudgetController {
     constructor(private readonly budgetRepository: IBudgetRepository) {}
