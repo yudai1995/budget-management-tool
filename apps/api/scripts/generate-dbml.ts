@@ -3,8 +3,8 @@ import * as path from 'node:path'
 import 'reflect-metadata'
 import { getMetadataArgsStorage } from 'typeorm'
 
-import { Budget } from '../src/entity/Budget'
-import { User } from '../src/entity/User'
+import { Budget } from '../src/domain/models/Budget'
+import { User } from '../src/domain/models/User'
 
 function main() {
     const projectRoot = path.resolve(__dirname, '..') // apps/api

@@ -1,14 +1,20 @@
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import { NextFunction, Request, Response } from 'express'
-import { AppDataSource } from './data-source'
-import { budgetRoutes, userRoutes, loginRouter, logoutRouter } from './routes'
+import { AppDataSource } from './infrastructure/persistence/data-source'
+import { createBudgetRoutes, createExpenseRoutes, createLoginRoute, createUserRoutes, logoutRoute } from './presentation/routes/routes'
 const path = require('path')
-import { Budget } from './entity/Budget'
-import { errorModel } from './model/errorModel'
+import { errorModel } from './domain/models/errorModel'
 const Router = require('express')
 const router = Router()
 const session = require('express-session')
+import { TypeORMBudgetRepository } from './infrastructure/persistence/TypeORMBudgetRepository'
+import { TypeORMExpenseRepository } from './infrastructure/persistence/TypeORMExpenseRepository'
+import { TypeORMUserRepository } from './infrastructure/persistence/TypeORMUserRepository'
+import { CreateExpenseUseCase } from './application/use-cases/CreateExpenseUseCase'
+import { BudgetController } from './presentation/controllers/BudgetController'
+import { ExpenseController } from './presentation/controllers/ExpenseController'
+import { UserController } from './presentation/controllers/UserController'
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -36,8 +42,22 @@ AppDataSource.initialize()
         app.use(bodyParser.json())
         app.use(session(sessionOption))
 
-        app.post(loginRouter.route, (req: Request, res: Response, next: NextFunction) => {
-            const result = new (loginRouter.controller as any)()[loginRouter.action](req, res, next)
+        // --- DDD wiring（composition root）---
+        const budgetRepository = new TypeORMBudgetRepository(AppDataSource)
+        const userRepository = new TypeORMUserRepository(AppDataSource)
+        const expenseRepository = new TypeORMExpenseRepository(AppDataSource)
+        const createExpenseUseCase = new CreateExpenseUseCase(expenseRepository, userRepository)
+        const budgetController = new BudgetController(budgetRepository)
+        const expenseController = new ExpenseController(expenseRepository, createExpenseUseCase)
+        const userController = new UserController(userRepository)
+
+        const budgetRoutes = createBudgetRoutes(budgetController)
+        const expenseRoutes = createExpenseRoutes(expenseController)
+        const userRoutes = createUserRoutes(userController)
+        const loginRoute = createLoginRoute(userController)
+
+        app.post(loginRoute.route, (req: Request, res: Response, next: NextFunction) => {
+            const result = loginRoute.handler(req, res, next)
             if (result) {
                 req.session.login = req.body.userId
                 result
@@ -64,7 +84,7 @@ AppDataSource.initialize()
             }
         })
 
-        app.post(logoutRouter.route, (req, res) => {
+        app.post(logoutRoute.route, (req, res) => {
             if (req.session.login === undefined) {
                 res.status(403).send({ result: 'error', message: 'Auth Error' })
             }
@@ -73,9 +93,31 @@ AppDataSource.initialize()
         })
 
         // register express routes from defined application routes
+        expenseRoutes.forEach((route) => {
+            ;(app as any)[route.method](route.route, (req: Request, res: Response, next: NextFunction) => {
+                if (req.session.login === undefined) {
+                    res.status(403).send({ result: 'error', message: 'Auth Error' })
+                    return
+                }
+                const result = route.handler(req, res, next)
+                if (result instanceof Promise) {
+                    result
+                        .then((expense) => {
+                            res.send({ expense })
+                        })
+                        .catch((err) => {
+                            console.log(err)
+                            res.status(500).send({ result: 'error', message: 'Something broken' })
+                        })
+                } else if (result !== null && result !== undefined) {
+                    res.json(result)
+                }
+            })
+        })
+
         budgetRoutes.forEach((route) => {
             ;(app as any)[route.method](route.route, (req: Request, res: Response, next: NextFunction) => {
-                const result = new (route.controller as any)()[route.action](req, res, next)
+                const result = route.handler(req, res, next)
                 if (req.session.login === undefined) {
                     res.status(403).send({ result: 'error', message: 'Auth Error' })
                 }
@@ -104,7 +146,7 @@ AppDataSource.initialize()
 
         userRoutes.forEach((route) => {
             ;(app as any)[route.method](route.route, (req: Request, res: Response, next: NextFunction) => {
-                const result = new (route.controller as any)()[route.action](req, res, next)
+                const result = route.handler(req, res, next)
                 if (req.session.login === undefined) {
                     res.status(403).send({ result: 'error', message: 'Auth Error' })
                 }
