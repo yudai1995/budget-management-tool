@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from 'express'
-import { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
-import { CreateExpenseUseCase } from '../../application/use-cases/CreateExpenseUseCase'
+import type { NextFunction, Request, Response } from 'express'
+import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
+import type { CreateExpenseUseCase } from '../../application/use-cases/CreateExpenseUseCase'
 
 export class ExpenseController {
     constructor(

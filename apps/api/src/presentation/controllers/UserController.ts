@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from 'express'
-import { IUserRepository } from '../../domain/repositories/IUserRepository'
+import type { NextFunction, Request, Response } from 'express'
+import type { IUserRepository } from '../../domain/repositories/IUserRepository'
 
 export class UserController {
     constructor(private readonly userRepository: IUserRepository) {}

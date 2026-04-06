@@ -1,6 +1,6 @@
 import { Expense } from '../../domain/models/Expense'
-import { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
-import { IUserRepository } from '../../domain/repositories/IUserRepository'
+import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
+import type { IUserRepository } from '../../domain/repositories/IUserRepository'
 
 export interface CreateExpenseInput {
     amount: number

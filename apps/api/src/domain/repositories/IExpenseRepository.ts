@@ -1,4 +1,4 @@
-import { Expense } from '../models/Expense'
+import type { Expense } from '../models/Expense'
 
 export interface IExpenseRepository {
     findAll(): Promise<Expense[]>

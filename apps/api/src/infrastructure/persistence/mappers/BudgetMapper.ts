@@ -1,10 +1,10 @@
-import { Expense } from '../../../domain/models/Expense'
+import { Budget } from '../../../domain/models/Budget'
 import { BudgetDataModel } from '../entity/BudgetDataModel'
 
-export class ExpenseMapper {
+export class BudgetMapper {
     /** インフラモデル → ドメインモデル */
-    static toDomain(dataModel: BudgetDataModel): Expense {
-        return Expense.reconstruct({
+    static toDomain(dataModel: BudgetDataModel): Budget {
+        return Budget.reconstruct({
             id: dataModel.id,
             amount: dataModel.amount,
             balanceType: dataModel.balanceType,
@@ -19,15 +19,15 @@ export class ExpenseMapper {
     }
 
     /** ドメインモデル → インフラモデル */
-    static toDataModel(expense: Expense): BudgetDataModel {
+    static toDataModel(budget: Budget): BudgetDataModel {
         const dataModel = new BudgetDataModel()
-        dataModel.id = expense.id
-        dataModel.amount = expense.amount
-        dataModel.balanceType = expense.balanceType
-        dataModel.userId = expense.userId
-        dataModel.categoryId = expense.categoryId
-        dataModel.content = expense.content
-        dataModel.date = expense.date
+        dataModel.id = budget.id
+        dataModel.amount = budget.amount
+        dataModel.balanceType = budget.balanceType
+        dataModel.userId = budget.userId
+        dataModel.categoryId = budget.categoryId
+        dataModel.content = budget.content
+        dataModel.date = budget.date
         // createdDate / updatedDate / deletedDate はTypeORMデコレーターが管理
         return dataModel
     }
