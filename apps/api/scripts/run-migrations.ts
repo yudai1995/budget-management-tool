@@ -1,4 +1,4 @@
-import { AppDataSource } from '../src/data-source'
+import { AppDataSource } from '../src/infrastructure/persistence/data-source'
 
 async function main() {
     const dataSource = await AppDataSource.initialize()

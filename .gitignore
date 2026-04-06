@@ -1,8 +1,13 @@
 # dependencies
 /node_modules
+**/node_modules
 
 # production
 /api/build
 
 # development
 .serena
+
+# 環境変数（機密情報）
+.env
+.env.*
