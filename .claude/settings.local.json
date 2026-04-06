@@ -26,7 +26,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "mcp__serena__list_dir",
-      "Bash(grep -rn \"budget_list\\\\|budgetList\\\\|expense_list\\\\|expenseList\" /Users/yamamoto/workspace/_source/github/budget-management-tool --include=*.ts --include=*.tsx --include=*.sql --include=*.js)"
+      "Bash(grep -rn \"budget_list\\\\|budgetList\\\\|expense_list\\\\|expenseList\" /Users/yamamoto/workspace/_source/github/budget-management-tool --include=*.ts --include=*.tsx --include=*.sql --include=*.js)",
+      "Bash(git push:*)"
     ]
   }
 }
