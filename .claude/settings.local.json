@@ -27,7 +27,19 @@
       "Bash(git commit:*)",
       "mcp__serena__list_dir",
       "Bash(grep -rn \"budget_list\\\\|budgetList\\\\|expense_list\\\\|expenseList\" /Users/yamamoto/workspace/_source/github/budget-management-tool --include=*.ts --include=*.tsx --include=*.sql --include=*.js)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(ls apps/api/.eslint* apps/api/tsconfig*)",
+      "Bash(ls apps/api/*.json apps/api/*.js)",
+      "Bash(ls apps/api/*.json)",
+      "Bash(ls apps/api/tsconfig*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm --filter @budget/api add -D @biomejs/biome)",
+      "Bash(npx:*)",
+      "Bash(/Users/yamamoto/workspace/_source/github/budget-management-tool/apps/api/node_modules/.bin/biome --version)",
+      "Bash(./apps/api/node_modules/.bin/biome lint:*)",
+      "Bash(ls /Users/yamamoto/workspace/_source/github/budget-management-tool/biome*)",
+      "Bash(node_modules/.bin/biome lint:*)"
     ]
   }
 }
