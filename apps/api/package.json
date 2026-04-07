@@ -16,6 +16,7 @@
     "migration:revert": "ts-node --files scripts/revert-migration.ts"
   },
   "dependencies": {
+    "@budget/common": "workspace:*",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.7",

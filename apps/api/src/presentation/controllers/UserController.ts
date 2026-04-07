@@ -1,33 +1,27 @@
-import type { NextFunction, Request, Response } from 'express'
+import type { User } from '../../domain/models/User'
+import type { errorModel } from '../../domain/models/errorModel'
 import type { IUserRepository } from '../../domain/repositories/IUserRepository'
 
 export class UserController {
     constructor(private readonly userRepository: IUserRepository) {}
 
-    async all(request: Request, response: Response, next: NextFunction) {
+    async all(): Promise<User[]> {
         return this.userRepository.all()
     }
 
-    async one(request: Request, response: Response, next: NextFunction) {
-        const userId = String(request.params.userId)
+    async one(userId: string): Promise<User | null> {
         return this.userRepository.one(userId)
     }
 
-    async save(request: Request, response: Response, next: NextFunction) {
-        const userId = String(request.params.userId ?? request.body.userId ?? '')
-        const userName = request.body.userName
-        const preHashPassword = request.body.password
+    async save(userId: string, userName: string, preHashPassword: string): Promise<User> {
         return this.userRepository.save(userId, userName, preHashPassword)
     }
 
-    async remove(request: Request, response: Response, next: NextFunction) {
-        const userId = String(request.params.userId)
+    async remove(userId: string): Promise<void> {
         return this.userRepository.remove(userId)
     }
 
-    async login(request: Request, response: Response, next: NextFunction) {
-        const userId = String(request.body.userId)
-        const password = request.body.password
+    async login(userId: string, password: string): Promise<true | errorModel> {
         return this.userRepository.login(userId, password)
     }
 }

@@ -1,29 +1,7 @@
 import { ulid } from 'ulid'
+import type { BalanceType, CreateExpenseProps, ExpenseProps } from '@budget/common'
 
-/** 収支区分: 0=支出, 1=収入 */
-export type BalanceType = 0 | 1
-
-export interface ExpenseProps {
-    id: string
-    amount: number
-    balanceType: BalanceType
-    userId: string
-    categoryId: number
-    content: string | null
-    date: string
-    createdDate: Date
-    updatedDate: Date
-    deletedDate: Date | null
-}
-
-export interface CreateExpenseProps {
-    amount: number
-    balanceType: BalanceType
-    userId: string
-    categoryId?: number
-    content?: string | null
-    date: string
-}
+export type { BalanceType, ExpenseProps, CreateExpenseProps }
 
 export class Expense {
     readonly id: string

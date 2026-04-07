@@ -1,8 +1,6 @@
-export interface UserProps {
-    userId: string
-    userName: string
-    password: string
-}
+import type { UserProps } from '@budget/common'
+
+export type { UserProps }
 
 /** ユーザーのドメインエンティティ（インフラ依存なし） */
 export class User {

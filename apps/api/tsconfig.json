@@ -7,6 +7,11 @@
         "outDir": "./build",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "baseUrl": ".",
+        "paths": {
+            "@budget/common": ["../../packages/common/src/index.ts"],
+            "@budget/common/*": ["../../packages/common/src/*"]
+        }
     }
 }

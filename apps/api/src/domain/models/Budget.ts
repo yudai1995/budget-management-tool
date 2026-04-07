@@ -1,15 +1,6 @@
-export interface BudgetProps {
-    id: string
-    amount: number
-    balanceType: 0 | 1
-    userId: string
-    categoryId: number
-    content: string | null
-    date: string
-    createdDate: Date
-    updatedDate: Date
-    deletedDate: Date | null
-}
+import type { BudgetProps } from '@budget/common'
+
+export type { BudgetProps }
 
 /** budget_list に対応するドメインエンティティ（インフラ依存なし） */
 export class Budget {

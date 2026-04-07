@@ -4,6 +4,13 @@
 
 # production
 /api/build
+**/build
+**/dist
+**/.next
+
+# turbo cache
+.turbo
+**/.turbo
 
 # development
 .serena
