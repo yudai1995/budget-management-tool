@@ -1,7 +1,9 @@
-import { DataSource } from 'typeorm'
-import { User } from '../../domain/models/User'
+import type { DataSource } from 'typeorm'
+import type { User } from '../../domain/models/User'
 import { errorModel } from '../../domain/models/errorModel'
-import { IUserRepository } from '../../domain/repositories/IUserRepository'
+import type { IUserRepository } from '../../domain/repositories/IUserRepository'
+import { UserDataModel } from './entity/UserDataModel'
+import { UserMapper } from './mappers/UserMapper'
 
 const bcrypt = require('bcrypt')
 
@@ -13,33 +15,40 @@ export class TypeORMUserRepository implements IUserRepository {
     constructor(private readonly dataSource: DataSource) {}
 
     async all(): Promise<User[]> {
-        return this.dataSource.getRepository(User).find()
+        const dataModels = await this.dataSource.getRepository(UserDataModel).find()
+        return dataModels.map(UserMapper.toDomain)
     }
 
     async one(userId: string): Promise<User | null> {
-        return this.dataSource.getRepository(User).findOneBy({ userId })
+        const dataModel = await this.dataSource.getRepository(UserDataModel).findOneBy({ userId })
+        if (!dataModel) return null
+        return UserMapper.toDomain(dataModel)
     }
 
     async save(userId: string, userName: string, password: string): Promise<User> {
         const hashed = await bcrypt.hash(password, 10)
-        return this.dataSource.getRepository(User).save({ userId, userName, password: hashed })
+        const dataModel = await this.dataSource
+            .getRepository(UserDataModel)
+            .save({ userId, userName, password: hashed })
+        return UserMapper.toDomain(dataModel)
     }
 
-    async remove(userId: string): Promise<any> {
-        const repo = this.dataSource.getRepository(User)
+    async remove(userId: string): Promise<void> {
+        const repo = this.dataSource.getRepository(UserDataModel)
         const userToRemove = await repo.findOneBy({ userId })
-        return repo.remove(userToRemove)
+        if (userToRemove) {
+            await repo.remove(userToRemove)
+        }
     }
 
     async login(userId: string, password: string): Promise<true | errorModel> {
         const effectivePassword = userId === 'Guest' ? process.env.GUEST_PASSWORD : password
-        const loginUser = await this.dataSource.getRepository(User).findOneBy({ userId })
-        if (!loginUser) return errorModel.NOT_FOUND
+        const dataModel = await this.dataSource.getRepository(UserDataModel).findOneBy({ userId })
+        if (!dataModel) return errorModel.NOT_FOUND
 
-        const compared = await bcrypt.compare(effectivePassword, loginUser.password)
+        const compared = await bcrypt.compare(effectivePassword, dataModel.password)
         if (compared) return true
 
         return errorModel.AUTHENTICATION_FAILD
     }
 }
-

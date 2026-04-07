@@ -1,0 +1,14 @@
+{
+  "name": "@budget/common",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo 'no lint config for common'"
+  },
+  "devDependencies": {
+    "typescript": "4.9.5"
+  }
+}

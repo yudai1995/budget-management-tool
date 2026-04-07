@@ -1,19 +1,20 @@
-import { Entity, Column, OneToMany, PrimaryColumn } from 'typeorm'
-import { Budget } from './Budget'
+import type { UserProps } from '@budget/common'
 
-@Entity({
-    name: 'user_list',
-})
+export type { UserProps }
+
+/** ユーザーのドメインエンティティ（インフラ依存なし） */
 export class User {
-    @PrimaryColumn({ type: 'varchar', length: 255, name: 'userId' })
-    userId: string
+    readonly userId: string
+    readonly userName: string
+    readonly password: string
 
-    @Column({ type: 'varchar', length: 255, name: 'userName' })
-    userName: string
+    private constructor(props: UserProps) {
+        this.userId = props.userId
+        this.userName = props.userName
+        this.password = props.password
+    }
 
-    @Column({ type: 'varchar', length: 255, name: 'password' })
-    password: string
-
-    @OneToMany(() => Budget, (budget) => budget.user)
-    budgets: Budget[]
+    static reconstruct(props: UserProps): User {
+        return new User(props)
+    }
 }

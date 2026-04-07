@@ -1,6 +1,7 @@
-import { NextFunction, Request, Response } from 'express'
-import { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
-import { CreateExpenseUseCase } from '../../application/use-cases/CreateExpenseUseCase'
+import type { CreateExpenseInput } from '@budget/common'
+import type { CreateExpenseUseCase } from '../../application/use-cases/CreateExpenseUseCase'
+import type { Expense } from '../../domain/models/Expense'
+import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
 
 export class ExpenseController {
     constructor(
@@ -8,29 +9,19 @@ export class ExpenseController {
         private readonly createExpenseUseCase: CreateExpenseUseCase,
     ) {}
 
-    async all(_request: Request, _response: Response, _next: NextFunction) {
+    async all(): Promise<Expense[]> {
         return this.expenseRepository.findAll()
     }
 
-    async one(request: Request, _response: Response, _next: NextFunction) {
-        const id = String(request.params.id)
+    async one(id: string): Promise<Expense | null> {
         return this.expenseRepository.findById(id)
     }
 
-    async save(request: Request, _response: Response, _next: NextFunction) {
-        const { amount, balanceType, userId, categoryId, content, date } = request.body.newData
-        return this.createExpenseUseCase.execute({
-            amount,
-            balanceType,
-            userId,
-            categoryId,
-            content,
-            date,
-        })
+    async save(input: CreateExpenseInput): Promise<Expense> {
+        return this.createExpenseUseCase.execute(input)
     }
 
-    async remove(request: Request, _response: Response, _next: NextFunction) {
-        const id = String(request.params.id)
+    async remove(id: string): Promise<void> {
         return this.expenseRepository.remove(id)
     }
 }

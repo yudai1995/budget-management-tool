@@ -1,24 +1,22 @@
-import { NextFunction, Request, Response } from 'express'
-import { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
+import type { Budget } from '../../domain/models/Budget'
+import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository'
 
 export class BudgetController {
     constructor(private readonly budgetRepository: IBudgetRepository) {}
 
-    async all(request: Request, response: Response, next: NextFunction) {
+    async all(): Promise<Budget[]> {
         return this.budgetRepository.all()
     }
 
-    async one(request: Request, response: Response, next: NextFunction) {
-        const id = String(request.params.id)
+    async one(id: string): Promise<Budget | null> {
         return this.budgetRepository.one(id)
     }
 
-    async save(request: Request, response: Response, next: NextFunction) {
-        return this.budgetRepository.save(request.body.newData)
+    async save(data: unknown): Promise<Budget> {
+        return this.budgetRepository.save(data)
     }
 
-    async remove(request: Request, response: Response, next: NextFunction) {
-        const id = String(request.params.id)
+    async remove(id: string): Promise<void> {
         // TODO: delete
         // const budgetToRemove = await this.budgetRepository.findOneBy({
         //   id: request.params.id,

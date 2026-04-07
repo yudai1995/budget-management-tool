@@ -6,7 +6,9 @@
     "dev": "wait-on tcp:${DB_HOSTNAME:-127.0.0.1}:${DB_PORT:-3306} && PORT=3001 ts-node --files src/index.ts",
     "build": "tsc",
     "start": "node build/index.js",
-    "lint": "eslint .",
+    "lint": "biome lint .",
+    "format": "biome format . --write",
+    "check": "biome check .",
     "db:docs": "ts-node --files scripts/generate-dbml.ts",
     "db:share": "pnpm run db:docs && dbdocs build ../../docs/database/schema.dbml --public",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/infrastructure/persistence/data-source.ts",
@@ -14,6 +16,7 @@
     "migration:revert": "ts-node --files scripts/revert-migration.ts"
   },
   "dependencies": {
+    "@budget/common": "workspace:*",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.7",
@@ -26,6 +29,7 @@
     "ulid": "^3.0.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.10",
     "@dbml/cli": "^6.6.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

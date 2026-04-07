@@ -1,6 +1,6 @@
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
-import { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import { AppDataSource } from './infrastructure/persistence/data-source'
 import { createBudgetRoutes, createExpenseRoutes, createLoginRoute, createUserRoutes, logoutRoute } from './presentation/routes/routes'
 const path = require('path')

@@ -1,15 +1,9 @@
+import type { CreateExpenseInput } from '@budget/common'
 import { Expense } from '../../domain/models/Expense'
-import { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
-import { IUserRepository } from '../../domain/repositories/IUserRepository'
+import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
+import type { IUserRepository } from '../../domain/repositories/IUserRepository'
 
-export interface CreateExpenseInput {
-    amount: number
-    balanceType: 0 | 1
-    userId: string
-    categoryId?: number
-    content?: string | null
-    date: string
-}
+export type { CreateExpenseInput }
 
 export class CreateExpenseUseCase {
     constructor(
