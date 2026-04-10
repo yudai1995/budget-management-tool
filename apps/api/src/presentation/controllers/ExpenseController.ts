@@ -1,7 +1,9 @@
+import { createExpenseSchema } from '@budget/common'
 import type { CreateExpenseInput } from '@budget/common'
 import type { CreateExpenseUseCase } from '../../application/use-cases/CreateExpenseUseCase'
 import type { Expense } from '../../domain/models/Expense'
 import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
+import { ValidationError } from '../errors'
 
 export class ExpenseController {
     constructor(
@@ -17,8 +19,14 @@ export class ExpenseController {
         return this.expenseRepository.findById(id)
     }
 
-    async save(input: CreateExpenseInput): Promise<Expense> {
-        return this.createExpenseUseCase.execute(input)
+    /** Zod でバリデーションし、不正な入力は ValidationError を throw する */
+    async save(input: unknown): Promise<Expense> {
+        const result = createExpenseSchema.safeParse(input)
+        if (!result.success) {
+            throw new ValidationError(result.error.message)
+        }
+        // TypeScript 4.9.5 での safeParse 後の型推論の制限を回避するため明示的にキャスト
+        return this.createExpenseUseCase.execute(result.data as unknown as CreateExpenseInput)
     }
 
     async remove(id: string): Promise<void> {

@@ -3,10 +3,16 @@
 import { redirect } from "next/navigation";
 import { serverFetch, ApiError } from "../api/client";
 import type { LoginResponse, LogoutResponse } from "../api/types";
-import { errorModel } from "@budget/common";
+import { errorModel, loginSchema } from "@budget/common";
+
+export type LoginFieldErrors = {
+  userId?: string[];
+  password?: string[];
+};
 
 export type LoginState = {
   error: string | null;
+  fieldErrors?: LoginFieldErrors;
 };
 
 /** ログイン Server Action */
@@ -14,17 +20,21 @@ export async function loginAction(
   _prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
-  const userId = formData.get("userId");
-  const password = formData.get("password");
+  const raw = {
+    userId: String(formData.get("userId") ?? ""),
+    password: String(formData.get("password") ?? ""),
+  };
 
-  if (!userId || !password) {
-    return { error: "ユーザーIDとパスワードを入力してください" };
+  const result = loginSchema.safeParse(raw);
+  if (!result.success) {
+    const fieldErrors = result.error.flatten().fieldErrors as LoginFieldErrors;
+    return { error: null, fieldErrors };
   }
 
   try {
     await serverFetch<LoginResponse>("/api/login", {
       method: "POST",
-      body: JSON.stringify({ userId, password }),
+      body: JSON.stringify(result.data),
     });
   } catch (err) {
     if (err instanceof ApiError) {
