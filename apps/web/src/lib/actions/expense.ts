@@ -2,11 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { serverFetch, ApiError } from "../api/client";
-import type { CreateExpenseInput } from "@budget/common";
+import { createExpenseSchema } from "@budget/common";
 import type { GetExpenseResponse } from "../api/types";
+
+export type ExpenseFieldErrors = {
+  amount?: string[];
+  balanceType?: string[];
+  date?: string[];
+  userId?: string[];
+};
 
 export type ExpenseActionState = {
   error: string | null;
+  fieldErrors?: ExpenseFieldErrors;
   success: boolean;
 };
 
@@ -15,31 +23,24 @@ export async function createExpenseAction(
   _prev: ExpenseActionState,
   formData: FormData,
 ): Promise<ExpenseActionState> {
-  const amount = Number(formData.get("amount"));
-  const balanceType = Number(formData.get("balanceType")) as 0 | 1;
-  const userId = formData.get("userId");
-  const date = formData.get("date");
-  const content = formData.get("content") || null;
-
-  if (!amount || amount <= 0) {
-    return { error: "金額は1以上の値を入力してください", success: false };
-  }
-  if (!userId || !date) {
-    return { error: "必須項目を入力してください", success: false };
-  }
-
-  const input: CreateExpenseInput = {
-    amount,
-    balanceType,
-    userId: String(userId),
-    date: String(date),
-    content: content ? String(content) : null,
+  const raw = {
+    amount: Number(formData.get("amount")),
+    balanceType: Number(formData.get("balanceType")) as 0 | 1,
+    userId: String(formData.get("userId") ?? ""),
+    date: String(formData.get("date") ?? ""),
+    content: formData.get("content") ? String(formData.get("content")) : null,
   };
+
+  const result = createExpenseSchema.safeParse(raw);
+  if (!result.success) {
+    const fieldErrors = result.error.flatten().fieldErrors as ExpenseFieldErrors;
+    return { error: null, fieldErrors, success: false };
+  }
 
   try {
     await serverFetch<GetExpenseResponse>("/api/expense", {
       method: "POST",
-      body: JSON.stringify({ newData: input }),
+      body: JSON.stringify({ newData: result.data }),
     });
   } catch (err) {
     if (err instanceof ApiError) {

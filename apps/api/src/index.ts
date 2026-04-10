@@ -3,6 +3,8 @@ import * as bodyParser from 'body-parser'
 import type { NextFunction, Request, Response } from 'express'
 import { AppDataSource } from './infrastructure/persistence/data-source'
 import { createBudgetRoutes, createExpenseRoutes, createLoginRoute, createUserRoutes, logoutRoute } from './presentation/routes/routes'
+import { loginSchema } from '@budget/common'
+import { ValidationError } from './presentation/errors'
 const path = require('path')
 import { errorModel } from './domain/models/errorModel'
 const Router = require('express')
@@ -57,6 +59,11 @@ AppDataSource.initialize()
         const loginRoute = createLoginRoute(userController)
 
         app.post(loginRoute.route, (req: Request, res: Response, next: NextFunction) => {
+            const validation = loginSchema.safeParse({ userId: req.body.userId, password: req.body.password })
+            if (!validation.success) {
+                res.status(400).json({ result: 'error', message: validation.error.message })
+                return
+            }
             const result = loginRoute.handler(req, res, next)
             if (result) {
                 req.session.login = req.body.userId
@@ -106,6 +113,10 @@ AppDataSource.initialize()
                             res.send({ expense })
                         })
                         .catch((err) => {
+                            if (err instanceof ValidationError) {
+                                res.status(400).json({ result: 'error', message: err.details })
+                                return
+                            }
                             console.log(err)
                             res.status(500).send({ result: 'error', message: 'Something broken' })
                         })

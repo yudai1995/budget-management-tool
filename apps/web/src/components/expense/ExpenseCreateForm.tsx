@@ -11,6 +11,16 @@ type Props = {
 
 const initialState: ExpenseActionState = { error: null, success: false };
 
+/** フィールドエラーを表示するヘルパー */
+function FieldError({ messages }: { messages?: string[] }) {
+  if (!messages?.length) return null;
+  return (
+    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+      {messages[0]}
+    </p>
+  );
+}
+
 export function ExpenseCreateForm({ userId }: Props) {
   const [state, formAction, isPending] = useActionState(
     createExpenseAction,
@@ -41,6 +51,7 @@ export function ExpenseCreateForm({ userId }: Props) {
             <option value="0">支出</option>
             <option value="1">収入</option>
           </select>
+          <FieldError messages={state.fieldErrors?.balanceType} />
         </div>
 
         {/* 金額 */}
@@ -57,6 +68,7 @@ export function ExpenseCreateForm({ userId }: Props) {
             placeholder="金額を入力"
             className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
           />
+          <FieldError messages={state.fieldErrors?.amount} />
         </div>
       </div>
 
@@ -73,6 +85,7 @@ export function ExpenseCreateForm({ userId }: Props) {
           defaultValue={new Date().toISOString().split("T")[0]}
           className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
         />
+        <FieldError messages={state.fieldErrors?.date} />
       </div>
 
       {/* 内容（任意） */}

@@ -6,6 +6,16 @@ import type { LoginState } from "@/lib/actions/auth";
 
 const initialState: LoginState = { error: null };
 
+/** フィールドエラーを表示するヘルパー */
+function FieldError({ messages }: { messages?: string[] }) {
+  if (!messages?.length) return null;
+  return (
+    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+      {messages[0]}
+    </p>
+  );
+}
+
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
@@ -30,6 +40,7 @@ export function LoginForm() {
               placeholder="ユーザー名を入力"
               className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
             />
+            <FieldError messages={state.fieldErrors?.userId} />
           </div>
 
           <div className="flex flex-col gap-1">
@@ -45,6 +56,7 @@ export function LoginForm() {
               placeholder="パスワードを入力"
               className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
             />
+            <FieldError messages={state.fieldErrors?.password} />
           </div>
 
           {state.error && (
