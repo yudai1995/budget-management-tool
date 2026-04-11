@@ -19,7 +19,14 @@
     },
     "format": {
       "cache": false
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test:api": {
+      "dependsOn": ["^build"],
+      "cache": false
     }
   }
 }
-
