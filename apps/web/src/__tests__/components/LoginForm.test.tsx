@@ -1,0 +1,88 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import * as React from 'react'
+import { LoginForm } from '../../components/login/LoginForm'
+
+// Server Actionをモック
+vi.mock('@/lib/actions/auth', () => ({
+    loginAction: vi.fn(),
+    guestLoginAction: vi.fn(),
+}))
+
+// ESM環境ではvi.spyOnは不可。vi.mockでuseActionStateをモックする
+vi.mock('react', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('react')>()
+    return {
+        ...actual,
+        useActionState: vi.fn(),
+    }
+})
+
+describe('LoginForm', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
+
+    it('初期表示: フォームとラベルが描画される', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        expect(screen.getByLabelText('ユーザー名')).toBeInTheDocument()
+        expect(screen.getByLabelText('パスワード')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'ログインする' })).toBeInTheDocument()
+    })
+
+    it('fieldErrors.userId があるとき、エラーメッセージを表示する', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null, fieldErrors: { userId: ['ユーザーIDを入力してください'] } },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        expect(screen.getByText('ユーザーIDを入力してください')).toBeInTheDocument()
+    })
+
+    it('fieldErrors.password があるとき、エラーメッセージを表示する', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null, fieldErrors: { password: ['パスワードを入力してください'] } },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        expect(screen.getByText('パスワードを入力してください')).toBeInTheDocument()
+    })
+
+    it('state.error があるとき、エラーメッセージを表示する', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: '認証に失敗しました' },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        expect(screen.getByText('認証に失敗しました')).toBeInTheDocument()
+    })
+
+    it('isPending=true のとき、ボタンが disabled になる', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null },
+            vi.fn(),
+            true,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        const button = screen.getByRole('button', { name: 'ログイン中...' })
+        expect(button).toBeDisabled()
+    })
+})

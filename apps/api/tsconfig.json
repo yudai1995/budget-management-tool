@@ -8,10 +8,12 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "sourceMap": true,
+        "skipLibCheck": true,
         "baseUrl": ".",
         "paths": {
             "@budget/common": ["../../packages/common/src/index.ts"],
             "@budget/common/*": ["../../packages/common/src/*"]
         }
-    }
+    },
+    "exclude": ["node_modules", "src/__tests__"]
 }

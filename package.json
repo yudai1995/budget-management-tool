@@ -7,9 +7,14 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "db:docs": "pnpm --filter @budget/api run db:docs",
-    "db:share": "pnpm --filter @budget/api run db:share"
+    "db:share": "pnpm --filter @budget/api run db:share",
+    "type-check": "turbo run type-check",
+    "test:unit": "turbo run test:unit",
+    "test:api": "turbo run test:api",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "turbo": "^2.8.21"
   },
   "pnpm": {
