@@ -6,6 +6,7 @@
     "dev": "wait-on tcp:${DB_HOSTNAME:-127.0.0.1}:${DB_PORT:-3306} && PORT=3001 ts-node --files src/index.ts",
     "build": "tsc",
     "start": "node build/index.js",
+    "type-check": "tsc --noEmit",
     "lint": "biome lint .",
     "format": "biome format . --write",
     "check": "biome check .",

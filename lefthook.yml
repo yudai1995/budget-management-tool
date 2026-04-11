@@ -1,0 +1,22 @@
+# Lefthook — モノリポ全体の pre-commit ガードレール
+# FE (apps/web) / BE (apps/api) / Common (packages/common) を横断して品質を担保する
+
+pre-commit:
+  parallel: false
+  commands:
+    # 1. 型チェック: packages/common → apps/api → apps/web の依存順で実行
+    type-check:
+      run: pnpm turbo run type-check
+      fail_text: "型エラーが検出されました。tsc --noEmit を確認してください。"
+
+    # 2. 静的解析: Biome (BE) / ESLint (FE)
+    lint:
+      run: pnpm turbo run lint
+      fail_text: "lint エラーが検出されました。各パッケージの lint コマンドを確認してください。"
+
+    # 3. フォーマット: Biome format (BE) / ESLint --fix (FE)
+    #    stage_fixed: true によりフォーマット後の差分を自動で再ステージング
+    format:
+      run: pnpm turbo run format
+      stage_fixed: true
+      fail_text: "フォーマットエラーが発生しました。"
