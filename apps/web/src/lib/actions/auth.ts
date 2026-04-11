@@ -53,11 +53,8 @@ export async function loginAction(
 
 /** ゲストログイン Server Action */
 export async function guestLoginAction(): Promise<void> {
-  await serverFetch<LoginResponse>("/api/login", {
-    method: "POST",
-    body: JSON.stringify({ userId: "Guest", password: process.env.GUEST_PASSWORD ?? "" }),
-  });
-
+  // パスワードは API 側で管理。web は credentials 不要。
+  await serverFetch<LoginResponse>("/api/guest-login", { method: "POST" });
   redirect("/expenses");
 }
 

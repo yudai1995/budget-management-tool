@@ -23,30 +23,14 @@ import { redirect } from 'next/navigation'
 describe('guestLoginAction', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        process.env.GUEST_PASSWORD = 'guest-pass'
     })
 
-    it('GUEST_PASSWORD を含むリクエストボディで /api/login を呼ぶ', async () => {
+    it('body なしで /api/guest-login を呼ぶ（credentials は API 側で管理）', async () => {
         vi.mocked(serverFetch).mockResolvedValue({})
 
         await guestLoginAction()
 
-        expect(serverFetch).toHaveBeenCalledWith('/api/login', {
-            method: 'POST',
-            body: JSON.stringify({ userId: 'Guest', password: 'guest-pass' }),
-        })
-    })
-
-    it('GUEST_PASSWORD が未設定のとき空文字で呼ぶ', async () => {
-        delete process.env.GUEST_PASSWORD
-        vi.mocked(serverFetch).mockResolvedValue({})
-
-        await guestLoginAction()
-
-        expect(serverFetch).toHaveBeenCalledWith('/api/login', {
-            method: 'POST',
-            body: JSON.stringify({ userId: 'Guest', password: '' }),
-        })
+        expect(serverFetch).toHaveBeenCalledWith('/api/guest-login', { method: 'POST' })
     })
 
     it('ログイン成功後に /expenses へリダイレクトする', async () => {
@@ -55,6 +39,12 @@ describe('guestLoginAction', () => {
         await guestLoginAction()
 
         expect(redirect).toHaveBeenCalledWith('/expenses')
+    })
+
+    it('API エラー時は ApiError をスローする', async () => {
+        vi.mocked(serverFetch).mockRejectedValue(new ApiError(500, 'Something broken'))
+
+        await expect(guestLoginAction()).rejects.toBeInstanceOf(ApiError)
     })
 })
 
