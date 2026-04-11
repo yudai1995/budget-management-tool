@@ -1,11 +1,11 @@
-import 'reflect-metadata'
-import { DataSource } from 'typeorm'
-import * as path from 'node:path'
-import { BudgetDataModel } from './entity/BudgetDataModel'
-import { UserDataModel } from './entity/UserDataModel'
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
+import * as path from 'node:path';
+import { BudgetDataModel } from './entity/BudgetDataModel';
+import { UserDataModel } from './entity/UserDataModel';
 
 if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config()
+    require('dotenv').config();
 }
 
 export const AppDataSource = new DataSource({
@@ -21,4 +21,4 @@ export const AppDataSource = new DataSource({
     migrations: [path.join(__dirname, 'migrations', '**/*{.ts,.js}')],
     migrationsTableName: 'migrations',
     subscribers: [],
-})
+});

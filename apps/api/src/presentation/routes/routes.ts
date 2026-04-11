@@ -1,17 +1,17 @@
-import type { NextFunction, Request, Response } from 'express'
-import type { BudgetController } from '../controllers/BudgetController'
-import type { ExpenseController } from '../controllers/ExpenseController'
-import type { UserController } from '../controllers/UserController'
+import type { NextFunction, Request, Response } from 'express';
+import type { BudgetController } from '../controllers/BudgetController';
+import type { ExpenseController } from '../controllers/ExpenseController';
+import type { UserController } from '../controllers/UserController';
 
-export type AppRouteMethod = 'get' | 'post' | 'put' | 'delete'
+export type AppRouteMethod = 'get' | 'post' | 'put' | 'delete';
 
 export type AppRoute = {
-    method: AppRouteMethod
-    route: string
-    action: string
+    method: AppRouteMethod;
+    route: string;
+    action: string;
     // biome-ignore lint/suspicious/noExplicitAny: Expressハンドラの戻り値はPromise/void/任意の値を取るため意図的にany
-    handler: (req: Request, res: Response, next: NextFunction) => any
-}
+    handler: (req: Request, res: Response, next: NextFunction) => any;
+};
 
 export const createBudgetRoutes = (controller: BudgetController): AppRoute[] => [
     {
@@ -45,7 +45,7 @@ export const createBudgetRoutes = (controller: BudgetController): AppRoute[] => 
         action: 'remove',
         handler: (req, _res, _next) => controller.remove(String(req.params.id)),
     },
-]
+];
 
 export const createUserRoutes = (controller: UserController): AppRoute[] => [
     {
@@ -65,8 +65,8 @@ export const createUserRoutes = (controller: UserController): AppRoute[] => [
         route: '/api/user',
         action: 'save',
         handler: (req, _res, _next) => {
-            const userId = String(req.params.userId ?? req.body.userId ?? '')
-            return controller.save(userId, req.body.userName, req.body.password)
+            const userId = String(req.params.userId ?? req.body.userId ?? '');
+            return controller.save(userId, req.body.userName, req.body.password);
         },
     },
     // TODO: add PUT ACTION
@@ -75,8 +75,8 @@ export const createUserRoutes = (controller: UserController): AppRoute[] => [
         route: '/api/user/:userId',
         action: 'save',
         handler: (req, _res, _next) => {
-            const userId = String(req.params.userId ?? req.body.userId ?? '')
-            return controller.save(userId, req.body.userName, req.body.password)
+            const userId = String(req.params.userId ?? req.body.userId ?? '');
+            return controller.save(userId, req.body.userName, req.body.password);
         },
     },
     {
@@ -85,7 +85,7 @@ export const createUserRoutes = (controller: UserController): AppRoute[] => [
         action: 'remove',
         handler: (req, _res, _next) => controller.remove(String(req.params.userId)),
     },
-]
+];
 
 export const createExpenseRoutes = (controller: ExpenseController): AppRoute[] => [
     {
@@ -118,16 +118,16 @@ export const createExpenseRoutes = (controller: ExpenseController): AppRoute[] =
         action: 'remove',
         handler: (req, _res, _next) => controller.remove(String(req.params.id)),
     },
-]
+];
 
 export const createLoginRoute = (controller: UserController): AppRoute => ({
     method: 'post',
     route: '/api/login',
     action: 'login',
     handler: (req, _res, _next) => controller.login(String(req.body.userId), req.body.password),
-})
+});
 
 export const logoutRoute = {
     method: 'post' as const,
     route: '/api/logout',
-}
+};

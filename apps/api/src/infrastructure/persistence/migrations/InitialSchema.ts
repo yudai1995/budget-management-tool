@@ -1,4 +1,4 @@
-import type { MigrationInterface, QueryRunner } from 'typeorm'
+import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class InitialSchema1710000000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -10,7 +10,7 @@ export class InitialSchema1710000000000 implements MigrationInterface {
                 password varchar(255) NOT NULL,
                 PRIMARY KEY (userId)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        `)
+        `);
 
         await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS budget_list (
@@ -25,12 +25,11 @@ export class InitialSchema1710000000000 implements MigrationInterface {
                 deletedDate datetime(6) NULL,
                 PRIMARY KEY (id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-        `)
+        `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP TABLE IF EXISTS budget_list;`)
-        await queryRunner.query(`DROP TABLE IF EXISTS user_list;`)
+        await queryRunner.query(`DROP TABLE IF EXISTS budget_list;`);
+        await queryRunner.query(`DROP TABLE IF EXISTS user_list;`);
     }
 }
-

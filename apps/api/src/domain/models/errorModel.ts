@@ -1,1 +1,1 @@
-export { errorModel } from '@budget/common'
+export { errorModel } from '@budget/common';

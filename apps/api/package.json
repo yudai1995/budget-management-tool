@@ -15,9 +15,9 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/infrastructure/persistence/data-source.ts",
     "migration:run": "ts-node --files scripts/run-migrations.ts",
     "migration:revert": "ts-node --files scripts/revert-migration.ts",
-    "type-check": "tsc --noEmit",
     "test:unit": "vitest run src/__tests__/unit",
-    "test:api": "vitest run src/__tests__/e2e"
+    "test:api": "vitest run src/__tests__/e2e",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@budget/common": "workspace:*",

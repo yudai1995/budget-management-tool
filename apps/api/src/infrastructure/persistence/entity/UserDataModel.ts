@@ -1,18 +1,21 @@
-import { Entity, Column, OneToMany, PrimaryColumn } from 'typeorm'
-import { BudgetDataModel } from './BudgetDataModel'
+import { Entity, Column, OneToMany, PrimaryColumn } from 'typeorm';
+import { BudgetDataModel } from './BudgetDataModel';
 
 /** user_list テーブルに対応するTypeORMエンティティ（インフラ層専用） */
 @Entity({ name: 'user_list' })
 export class UserDataModel {
     @PrimaryColumn({ type: 'varchar', length: 255, name: 'userId' })
-    userId: string
+    userId: string;
 
     @Column({ type: 'varchar', length: 255, name: 'userName' })
-    userName: string
+    userName: string;
 
     @Column({ type: 'varchar', length: 255, name: 'password' })
-    password: string
+    password: string;
 
-    @OneToMany(() => BudgetDataModel, (budget) => budget.user)
-    budgets: BudgetDataModel[]
+    @OneToMany(
+        () => BudgetDataModel,
+        (budget) => budget.user
+    )
+    budgets: BudgetDataModel[];
 }

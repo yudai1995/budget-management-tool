@@ -1,21 +1,21 @@
-import type { CreateExpenseInput } from '@budget/common'
-import { Expense } from '../../domain/models/Expense'
-import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository'
-import type { IUserRepository } from '../../domain/repositories/IUserRepository'
+import type { CreateExpenseInput } from '@budget/common';
+import { Expense } from '../../domain/models/Expense';
+import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository';
+import type { IUserRepository } from '../../domain/repositories/IUserRepository';
 
-export type { CreateExpenseInput }
+export type { CreateExpenseInput };
 
 export class CreateExpenseUseCase {
     constructor(
         private readonly expenseRepository: IExpenseRepository,
-        private readonly userRepository: IUserRepository,
+        private readonly userRepository: IUserRepository
     ) {}
 
     async execute(input: CreateExpenseInput): Promise<Expense> {
         // ユーザー存在確認
-        const user = await this.userRepository.one(input.userId)
+        const user = await this.userRepository.one(input.userId);
         if (!user) {
-            throw new Error(`ユーザーが見つかりません: ${input.userId}`)
+            throw new Error(`ユーザーが見つかりません: ${input.userId}`);
         }
 
         const expense = Expense.create({
@@ -25,8 +25,8 @@ export class CreateExpenseUseCase {
             categoryId: input.categoryId,
             content: input.content,
             date: input.date,
-        })
+        });
 
-        return this.expenseRepository.save(expense)
+        return this.expenseRepository.save(expense);
     }
 }

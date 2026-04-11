@@ -1,17 +1,16 @@
-import { AppDataSource } from '../src/infrastructure/persistence/data-source'
+import { AppDataSource } from '../src/infrastructure/persistence/data-source';
 
 async function main() {
-    const dataSource = await AppDataSource.initialize()
+    const dataSource = await AppDataSource.initialize();
     try {
-        await dataSource.undoLastMigration()
-        console.log('Reverted last migration')
+        await dataSource.undoLastMigration();
+        console.log('Reverted last migration');
     } finally {
-        await dataSource.destroy()
+        await dataSource.destroy();
     }
 }
 
 main().catch((err) => {
-    console.error(err)
-    process.exit(1)
-})
-
+    console.error(err);
+    process.exit(1);
+});

@@ -16,8 +16,10 @@
 .serena
 
 # 環境変数（機密情報）
+# .env.test はテスト用デフォルト値のためバージョン管理対象
 .env
-.env.*
+.env.local
+.env.production
 
 # Playwright
 /playwright-report/

@@ -13,6 +13,7 @@
     "db:share": "pnpm --filter @budget/api run db:share",
     "test:unit": "turbo run test:unit",
     "test:api": "turbo run test:api",
+    "test:integration": "pnpm --filter @budget/api run test:integration",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
