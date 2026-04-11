@@ -1,6 +1,7 @@
 import { AppDataSource } from './infrastructure/persistence/data-source';
 import { TypeORMBudgetRepository } from './infrastructure/persistence/TypeORMBudgetRepository';
 import { TypeORMExpenseRepository } from './infrastructure/persistence/TypeORMExpenseRepository';
+import { TypeORMRefreshTokenRepository } from './infrastructure/persistence/TypeORMRefreshTokenRepository';
 import { TypeORMUserRepository } from './infrastructure/persistence/TypeORMUserRepository';
 import type { AppDeps } from './app';
 
@@ -13,5 +14,6 @@ export function buildDeps(): AppDeps {
         userRepository: new TypeORMUserRepository(AppDataSource),
         expenseRepository: new TypeORMExpenseRepository(AppDataSource),
         budgetRepository: new TypeORMBudgetRepository(AppDataSource),
+        refreshTokenRepository: new TypeORMRefreshTokenRepository(AppDataSource),
     };
 }

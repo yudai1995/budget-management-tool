@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
 import { createAuthMiddleware } from '../middleware/auth';
+import type { TokenService } from '../../application/auth/TokenService';
 import type { AppDeps, HonoEnv } from '../../app';
 
-export function createBudgetRoutes(deps: AppDeps, sessionSecret: string) {
+export function createBudgetRoutes(deps: AppDeps, tokenService: TokenService) {
     const { budgetRepository } = deps;
-    const auth = createAuthMiddleware(sessionSecret);
+    const auth = createAuthMiddleware(tokenService);
 
     return new Hono<HonoEnv>()
         .get('/budget', auth, async (c) => {

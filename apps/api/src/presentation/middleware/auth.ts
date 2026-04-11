@@ -1,19 +1,24 @@
 import { createMiddleware } from 'hono/factory';
-import { getSignedCookie } from 'hono/cookie';
 import type { HonoEnv } from '../../app';
-
-export const SESSION_COOKIE_NAME = 'session';
+import type { TokenService } from '../../application/auth/TokenService';
 
 /**
- * セッションCookieを検証し、未認証リクエストを 403 で拒否するミドルウェア。
- * 認証済みの場合は context 変数 `userId` にログイン中のユーザーIDを設定する。
+ * Bearer トークン（RS256 JWT）を検証するミドルウェア。
+ * 検証成功時は context 変数 `userId` にログイン中のユーザーIDを設定する。
  */
-export const createAuthMiddleware = (sessionSecret: string) =>
+export const createAuthMiddleware = (tokenService: TokenService) =>
     createMiddleware<HonoEnv>(async (c, next) => {
-        const userId = await getSignedCookie(c, sessionSecret, SESSION_COOKIE_NAME);
-        if (!userId) {
-            return c.json({ result: 'error', message: 'Auth Error' }, 403);
+        const authorization = c.req.header('Authorization');
+        if (!authorization?.startsWith('Bearer ')) {
+            return c.json({ result: 'error', message: '認証が必要です' }, 401);
         }
-        c.set('userId', userId);
-        await next();
+
+        const token = authorization.slice(7);
+        try {
+            const payload = await tokenService.verifyAccessToken(token);
+            c.set('userId', payload.sub);
+            await next();
+        } catch {
+            return c.json({ result: 'error', message: '認証トークンが無効です' }, 401);
+        }
     });

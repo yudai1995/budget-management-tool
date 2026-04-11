@@ -14,19 +14,25 @@ export class ApiError extends Error {
 
 /**
  * Server Component / Server Action から呼び出すサーバーサイド専用 fetch ラッパー。
- * express-session のセッション Cookie を自動転送する。
+ * Cookie に保存された JWT アクセストークンを Authorization ヘッダーで API に転送する。
  */
 export async function serverFetch<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
   const cookieStore = await cookies();
+  const accessToken = cookieStore.get("access_token")?.value;
+
+  const authHeaders: Record<string, string> = {};
+  if (accessToken) {
+    authHeaders.Authorization = `Bearer ${accessToken}`;
+  }
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
+      ...authHeaders,
       ...options?.headers,
     },
   });
