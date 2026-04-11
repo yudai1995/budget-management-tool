@@ -1,7 +1,9 @@
 import 'reflect-metadata';
+import * as path from 'node:path';
 
 if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+    // CWD は turbo 実行時に apps/api/ になるため、リポジトリルートの .env を明示的に指定する
+    require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 }
 
 import { serve } from '@hono/node-server';
