@@ -17,9 +17,11 @@
     "migration:revert": "ts-node --files scripts/revert-migration.ts",
     "test:unit": "vitest run src/__tests__/unit",
     "test:api": "vitest run src/__tests__/e2e",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "generate:openapi": "ts-node --files scripts/generate-openapi.ts"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
     "@budget/common": "workspace:*",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.3",
@@ -29,17 +31,22 @@
     "mysql2": "^3.12.0",
     "nodemon": "^3.1.9",
     "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
     "typeorm": "0.3.20",
-    "ulid": "^3.0.2"
+    "ulid": "^3.0.2",
+    "yaml": "^2.8.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",
     "@dbml/cli": "^6.6.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.18.2",
     "@types/node": "^20.19.37",
     "@types/supertest": "^7.2.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "dbdocs": "1.1.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^9.1.0",

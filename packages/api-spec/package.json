@@ -1,0 +1,6 @@
+{
+  "name": "@budget/api-spec",
+  "version": "0.1.0",
+  "private": true,
+  "main": "openapi.yaml"
+}

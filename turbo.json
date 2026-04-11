@@ -27,6 +27,16 @@
     "test:api": {
       "dependsOn": ["^build"],
       "cache": false
+    },
+    "generate:openapi": {
+      "dependsOn": ["^build"],
+      "outputs": ["../../packages/api-spec/openapi.json"],
+      "cache": false
+    },
+    "codegen": {
+      "dependsOn": ["generate:openapi", "^build"],
+      "outputs": ["src/schema.d.ts", "dist/schema.d.ts"],
+      "cache": false
     }
   }
 }
