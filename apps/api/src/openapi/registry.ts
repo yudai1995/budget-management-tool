@@ -123,6 +123,28 @@ registry.registerPath({
 
 registry.registerPath({
     method: 'post',
+    path: '/api/guest-login',
+    summary: 'ゲストログイン',
+    description: 'パスワード不要でゲストセッションを発行する',
+    tags: ['Auth'],
+    responses: {
+        200: {
+            description: 'ゲストログイン成功',
+            content: { 'application/json': { schema: LoginResponseSchema } },
+        },
+        404: {
+            description: 'ゲストユーザーが存在しない',
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+        },
+        500: {
+            description: 'サーバーエラー',
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+        },
+    },
+});
+
+registry.registerPath({
+    method: 'post',
     path: '/api/logout',
     summary: 'ログアウト',
     description: 'セッション Cookie を無効化する',

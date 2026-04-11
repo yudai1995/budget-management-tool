@@ -226,6 +226,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/guest-login:
+    post:
+      summary: ゲストログイン
+      description: パスワード不要でゲストセッションを発行する
+      tags:
+        - Auth
+      responses:
+        "200":
+          description: ゲストログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "404":
+          description: ゲストユーザーが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/logout:
     post:
       summary: ログアウト
