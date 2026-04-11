@@ -42,11 +42,13 @@ export class TypeORMUserRepository implements IUserRepository {
     }
 
     async login(userId: string, password: string): Promise<true | errorModel> {
-        const effectivePassword = userId === 'Guest' ? process.env.GUEST_PASSWORD : password;
         const dataModel = await this.dataSource.getRepository(UserDataModel).findOneBy({ userId });
         if (!dataModel) return errorModel.NOT_FOUND;
 
-        const compared = await bcrypt.compare(effectivePassword, dataModel.password);
+        // ハッシュが未設定の場合は認証失敗（ゲストユーザー等、パスワードなしのアカウント）
+        if (!dataModel.password) return errorModel.AUTHENTICATION_FAILD;
+
+        const compared = await bcrypt.compare(password, dataModel.password);
         if (compared) return true;
 
         return errorModel.AUTHENTICATION_FAILD;
