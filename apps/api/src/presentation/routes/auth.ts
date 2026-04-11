@@ -53,12 +53,11 @@ export function createAuthRoutes(deps: AppDeps, sessionSecret: string) {
             }
         )
         .post('/guest-login', async (c) => {
-            // GUEST_PASSWORD は API 側の環境変数で管理。web アプリは credentials 不要。
+            // ゲストログインはパスワード不要。ゲストユーザーの存在確認のみ行う。
             try {
-                const loginResult = await userRepository.login(GUEST_USER_ID, '');
-                if (loginResult !== true) {
-                    console.error('[POST /guest-login] ゲストユーザーの認証に失敗:', loginResult);
-                    return c.json({ result: 'error', message: 'ゲストログインに失敗しました' }, 500);
+                const guest = await userRepository.one(GUEST_USER_ID);
+                if (!guest) {
+                    return c.json({ result: 'error', message: 'ゲストユーザーが存在しません' }, 404);
                 }
                 await issueSession(c, GUEST_USER_ID);
                 return c.json({ result: 'success', userId: GUEST_USER_ID });
