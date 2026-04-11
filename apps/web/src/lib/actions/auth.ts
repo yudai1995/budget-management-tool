@@ -55,7 +55,7 @@ export async function loginAction(
 export async function guestLoginAction(): Promise<void> {
   await serverFetch<LoginResponse>("/api/login", {
     method: "POST",
-    body: JSON.stringify({ userId: "Guest" }),
+    body: JSON.stringify({ userId: "Guest", password: process.env.GUEST_PASSWORD ?? "" }),
   });
 
   redirect("/expenses");
