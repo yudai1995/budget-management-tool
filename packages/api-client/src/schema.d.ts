@@ -15,7 +15,7 @@ export interface paths {
         put?: never;
         /**
          * ログイン
-         * @description セッション Cookie を発行する
+         * @description userId / password で認証し、JWT アクセストークンとリフレッシュトークンを返す。
          */
         post: {
             parameters: {
@@ -36,7 +36,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["LoginResponse"];
+                        "application/json": components["schemas"]["TokenPairResponse"];
                     };
                 };
                 /** @description バリデーションエラー */
@@ -48,8 +48,17 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                /** @description 認証失敗 */
-                403: {
+                /** @description 認証失敗（詳細は返さない） */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description サーバーエラー */
+                500: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -76,7 +85,7 @@ export interface paths {
         put?: never;
         /**
          * ゲストログイン
-         * @description パスワード不要でゲストセッションを発行する
+         * @description パスワード不要でゲストユーザーとしてログインし、JWT トークンペアを返す。
          */
         post: {
             parameters: {
@@ -93,11 +102,81 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["LoginResponse"];
+                        "application/json": components["schemas"]["TokenPairResponse"];
                     };
                 };
                 /** @description ゲストユーザーが存在しない */
                 404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description サーバーエラー */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * トークンリフレッシュ
+         * @description リフレッシュトークンを消費し、新しいトークンペアを返す（Refresh Token Rotation）。
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefreshRequest"];
+                };
+            };
+            responses: {
+                /** @description リフレッシュ成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TokenPairResponse"];
+                    };
+                };
+                /** @description refreshToken が未指定 */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description トークン無効または再利用検知 */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -133,7 +212,7 @@ export interface paths {
         put?: never;
         /**
          * ログアウト
-         * @description セッション Cookie を無効化する
+         * @description リフレッシュトークンを失効させる。
          */
         post: {
             parameters: {
@@ -142,7 +221,11 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["LogoutRequest"];
+                };
+            };
             responses: {
                 /** @description ログアウト成功 */
                 200: {
@@ -153,8 +236,8 @@ export interface paths {
                         "application/json": components["schemas"]["LogoutResponse"];
                     };
                 };
-                /** @description 未認証 */
-                403: {
+                /** @description サーバーエラー */
+                500: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -193,11 +276,11 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GetExpensesResponse"];
+                        "application/json": components["schemas"]["ExpenseListResponse"];
                     };
                 };
                 /** @description 未認証 */
-                403: {
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -218,7 +301,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateExpenseRequest"];
+                    "application/json": components["schemas"]["CreateExpenseBody"];
                 };
             };
             responses: {
@@ -228,7 +311,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GetExpenseResponse"];
+                        "application/json": components["schemas"]["ExpenseDetailResponse"];
                     };
                 };
                 /** @description バリデーションエラー */
@@ -241,7 +324,7 @@ export interface paths {
                     };
                 };
                 /** @description 未認証 */
-                403: {
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -282,11 +365,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GetExpenseResponse"];
+                        "application/json": components["schemas"]["ExpenseDetailResponse"];
                     };
                 };
                 /** @description 未認証 */
-                403: {
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description リソースが見つからない */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -308,7 +400,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateExpenseRequest"];
+                    "application/json": components["schemas"]["CreateExpenseBody"];
                 };
             };
             responses: {
@@ -318,7 +410,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GetExpenseResponse"];
+                        "application/json": components["schemas"]["ExpenseDetailResponse"];
                     };
                 };
                 /** @description バリデーションエラー */
@@ -331,7 +423,7 @@ export interface paths {
                     };
                 };
                 /** @description 未認証 */
-                403: {
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -360,11 +452,456 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["GetExpenseResponse"];
+                        "application/json": {
+                            /** @enum {string} */
+                            result: "success";
+                        };
                     };
                 };
                 /** @description 未認証 */
-                403: {
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 予算一覧取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 予算一覧 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BudgetListResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** 予算登録 */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateBudgetBody"];
+                };
+            };
+            responses: {
+                /** @description 登録成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BudgetDetailResponse"];
+                    };
+                };
+                /** @description バリデーションエラー */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/budget/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 予算詳細取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 予算詳細 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BudgetDetailResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description リソースが見つからない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** 予算更新 */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateBudgetBody"];
+                };
+            };
+            responses: {
+                /** @description 更新成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BudgetDetailResponse"];
+                    };
+                };
+                /** @description バリデーションエラー */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** 予算削除 */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 削除成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            result: "success";
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ユーザー一覧取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ユーザー一覧 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserListResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** ユーザー登録 */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateUserBody"];
+                };
+            };
+            responses: {
+                /** @description 登録成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserDetailResponse"];
+                    };
+                };
+                /** @description バリデーションエラー */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ユーザー詳細取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ユーザー詳細 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserDetailResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description リソースが見つからない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** ユーザー更新 */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserBody"];
+                };
+            };
+            responses: {
+                /** @description 更新成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserDetailResponse"];
+                    };
+                };
+                /** @description バリデーションエラー */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** ユーザー削除 */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 削除成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            result: "success";
+                        };
+                    };
+                };
+                /** @description 未認証 */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -383,6 +920,48 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        TokenPairResponse: {
+            /** @enum {string} */
+            result: "success";
+            /** @example eyJhbGciOiJSUzI1NiJ9... */
+            accessToken: string;
+            /** @example eyJhbGciOiJSUzI1NiJ9... */
+            refreshToken: string;
+            /** @example user01 */
+            userId: string;
+        };
+        ErrorResponse: {
+            /**
+             * @example error
+             * @enum {string}
+             */
+            result: "error";
+            /** @example エラーメッセージ */
+            message: string;
+        };
+        LoginRequest: {
+            /** @example user01 */
+            userId: string;
+            /** @example •••••••• */
+            password: string;
+        };
+        RefreshRequest: {
+            /** @example eyJ... */
+            refreshToken: string;
+        };
+        LogoutResponse: {
+            /**
+             * @example success
+             * @enum {string}
+             */
+            result: "success" | "error";
+            /** @example ログアウトしました */
+            message: string;
+        };
+        LogoutRequest: {
+            /** @example eyJ... */
+            refreshToken?: string;
+        };
         ExpenseResponse: {
             /**
              * @description Expense ID (ULID)
@@ -435,36 +1014,13 @@ export interface components {
              */
             deletedDate: string | null;
         };
-        ErrorResponse: {
-            /**
-             * @example error
-             * @enum {string}
-             */
-            result: "error";
-            /** @example Auth Error */
-            message: string;
+        ExpenseListResponse: {
+            expense: components["schemas"]["ExpenseResponse"][];
         };
-        LoginResponse: {
-            /**
-             * @example success
-             * @enum {string}
-             */
-            result: "success" | "failed";
-            /** @example user01 */
-            userId?: string;
-            /** @example ログインに失敗しました */
-            message?: string;
+        ExpenseDetailResponse: {
+            expense: components["schemas"]["ExpenseResponse"];
         };
-        LogoutResponse: {
-            /**
-             * @example success
-             * @enum {string}
-             */
-            result: "success" | "error";
-            /** @example Logout Success */
-            message: string;
-        };
-        CreateExpenseRequest: {
+        CreateExpenseBody: {
             /** @description 支出データ */
             newData: {
                 /**
@@ -494,15 +1050,104 @@ export interface components {
                 content?: string | null;
             };
         };
-        LoginRequest: {
+        BudgetResponse: {
+            /**
+             * @description Budget ID (ULID)
+             * @example 01ARZ3NDEKTSV4RRFFQ69G5FAV
+             */
+            id: string;
+            /**
+             * @description 金額（円）
+             * @example 1000
+             */
+            amount: number;
+            /**
+             * @description 収支区分: 0=支出, 1=収入
+             * @example 0
+             */
+            balanceType: 0 | 1;
+            /**
+             * @description ユーザーID
+             * @example user01
+             */
             userId: string;
+            /**
+             * @description カテゴリID
+             * @example 1
+             */
+            categoryId: number;
+            /**
+             * @description 備考
+             * @example 食費予算
+             */
+            content: string | null;
+            /**
+             * @description 日付 (YYYY-MM)
+             * @example 2024-03
+             */
+            date: string;
+            /** @description 作成日時 (ISO 8601) */
+            createdDate: string;
+            /** @description 更新日時 (ISO 8601) */
+            updatedDate: string;
+            /**
+             * @description 削除日時 (ISO 8601)
+             * @example null
+             */
+            deletedDate: string | null;
+        };
+        BudgetListResponse: {
+            budget: components["schemas"]["BudgetResponse"][];
+        };
+        BudgetDetailResponse: {
+            budget: components["schemas"]["BudgetResponse"];
+        };
+        CreateBudgetBody: {
+            /** @description 予算データ */
+            newData: {
+                [key: string]: unknown;
+            };
+        };
+        UserResponse: {
+            /**
+             * @description ユーザーID
+             * @example user01
+             */
+            userId: string;
+            /**
+             * @description ユーザー名
+             * @example 山田太郎
+             */
+            userName: string;
+        };
+        UserListResponse: {
+            user: components["schemas"]["UserResponse"][];
+        };
+        UserDetailResponse: {
+            user: components["schemas"]["UserResponse"];
+        };
+        CreateUserBody: {
+            /**
+             * @description ユーザーID（省略時自動生成）
+             * @example user01
+             */
+            userId?: string;
+            /**
+             * @description ユーザー名
+             * @example 山田太郎
+             */
+            userName: string;
+            /** @description パスワード */
             password: string;
         };
-        GetExpensesResponse: {
-            expense: components["schemas"]["ExpenseResponse"][];
-        };
-        GetExpenseResponse: {
-            expense: components["schemas"]["ExpenseResponse"];
+        UpdateUserBody: {
+            /**
+             * @description ユーザー名
+             * @example 山田太郎
+             */
+            userName: string;
+            /** @description パスワード */
+            password: string;
         };
     };
     responses: never;

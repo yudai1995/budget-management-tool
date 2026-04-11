@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { OpenAPIHono } from '@hono/zod-openapi';
 import type { IBudgetRepository } from './domain/repositories/IBudgetRepository';
 import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
 import type { IUserRepository } from './domain/repositories/IUserRepository';
@@ -29,11 +29,19 @@ export function createApp(deps: AppDeps) {
     const publicKeyPem = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n') ?? '';
     const tokenService = new TokenService(privateKeyPem, publicKeyPem, deps.refreshTokenRepository);
 
-    const app = new Hono<HonoEnv>()
-        .route('/api', createAuthRoutes(deps, tokenService))
-        .route('/api', createExpenseRoutes(deps, tokenService))
-        .route('/api', createBudgetRoutes(deps, tokenService))
-        .route('/api', createUserRoutes(deps, tokenService));
+    const app = new OpenAPIHono<HonoEnv>();
+
+    // JWT Bearer 認証スキームをレジストリに登録（createRoute の security: [{ bearerAuth: [] }] と対応）
+    app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+    });
+
+    app.route('/api', createAuthRoutes(deps, tokenService));
+    app.route('/api', createExpenseRoutes(deps, tokenService));
+    app.route('/api', createBudgetRoutes(deps, tokenService));
+    app.route('/api', createUserRoutes(deps, tokenService));
 
     app.onError((err, c) => {
         if (err instanceof DomainException) {

@@ -2,17 +2,96 @@ openapi: 3.0.0
 info:
   version: 1.0.0
   title: 家計簿管理ツール API
-  description: 支出（Expense）の登録・管理を行う REST API。セッション Cookie による認証が必要。
+  description: 支出（Expense）の登録・管理を行う REST API。JWT Bearer 認証が必要。
 servers:
   - url: http://localhost:3001
     description: ローカル開発
 components:
   securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: connect.sid
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    TokenPairResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+        accessToken:
+          type: string
+          example: eyJhbGciOiJSUzI1NiJ9...
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJSUzI1NiJ9...
+        userId:
+          type: string
+          example: user01
+      required:
+        - result
+        - accessToken
+        - refreshToken
+        - userId
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - error
+          example: error
+        message:
+          type: string
+          example: エラーメッセージ
+      required:
+        - result
+        - message
+    LoginRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          minLength: 1
+          example: user01
+        password:
+          type: string
+          minLength: 1
+          example: ••••••••
+      required:
+        - userId
+        - password
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+          example: eyJ...
+      required:
+        - refreshToken
+    LogoutResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+            - error
+          example: success
+        message:
+          type: string
+          example: ログアウトしました
+      required:
+        - result
+        - message
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          example: eyJ...
     ExpenseResponse:
       type: object
       properties:
@@ -75,53 +154,23 @@ components:
         - createdDate
         - updatedDate
         - deletedDate
-    ErrorResponse:
+    ExpenseListResponse:
       type: object
       properties:
-        result:
-          type: string
-          enum:
-            - error
-          example: error
-        message:
-          type: string
-          example: Auth Error
+        expense:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExpenseResponse"
       required:
-        - result
-        - message
-    LoginResponse:
+        - expense
+    ExpenseDetailResponse:
       type: object
       properties:
-        result:
-          type: string
-          enum:
-            - success
-            - failed
-          example: success
-        userId:
-          type: string
-          example: user01
-        message:
-          type: string
-          example: ログインに失敗しました
+        expense:
+          $ref: "#/components/schemas/ExpenseResponse"
       required:
-        - result
-    LogoutResponse:
-      type: object
-      properties:
-        result:
-          type: string
-          enum:
-            - success
-            - error
-          example: success
-        message:
-          type: string
-          example: Logout Success
-      required:
-        - result
-        - message
-    CreateExpenseRequest:
+        - expense
+    CreateExpenseBody:
       type: object
       properties:
         newData:
@@ -165,42 +214,164 @@ components:
           description: 支出データ
       required:
         - newData
-    LoginRequest:
+    BudgetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Budget ID (ULID)
+          example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+        amount:
+          type: integer
+          description: 金額（円）
+          example: 1000
+        balanceType:
+          anyOf:
+            - type: number
+              enum:
+                - 0
+            - type: number
+              enum:
+                - 1
+          description: "収支区分: 0=支出, 1=収入"
+          example: 0
+        userId:
+          type: string
+          description: ユーザーID
+          example: user01
+        categoryId:
+          type: integer
+          description: カテゴリID
+          example: 1
+        content:
+          type: string
+          nullable: true
+          description: 備考
+          example: 食費予算
+        date:
+          type: string
+          description: 日付 (YYYY-MM)
+          example: 2024-03
+        createdDate:
+          type: string
+          description: 作成日時 (ISO 8601)
+        updatedDate:
+          type: string
+          description: 更新日時 (ISO 8601)
+        deletedDate:
+          type: string
+          nullable: true
+          description: 削除日時 (ISO 8601)
+          example: null
+      required:
+        - id
+        - amount
+        - balanceType
+        - userId
+        - categoryId
+        - content
+        - date
+        - createdDate
+        - updatedDate
+        - deletedDate
+    BudgetListResponse:
+      type: object
+      properties:
+        budget:
+          type: array
+          items:
+            $ref: "#/components/schemas/BudgetResponse"
+      required:
+        - budget
+    BudgetDetailResponse:
+      type: object
+      properties:
+        budget:
+          $ref: "#/components/schemas/BudgetResponse"
+      required:
+        - budget
+    CreateBudgetBody:
+      type: object
+      properties:
+        newData:
+          type: object
+          additionalProperties:
+            nullable: true
+          description: 予算データ
+      required:
+        - newData
+    UserResponse:
       type: object
       properties:
         userId:
           type: string
+          description: ユーザーID
+          example: user01
+        userName:
+          type: string
+          description: ユーザー名
+          example: 山田太郎
+      required:
+        - userId
+        - userName
+    UserListResponse:
+      type: object
+      properties:
+        user:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponse"
+      required:
+        - user
+    UserDetailResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserResponse"
+      required:
+        - user
+    CreateUserBody:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: ユーザーID（省略時自動生成）
+          example: user01
+        userName:
+          type: string
           minLength: 1
+          description: ユーザー名
+          example: 山田太郎
         password:
           type: string
           minLength: 1
+          description: パスワード
       required:
-        - userId
+        - userName
         - password
-    GetExpensesResponse:
+    UpdateUserBody:
       type: object
       properties:
-        expense:
-          type: array
-          items:
-            $ref: "#/components/schemas/ExpenseResponse"
+        userName:
+          type: string
+          minLength: 1
+          description: ユーザー名
+          example: 山田太郎
+        password:
+          type: string
+          minLength: 1
+          description: パスワード
       required:
-        - expense
-    GetExpenseResponse:
-      type: object
-      properties:
-        expense:
-          $ref: "#/components/schemas/ExpenseResponse"
-      required:
-        - expense
+        - userName
+        - password
   parameters: {}
 paths:
   /api/login:
     post:
-      summary: ログイン
-      description: セッション Cookie を発行する
       tags:
         - Auth
+      summary: ログイン
+      description: userId / password で認証し、JWT アクセストークンとリフレッシュトークンを返す。
       requestBody:
         required: true
         content:
@@ -213,32 +384,38 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/TokenPairResponse"
         "400":
           description: バリデーションエラー
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "403":
-          description: 認証失敗
+        "401":
+          description: 認証失敗（詳細は返さない）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /api/guest-login:
     post:
-      summary: ゲストログイン
-      description: パスワード不要でゲストセッションを発行する
       tags:
         - Auth
+      summary: ゲストログイン
+      description: パスワード不要でゲストユーザーとしてログインし、JWT トークンペアを返す。
       responses:
         "200":
           description: ゲストログイン成功
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/TokenPairResponse"
         "404":
           description: ゲストユーザーが存在しない
           content:
@@ -251,14 +428,57 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /api/logout:
+  /api/refresh:
     post:
-      summary: ログアウト
-      description: セッション Cookie を無効化する
       tags:
         - Auth
+      summary: トークンリフレッシュ
+      description: リフレッシュトークンを消費し、新しいトークンペアを返す（Refresh Token Rotation）。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: リフレッシュ成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairResponse"
+        "400":
+          description: refreshToken が未指定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: トークン無効または再利用検知
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/logout:
+    post:
+      tags:
+        - Auth
+      summary: ログアウト
+      description: リフレッシュトークンを失効させる。
       security:
-        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutRequest"
       responses:
         "200":
           description: ログアウト成功
@@ -266,58 +486,58 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LogoutResponse"
-        "403":
-          description: 未認証
+        "500":
+          description: サーバーエラー
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /api/expense:
     get:
-      summary: 支出一覧取得
       tags:
         - Expense
+      summary: 支出一覧取得
       security:
-        - cookieAuth: []
+        - bearerAuth: []
       responses:
         "200":
           description: 支出一覧
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetExpensesResponse"
-        "403":
+                $ref: "#/components/schemas/ExpenseListResponse"
+        "401":
           description: 未認証
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     post:
-      summary: 支出登録
       tags:
         - Expense
+      summary: 支出登録
       security:
-        - cookieAuth: []
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateExpenseRequest"
+              $ref: "#/components/schemas/CreateExpenseBody"
       responses:
         "200":
           description: 登録成功
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetExpenseResponse"
+                $ref: "#/components/schemas/ExpenseDetailResponse"
         "400":
           description: バリデーションエラー
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "403":
+        "401":
           description: 未認証
           content:
             application/json:
@@ -325,15 +545,15 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
   /api/expense/{id}:
     get:
-      summary: 支出詳細取得
       tags:
         - Expense
+      summary: 支出詳細取得
       security:
-        - cookieAuth: []
+        - bearerAuth: []
       parameters:
         - schema:
             type: string
-            description: Expense ID (ULID)
+            description: リソース ID (ULID)
             example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
           required: true
           name: id
@@ -344,23 +564,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetExpenseResponse"
-        "403":
+                $ref: "#/components/schemas/ExpenseDetailResponse"
+        "401":
           description: 未認証
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     put:
-      summary: 支出更新
       tags:
         - Expense
+      summary: 支出更新
       security:
-        - cookieAuth: []
+        - bearerAuth: []
       parameters:
         - schema:
             type: string
-            description: Expense ID (ULID)
+            description: リソース ID (ULID)
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
           required: true
           name: id
           in: path
@@ -369,36 +596,37 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateExpenseRequest"
+              $ref: "#/components/schemas/CreateExpenseBody"
       responses:
         "200":
           description: 更新成功
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetExpenseResponse"
+                $ref: "#/components/schemas/ExpenseDetailResponse"
         "400":
           description: バリデーションエラー
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "403":
+        "401":
           description: 未認証
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     delete:
-      summary: 支出削除
       tags:
         - Expense
+      summary: 支出削除
       security:
-        - cookieAuth: []
+        - bearerAuth: []
       parameters:
         - schema:
             type: string
-            description: Expense ID (ULID)
+            description: リソース ID (ULID)
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
           required: true
           name: id
           in: path
@@ -408,8 +636,331 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetExpenseResponse"
-        "403":
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum:
+                      - success
+                required:
+                  - result
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/budget:
+    get:
+      tags:
+        - Budget
+      summary: 予算一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 予算一覧
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetListResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - Budget
+      summary: 予算登録
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBudgetBody"
+      responses:
+        "200":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetDetailResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/budget/{id}:
+    get:
+      tags:
+        - Budget
+      summary: 予算詳細取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: リソース ID (ULID)
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: 予算詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetDetailResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Budget
+      summary: 予算更新
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: リソース ID (ULID)
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+          required: true
+          name: id
+          in: path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBudgetBody"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetDetailResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Budget
+      summary: 予算削除
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: リソース ID (ULID)
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum:
+                      - success
+                required:
+                  - result
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/user:
+    get:
+      tags:
+        - User
+      summary: ユーザー一覧取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ユーザー一覧
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - User
+      summary: ユーザー登録
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserBody"
+      responses:
+        "200":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetailResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/user/{userId}:
+    get:
+      tags:
+        - User
+      summary: ユーザー詳細取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: ユーザーID
+            example: user01
+          required: true
+          name: userId
+          in: path
+      responses:
+        "200":
+          description: ユーザー詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetailResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - User
+      summary: ユーザー更新
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: ユーザーID
+            example: user01
+          required: true
+          name: userId
+          in: path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetailResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - User
+      summary: ユーザー削除
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: ユーザーID
+            example: user01
+          required: true
+          name: userId
+          in: path
+      responses:
+        "200":
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    enum:
+                      - success
+                required:
+                  - result
+        "401":
           description: 未認証
           content:
             application/json:

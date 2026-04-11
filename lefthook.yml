@@ -20,3 +20,10 @@ pre-commit:
       run: pnpm turbo run format
       stage_fixed: true
       fail_text: "フォーマットエラーが発生しました。"
+
+    # 4. OpenAPI スペック同期チェック:
+    #    generate:openapi で最新の spec を生成し、git の差分がなければ OK
+    #    差分がある場合は「`pnpm --filter @budget/api run generate:openapi` を実行してからコミットしてください」
+    openapi-sync:
+      run: pnpm --filter @budget/api run generate:openapi && git diff --exit-code packages/api-spec/openapi.yaml
+      fail_text: "OpenAPI スペックが最新ではありません。`pnpm --filter @budget/api run generate:openapi` を実行し、生成結果をステージングしてください。"
