@@ -6,7 +6,8 @@ import { RefreshTokenDataModel } from './entity/RefreshTokenDataModel';
 import { UserDataModel } from './entity/UserDataModel';
 
 if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+    // CWD は turbo 実行時に apps/api/ になるため、リポジトリルートの .env を明示的に指定する
+    require('dotenv').config({ path: require('node:path').resolve(__dirname, '../../../.env') });
 }
 
 export const AppDataSource = new DataSource({
