@@ -10,28 +10,27 @@
 
 ## クイックスタート
 
-1. 依存関係をインストールする
-
 ```bash
-pnpm install
-```
+# 1. 依存関係・DB・マイグレーションを一括セットアップ（初回のみ）
+pnpm setup
 
-2. `.env` を作成する（まだない場合）
-
-```bash
-cp .env.example .env
-```
-
-3. データベースを起動する
-
-```bash
-docker compose up -d
-```
-
-4. 全アプリを一括起動する
-
-```bash
+# 2. 全スタックを起動
 pnpm dev
+```
+
+> `pnpm setup` は以下を自動で行います: 依存関係のインストール / `.env` の生成 / DB 起動と healthcheck 待機 / マイグレーション実行
+
+### 特定パッケージのみ起動する場合
+
+```bash
+# API のみ
+pnpm dev:api
+
+# Web のみ
+pnpm dev:web
+
+# turbo フィルタを直接指定（turbo の --filter 構文）
+pnpm dev -- --filter @budget/api
 ```
 
 ### 起動先の URL
@@ -68,8 +67,11 @@ cp .env.example .env
 - データ永続化: `mysql-data-volume`
 - MySQL 設定ファイル: `./mysql/my.cnf`
 - 初回起動時に流す SQL のマウント先: `./mysql/init` → コンテナ内 `/docker-entrypoint-initdb.d`
+- healthcheck: DB が完全に起動するまで `mysqladmin ping` で待機（最大 90 秒）
 
 初期化用の SQL は `mysql/init/` に置いてください（**初回コンテナ作成時のみ**実行されます）。
+
+テスト用 DB（port 3307）は `docker-compose.test.yml` で管理しています。tmpfs を使用するため、コンテナ停止時にデータは消去されます。
 
 ## API 起動時の DB 待機
 
@@ -210,8 +212,20 @@ pnpm test:e2e
 
 ## よく使うコマンド
 
-- 全体ビルド: `pnpm turbo run build`
-- 全体 lint: `pnpm turbo run lint`
+| コマンド | 内容 |
+|---|---|
+| `pnpm setup` | 初回セットアップ（install + .env + DB + migration） |
+| `pnpm dev` | 全スタック起動（DB + codegen + api + web） |
+| `pnpm dev:api` | API のみ起動 |
+| `pnpm dev:web` | Web のみ起動 |
+| `pnpm logs` | DB コンテナのログを tail 表示 |
+| `pnpm db:start` | DB コンテナを起動 |
+| `pnpm db:stop` | DB コンテナを停止 |
+| `pnpm db:reset` | DB コンテナを完全リセット（volume 削除） |
+| `pnpm db:start:test` | テスト用 DB（port 3307）を起動 |
+| `pnpm codegen` | OpenAPI スペックと型定義を再生成 |
+| `pnpm build` | 全体ビルド |
+| `pnpm lint` | 全体 lint |
 
 ## DB スキーマ共有（DBML / dbdocs.io）
 

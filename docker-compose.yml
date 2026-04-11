@@ -16,6 +16,13 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     restart: always
+    healthcheck:
+      # サーバーの TCP 応答を確認（認証不要）
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
 
 volumes:
   mysql-data-volume:
