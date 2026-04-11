@@ -1,188 +1,49 @@
-import type { Application, NextFunction, Request, Response } from 'express';
-// biome-ignore lint/suspicious/noExplicitAny: Vitest ESM環境でのCJS互換のためrequireを使用
-const express: (...args: any[]) => Application = require('express');
-// biome-ignore lint/suspicious/noExplicitAny: 同上
-const bodyParser: any = require('body-parser');
-// biome-ignore lint/suspicious/noExplicitAny: 同上
-const swaggerUi: any = require('swagger-ui-express');
-import { loginSchema } from '@budget/common';
-import { ValidationError } from './presentation/errors';
-import { errorModel } from './domain/models/errorModel';
-import {
-    createBudgetRoutes,
-    createExpenseRoutes,
-    createLoginRoute,
-    createUserRoutes,
-    logoutRoute,
-} from './presentation/routes/routes';
-import type { BudgetController } from './presentation/controllers/BudgetController';
-import type { ExpenseController } from './presentation/controllers/ExpenseController';
-import type { UserController } from './presentation/controllers/UserController';
-import { generateOpenAPIDocument } from './openapi/spec';
+import { Hono } from 'hono';
+import type { IBudgetRepository } from './domain/repositories/IBudgetRepository';
+import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
+import type { IUserRepository } from './domain/repositories/IUserRepository';
+import { DomainException } from './shared/errors/DomainException';
+import { createAuthRoutes } from './presentation/routes/auth';
+import { createBudgetRoutes } from './presentation/routes/budget';
+import { createExpenseRoutes } from './presentation/routes/expense';
+import { createUserRoutes } from './presentation/routes/user';
 
-const session = require('express-session');
-
-export type AppControllers = {
-    budgetController: BudgetController;
-    expenseController: ExpenseController;
-    userController: UserController;
+export type AppDeps = {
+    userRepository: IUserRepository;
+    expenseRepository: IExpenseRepository;
+    budgetRepository: IBudgetRepository;
 };
 
 export type AppOptions = {
     sessionSecret?: string;
-    sessionMaxAge?: number;
 };
 
-export function createApp(controllers: AppControllers, options: AppOptions = {}): Application {
-    const { budgetController, expenseController, userController } = controllers;
-    const { sessionSecret = process.env.SESSION_KEY ?? 'test-secret', sessionMaxAge = 60 * 60 * 1000 } = options;
-
-    const app = express();
-
-    const sessionOption = {
-        secret: sessionSecret,
-        resave: false,
-        saveUninitialized: false,
-        cookie: { maxAge: sessionMaxAge, secure: false },
+/** Hono context の型変数定義（認証済みルートで userId を参照するために使用） */
+export type HonoEnv = {
+    Variables: {
+        userId: string;
     };
+};
 
-    if (app.get('env') === 'production') {
-        app.set('trust proxy', 1);
-        sessionOption.cookie.secure = true;
-    }
+export function createApp(deps: AppDeps, options: AppOptions = {}) {
+    const { sessionSecret = process.env.SESSION_KEY ?? 'dev-secret' } = options;
 
-    app.use(bodyParser.json());
-    app.use(session(sessionOption));
+    const app = new Hono<HonoEnv>()
+        .route('/api', createAuthRoutes(deps, sessionSecret))
+        .route('/api', createExpenseRoutes(deps, sessionSecret))
+        .route('/api', createBudgetRoutes(deps, sessionSecret))
+        .route('/api', createUserRoutes(deps, sessionSecret));
 
-    // Swagger UI（開発環境のみ: /api/docs で API 仕様を確認可能）
-    if (app.get('env') !== 'production') {
-        const openApiDoc = generateOpenAPIDocument();
-        app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
-    }
-
-    const budgetRoutes = createBudgetRoutes(budgetController);
-    const expenseRoutes = createExpenseRoutes(expenseController);
-    const userRoutes = createUserRoutes(userController);
-    const loginRoute = createLoginRoute(userController);
-
-    // ログインルート
-    app.post(loginRoute.route, async (req: Request, res: Response, next: NextFunction) => {
-        const validation = loginSchema.safeParse({ userId: req.body.userId, password: req.body.password });
-        if (!validation.success) {
-            res.status(400).json({ result: 'error', message: validation.error.message });
-            return;
+    app.onError((err, c) => {
+        if (err instanceof DomainException) {
+            return c.json({ result: 'error', message: err.message }, err.statusCode as 400 | 401 | 403 | 404 | 500);
         }
-        try {
-            const result = await loginRoute.handler(req, res, next);
-            req.session.login = req.body.userId;
-            if (result === errorModel.AUTHENTICATION_FAILD) {
-                res.status(401).send({ result: 'failed', message: errorModel.AUTHENTICATION_FAILD });
-            } else if (result === errorModel.NOT_FOUND) {
-                res.status(403).send({ result: 'failed', message: errorModel.NOT_FOUND });
-            } else if (result) {
-                res.send({ result: 'success', userId: req.body.userId });
-            } else {
-                res.status(404).send('Something broke!');
-            }
-        } catch (err) {
-            console.log(err);
-            res.status(500).send({ result: 'error', message: 'Something broken' });
-        }
-    });
-
-    // ログアウトルート
-    app.post(logoutRoute.route, (req: Request, res: Response) => {
-        if (req.session.login === undefined) {
-            res.status(403).send({ result: 'error', message: 'Auth Error' });
-            return;
-        }
-        req.session.login = undefined;
-        res.status(200).send({ result: 'success', message: 'logout success' });
-    });
-
-    // Expenseルート（認証必須）
-    expenseRoutes.forEach((route) => {
-        (app as unknown as Record<string, Function>)[route.method](
-            route.route,
-            async (req: Request, res: Response, next: NextFunction) => {
-                if (req.session.login === undefined) {
-                    res.status(403).send({ result: 'error', message: 'Auth Error' });
-                    return;
-                }
-                try {
-                    const expense = await route.handler(req, res, next);
-                    res.send({ expense });
-                } catch (err) {
-                    if (err instanceof ValidationError) {
-                        res.status(400).json({ result: 'error', message: err.details });
-                        return;
-                    }
-                    console.log(err);
-                    res.status(500).send({ result: 'error', message: 'Something broken' });
-                }
-            }
-        );
-    });
-
-    // Budgetルート（認証必須）
-    budgetRoutes.forEach((route) => {
-        (app as unknown as Record<string, Function>)[route.method](
-            route.route,
-            async (req: Request, res: Response, next: NextFunction) => {
-                if (req.session.login === undefined) {
-                    res.status(403).send({ result: 'error', message: 'Auth Error' });
-                    return;
-                }
-                try {
-                    const result = await route.handler(req, res, next);
-                    if (result !== null) {
-                        res.send({ budget: result });
-                    } else if (result !== undefined) {
-                        res.status(200).send('success');
-                    } else {
-                        res.status(404).send('Something broke!');
-                    }
-                } catch (err) {
-                    console.log(err);
-                    res.status(500).send({ result: 'error', message: 'Something broken' });
-                }
-            }
-        );
-    });
-
-    // Userルート（認証必須）
-    userRoutes.forEach((route) => {
-        (app as unknown as Record<string, Function>)[route.method](
-            route.route,
-            async (req: Request, res: Response, next: NextFunction) => {
-                if (req.session.login === undefined) {
-                    res.status(403).send({ result: 'error', message: 'Auth Error' });
-                    return;
-                }
-                try {
-                    const result = await route.handler(req, res, next);
-                    if (result !== null) {
-                        if (route.action === 'all') {
-                            (result as unknown[]).map((user) => {
-                                delete (user as Record<string, unknown>).password;
-                                return user;
-                            });
-                        } else if (route.action === 'one') {
-                            delete (result as Record<string, unknown>).password;
-                        }
-                        res.send({ user: result });
-                    } else if (result === null) {
-                        res.status(401).send({ result: 'Faild', message: 'not found' });
-                    } else {
-                        res.status(404).send({ result: 'Faild', message: 'not found' });
-                    }
-                } catch (err) {
-                    console.log(err);
-                    res.status(500).send({ result: 'error', message: 'Something broken' });
-                }
-            }
-        );
+        console.error('[unhandled error]', err);
+        return c.json({ result: 'error', message: 'Something broken' }, 500);
     });
 
     return app;
 }
+
+/** フロントエンドの型安全 RPC クライアント（hono/client の hc<AppType>）で使用する型 */
+export type AppType = ReturnType<typeof createApp>;
