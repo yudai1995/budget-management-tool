@@ -14,11 +14,14 @@
     "test:unit": "turbo run test:unit",
     "test:api": "turbo run test:api",
     "test:integration": "pnpm --filter @budget/api run test:integration",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "generate:openapi": "pnpm --filter @budget/api run generate:openapi",
+    "codegen": "pnpm run generate:openapi && openapi-typescript packages/api-spec/openapi.json -o packages/api-client/src/schema.d.ts && pnpm --filter @budget/api-client run build"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "lefthook": "^2.1.5",
+    "openapi-typescript": "^7.13.0",
     "turbo": "^2.8.21"
   },
   "pnpm": {

@@ -11,6 +11,8 @@
  * - ID は seedTestData() 経由で ulid() により動的に生成する
  */
 
+import { API_PATHS } from '@budget/api-client';
+import type { ExpenseResponse, GetExpensesResponse } from '@budget/api-client';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../app';
@@ -58,7 +60,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
     /** ログイン済みエージェントを返すヘルパー（seed された userId を使用） */
     async function loginAgent(userId: string) {
         const agent = request.agent(app);
-        await agent.post('/api/login').send({ userId, password: 'password123' });
+        await agent.post(API_PATHS.LOGIN).send({ userId, password: 'password123' });
         return agent;
     }
 
@@ -70,7 +72,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'lastMonthHeavyUser' });
             const agent = await loginAgent(users[0].userId);
 
-            const res = await agent.get('/api/expense');
+            const res = await agent.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(200);
             // 前月 15 件 + 収入 1 件 = 16 件
             expect(res.body.expense).toHaveLength(16);
@@ -80,7 +82,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const { users, budgets } = await seedTestData({ pattern: 'managerUser' });
             const agent = await loginAgent(users[0].userId);
 
-            const res = await agent.get('/api/expense');
+            const res = await agent.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(200);
             expect(res.body.expense).toHaveLength(budgets.length);
 
@@ -95,13 +97,13 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginAgent(users[0].userId);
 
-            const res = await agent.get('/api/expense');
+            const res = await agent.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(200);
             expect(res.body.expense).toHaveLength(0);
         });
 
         it('異常系 403: 未認証は Auth Error を返す', async () => {
-            const res = await request(app).get('/api/expense');
+            const res = await request(app).get(API_PATHS.EXPENSE);
             expect(res.status).toBe(403);
             expect(res.body.message).toBe('Auth Error');
         });
@@ -116,7 +118,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const agent = await loginAgent(users[0].userId);
             const today = new Date().toISOString().slice(0, 10);
 
-            const res = await agent.post('/api/expense').send({
+            const res = await agent.post(API_PATHS.EXPENSE).send({
                 newData: {
                     amount: 3000,
                     balanceType: 0,
@@ -139,7 +141,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const agent = await loginAgent(users[0].userId);
             const today = new Date().toISOString().slice(0, 10);
 
-            await agent.post('/api/expense').send({
+            await agent.post(API_PATHS.EXPENSE).send({
                 newData: {
                     amount: 5000,
                     balanceType: 1,
@@ -149,7 +151,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
                 },
             });
 
-            const listRes = await agent.get('/api/expense');
+            const listRes = await agent.get(API_PATHS.EXPENSE);
             expect(listRes.status).toBe(200);
             expect(listRes.body.expense).toHaveLength(1);
             expect(listRes.body.expense[0].amount).toBe(5000);
@@ -159,7 +161,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginAgent(users[0].userId);
 
-            const res = await agent.post('/api/expense').send({
+            const res = await agent.post(API_PATHS.EXPENSE).send({
                 newData: {
                     amount: 0,
                     balanceType: 0,
@@ -176,7 +178,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginAgent(users[0].userId);
 
-            const res = await agent.post('/api/expense').send({
+            const res = await agent.post(API_PATHS.EXPENSE).send({
                 newData: {
                     amount: 1000,
                     balanceType: 2, // 不正値
@@ -191,7 +193,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
 
         it('異常系 403: 未認証は Auth Error を返す', async () => {
             const res = await request(app)
-                .post('/api/expense')
+                .post(API_PATHS.EXPENSE)
                 .send({
                     newData: { amount: 1000, balanceType: 0, userId: 'user-1', date: '2024-01-01' },
                 });
@@ -203,7 +205,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const { users, budgets } = await seedTestData({ pattern: 'edgeCases' });
             const agent = await loginAgent(users[0].userId);
 
-            const res = await agent.get('/api/expense');
+            const res = await agent.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(200);
             expect(res.body.expense).toHaveLength(budgets.length);
 
@@ -227,7 +229,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
 
             // まず支出を 1 件登録
             const today = new Date().toISOString().slice(0, 10);
-            const postRes = await agent.post('/api/expense').send({
+            const postRes = await agent.post(API_PATHS.EXPENSE).send({
                 newData: {
                     amount: 1000,
                     balanceType: 0,
@@ -239,17 +241,17 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             const expenseId = postRes.body.expense.id;
 
             // 削除
-            const deleteRes = await agent.delete(`/api/expense/${expenseId}`);
+            const deleteRes = await agent.delete(`${API_PATHS.EXPENSE}/${expenseId}`);
             expect(deleteRes.status).toBe(200);
 
             // 削除後は一覧に含まれない
-            const listRes = await agent.get('/api/expense');
+            const listRes = await agent.get(API_PATHS.EXPENSE);
             const ids = listRes.body.expense.map((e: { id: string }) => e.id);
             expect(ids).not.toContain(expenseId);
         });
 
         it('異常系 403: 未認証は Auth Error を返す', async () => {
-            const res = await request(app).delete('/api/expense/some-id');
+            const res = await request(app).delete(`${API_PATHS.EXPENSE}/some-id`);
             expect(res.status).toBe(403);
         });
     });

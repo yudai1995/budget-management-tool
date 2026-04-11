@@ -12,6 +12,7 @@ export default defineConfig({
     resolve: {
         alias: {
             '@budget/common': resolve(__dirname, '../../packages/common/src/index.ts'),
+            '@budget/api-client': resolve(__dirname, '../../packages/api-client/src/index.ts'),
         },
     },
 })

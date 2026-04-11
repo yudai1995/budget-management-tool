@@ -3,6 +3,8 @@ import type { Application, NextFunction, Request, Response } from 'express';
 const express: (...args: any[]) => Application = require('express');
 // biome-ignore lint/suspicious/noExplicitAny: 同上
 const bodyParser: any = require('body-parser');
+// biome-ignore lint/suspicious/noExplicitAny: 同上
+const swaggerUi: any = require('swagger-ui-express');
 import { loginSchema } from '@budget/common';
 import { ValidationError } from './presentation/errors';
 import { errorModel } from './domain/models/errorModel';
@@ -16,6 +18,7 @@ import {
 import type { BudgetController } from './presentation/controllers/BudgetController';
 import type { ExpenseController } from './presentation/controllers/ExpenseController';
 import type { UserController } from './presentation/controllers/UserController';
+import { generateOpenAPIDocument } from './openapi/spec';
 
 const session = require('express-session');
 
@@ -50,6 +53,12 @@ export function createApp(controllers: AppControllers, options: AppOptions = {})
 
     app.use(bodyParser.json());
     app.use(session(sessionOption));
+
+    // Swagger UI（開発環境のみ: /api/docs で API 仕様を確認可能）
+    if (app.get('env') !== 'production') {
+        const openApiDoc = generateOpenAPIDocument();
+        app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
+    }
 
     const budgetRoutes = createBudgetRoutes(budgetController);
     const expenseRoutes = createExpenseRoutes(expenseController);

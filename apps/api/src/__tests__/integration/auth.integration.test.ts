@@ -10,6 +10,7 @@
  * - seedTestData() で動的 ID（ulid）を使用し、固定値は一切ハードコードしない
  */
 
+import { API_PATHS } from '@budget/api-client';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../app';
@@ -69,7 +70,7 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const { userId } = users[0];
 
-            const res = await request(app).post('/api/login').send({ userId, password: 'password123' });
+            const res = await request(app).post(API_PATHS.LOGIN).send({ userId, password: 'password123' });
 
             expect(res.status).toBe(200);
             expect(res.body.result).toBe('success');
@@ -81,17 +82,17 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { userId } = users[0];
             const agent = request.agent(app);
 
-            await agent.post('/api/login').send({ userId, password: 'password123' });
+            await agent.post(API_PATHS.LOGIN).send({ userId, password: 'password123' });
 
             // セッション維持確認: 認証が必要なエンドポイントにアクセスできる
-            const res = await agent.get('/api/expense');
+            const res = await agent.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(200);
         });
 
         it('異常系: 存在しないユーザーは 403 を返す', async () => {
             // DB に一切ユーザーが存在しない状態（resetDatabase 済み）
             const res = await request(app)
-                .post('/api/login')
+                .post(API_PATHS.LOGIN)
                 .send({ userId: 'nonexistent-user', password: 'password123' });
 
             expect(res.status).toBe(403);
@@ -102,21 +103,21 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const { userId } = users[0];
 
-            const res = await request(app).post('/api/login').send({ userId, password: 'wrong-password' });
+            const res = await request(app).post(API_PATHS.LOGIN).send({ userId, password: 'wrong-password' });
 
             expect(res.status).toBe(401);
             expect(res.body.result).toBe('failed');
         });
 
         it('異常系: userId が空文字のとき Zod バリデーションエラー (400) を返す', async () => {
-            const res = await request(app).post('/api/login').send({ userId: '', password: 'password123' });
+            const res = await request(app).post(API_PATHS.LOGIN).send({ userId: '', password: 'password123' });
 
             expect(res.status).toBe(400);
             expect(res.body.result).toBe('error');
         });
 
         it('異常系: password が未指定のとき Zod バリデーションエラー (400) を返す', async () => {
-            const res = await request(app).post('/api/login').send({ userId: 'some-user' });
+            const res = await request(app).post(API_PATHS.LOGIN).send({ userId: 'some-user' });
 
             expect(res.status).toBe(400);
             expect(res.body.result).toBe('error');
@@ -131,15 +132,15 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = request.agent(app);
 
-            await agent.post('/api/login').send({ userId: users[0].userId, password: 'password123' });
+            await agent.post(API_PATHS.LOGIN).send({ userId: users[0].userId, password: 'password123' });
 
-            const res = await agent.post('/api/logout');
+            const res = await agent.post(API_PATHS.LOGOUT);
             expect(res.status).toBe(200);
             expect(res.body.result).toBe('success');
         });
 
         it('異常系: 未ログイン状態でのログアウトは 403 を返す', async () => {
-            const res = await request(app).post('/api/logout');
+            const res = await request(app).post(API_PATHS.LOGOUT);
             expect(res.status).toBe(403);
         });
 
@@ -147,10 +148,10 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = request.agent(app);
 
-            await agent.post('/api/login').send({ userId: users[0].userId, password: 'password123' });
-            await agent.post('/api/logout');
+            await agent.post(API_PATHS.LOGIN).send({ userId: users[0].userId, password: 'password123' });
+            await agent.post(API_PATHS.LOGOUT);
 
-            const res = await agent.get('/api/expense');
+            const res = await agent.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(403);
         });
     });
