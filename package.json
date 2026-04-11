@@ -6,20 +6,26 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "format": "turbo run format",
+    "prepare": "lefthook install",
     "db:docs": "pnpm --filter @budget/api run db:docs",
     "db:share": "pnpm --filter @budget/api run db:share",
-    "type-check": "turbo run type-check",
     "test:unit": "turbo run test:unit",
     "test:api": "turbo run test:api",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "lefthook": "^2.1.5",
     "turbo": "^2.8.21"
   },
   "pnpm": {
     "overrides": {
       "axios": "1.14.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "lefthook"
+    ]
   }
 }

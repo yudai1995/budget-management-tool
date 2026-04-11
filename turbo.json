@@ -13,6 +13,13 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "format": {
+      "cache": false
+    },
     "test:unit": {
       "dependsOn": ["^build"],
       "cache": false
@@ -20,11 +27,6 @@
     "test:api": {
       "dependsOn": ["^build"],
       "cache": false
-    },
-    "type-check": {
-      "dependsOn": ["^build"],
-      "cache": false
     }
   }
 }
-

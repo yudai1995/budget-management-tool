@@ -25,6 +25,19 @@
                     }
                 }
             }
+        },
+        {
+            "includes": ["scripts/**/*.ts"],
+            "linter": {
+                "rules": {
+                    "suspicious": {
+                        "noExplicitAny": "off"
+                    },
+                    "complexity": {
+                        "noBannedTypes": "off"
+                    }
+                }
+            }
         }
     ],
     "formatter": {

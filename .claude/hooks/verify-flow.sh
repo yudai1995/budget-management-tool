@@ -1,17 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ============================================================
-# 作業後自動検証フロー
+# verify-flow.sh — 作業後自動検証フロー
 # 実行順序: type-check → test:unit → test:api → build
 # ひとつでも失敗した時点で処理を中断し、コミットを防止する
 # ============================================================
 
-set -e  # エラー発生時に即停止
+set -euo pipefail
 
-REPO_ROOT="$(git rev-parse --show-toplevel)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 echo ""
+echo "========================================="
+echo "  verify-flow: 作業後品質確認チェック"
+echo "========================================="
+echo ""
+
 echo "🔍 [1/4] 型整合性チェック (pnpm run type-check)..."
 if ! pnpm run type-check; then
     echo ""
