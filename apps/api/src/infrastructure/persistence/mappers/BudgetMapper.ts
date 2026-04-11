@@ -1,5 +1,5 @@
-import { Budget } from '../../../domain/models/Budget'
-import { BudgetDataModel } from '../entity/BudgetDataModel'
+import { Budget } from '../../../domain/models/Budget';
+import { BudgetDataModel } from '../entity/BudgetDataModel';
 
 export class BudgetMapper {
     /** インフラモデル → ドメインモデル */
@@ -15,20 +15,20 @@ export class BudgetMapper {
             createdDate: dataModel.createdDate,
             updatedDate: dataModel.updatedDate,
             deletedDate: dataModel.deletedDate,
-        })
+        });
     }
 
     /** ドメインモデル → インフラモデル */
     static toDataModel(budget: Budget): BudgetDataModel {
-        const dataModel = new BudgetDataModel()
-        dataModel.id = budget.id
-        dataModel.amount = budget.amount
-        dataModel.balanceType = budget.balanceType
-        dataModel.userId = budget.userId
-        dataModel.categoryId = budget.categoryId
-        dataModel.content = budget.content
-        dataModel.date = budget.date
+        const dataModel = new BudgetDataModel();
+        dataModel.id = budget.id;
+        dataModel.amount = budget.amount;
+        dataModel.balanceType = budget.balanceType;
+        dataModel.userId = budget.userId;
+        dataModel.categoryId = budget.categoryId;
+        dataModel.content = budget.content;
+        dataModel.date = budget.date;
         // createdDate / updatedDate / deletedDate はTypeORMデコレーターが管理
-        return dataModel
+        return dataModel;
     }
 }

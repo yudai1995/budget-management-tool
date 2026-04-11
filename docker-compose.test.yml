@@ -1,0 +1,23 @@
+# テスト専用 MySQL インスタンス（開発 DB とは完全に隔離）
+# 使用方法: docker compose -f docker-compose.test.yml up -d
+services:
+  db_test:
+    image: mysql:8.0
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    container_name: budget_db_test
+    ports:
+      - "3307:3306"
+    environment:
+      TZ: Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: budgetdb_test
+      MYSQL_USER: Admin
+      MYSQL_PASSWORD: password
+    tmpfs:
+      # tmpfs でデータを揮発させ、毎回クリーンな状態を保証
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "Admin", "-ppassword"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
