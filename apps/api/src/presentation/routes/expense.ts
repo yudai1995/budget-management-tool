@@ -5,6 +5,7 @@ import { createExpenseSchema } from '@budget/common';
 import type { CreateExpenseInput } from '@budget/common';
 import { CreateExpenseUseCase } from '../../application/use-cases/CreateExpenseUseCase';
 import { createAuthMiddleware } from '../middleware/auth';
+import type { TokenService } from '../../application/auth/TokenService';
 import type { AppDeps, HonoEnv } from '../../app';
 
 /** POST /api/expense のリクエストボディスキーマ */
@@ -12,10 +13,10 @@ const createExpenseBodySchema = z.object({
     newData: createExpenseSchema,
 });
 
-export function createExpenseRoutes(deps: AppDeps, sessionSecret: string) {
+export function createExpenseRoutes(deps: AppDeps, tokenService: TokenService) {
     const { expenseRepository, userRepository } = deps;
     const createExpenseUseCase = new CreateExpenseUseCase(expenseRepository, userRepository);
-    const auth = createAuthMiddleware(sessionSecret);
+    const auth = createAuthMiddleware(tokenService);
 
     return new Hono<HonoEnv>()
         .get('/expense', auth, async (c) => {

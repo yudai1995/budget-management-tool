@@ -16,9 +16,25 @@ vi.mock('next/navigation', () => ({
     redirect: vi.fn(),
 }))
 
+// next/headers の cookies をモック（JWT Cookie セット処理）
+vi.mock('next/headers', () => ({
+    cookies: vi.fn().mockResolvedValue({
+        set: vi.fn(),
+        delete: vi.fn(),
+        get: vi.fn().mockReturnValue(undefined),
+    }),
+}))
+
 import { loginAction, guestLoginAction } from '../../lib/actions/auth'
 import { serverFetch } from '../../lib/api/client'
 import { redirect } from 'next/navigation'
+
+const TOKEN_RESPONSE = {
+    result: 'success',
+    accessToken: 'test-access-token',
+    refreshToken: 'test-refresh-token',
+    userId: 'user1',
+}
 
 describe('guestLoginAction', () => {
     beforeEach(() => {
@@ -26,7 +42,7 @@ describe('guestLoginAction', () => {
     })
 
     it('body なしで /api/guest-login を呼ぶ（credentials は API 側で管理）', async () => {
-        vi.mocked(serverFetch).mockResolvedValue({})
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
         await guestLoginAction()
 
@@ -34,7 +50,7 @@ describe('guestLoginAction', () => {
     })
 
     it('ログイン成功後に /expenses へリダイレクトする', async () => {
-        vi.mocked(serverFetch).mockResolvedValue({})
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
         await guestLoginAction()
 
@@ -91,7 +107,7 @@ describe('loginAction', () => {
     })
 
     it('ログイン成功後に /expenses へリダイレクトする', async () => {
-        vi.mocked(serverFetch).mockResolvedValue({})
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
         const formData = new FormData()
         formData.set('userId', 'user1')

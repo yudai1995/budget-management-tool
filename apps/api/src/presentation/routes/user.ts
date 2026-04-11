@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { createAuthMiddleware } from '../middleware/auth';
+import type { TokenService } from '../../application/auth/TokenService';
 import type { User } from '../../domain/models/User';
 import type { AppDeps, HonoEnv } from '../../app';
 
@@ -8,9 +9,9 @@ function sanitizeUser({ userId, userName }: User): Omit<User, 'password'> {
     return { userId, userName };
 }
 
-export function createUserRoutes(deps: AppDeps, sessionSecret: string) {
+export function createUserRoutes(deps: AppDeps, tokenService: TokenService) {
     const { userRepository } = deps;
-    const auth = createAuthMiddleware(sessionSecret);
+    const auth = createAuthMiddleware(tokenService);
 
     return new Hono<HonoEnv>()
         .get('/user', auth, async (c) => {

@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import type { IBudgetRepository } from './domain/repositories/IBudgetRepository';
 import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
 import type { IUserRepository } from './domain/repositories/IUserRepository';
+import type { IRefreshTokenRepository } from './domain/repositories/IRefreshTokenRepository';
+import { TokenService } from './application/auth/TokenService';
 import { DomainException } from './shared/errors/DomainException';
 import { createAuthRoutes } from './presentation/routes/auth';
 import { createBudgetRoutes } from './presentation/routes/budget';
@@ -12,10 +14,7 @@ export type AppDeps = {
     userRepository: IUserRepository;
     expenseRepository: IExpenseRepository;
     budgetRepository: IBudgetRepository;
-};
-
-export type AppOptions = {
-    sessionSecret?: string;
+    refreshTokenRepository: IRefreshTokenRepository;
 };
 
 /** Hono context の型変数定義（認証済みルートで userId を参照するために使用） */
@@ -25,14 +24,16 @@ export type HonoEnv = {
     };
 };
 
-export function createApp(deps: AppDeps, options: AppOptions = {}) {
-    const { sessionSecret = process.env.SESSION_KEY ?? 'dev-secret' } = options;
+export function createApp(deps: AppDeps) {
+    const privateKeyPem = process.env.JWT_PRIVATE_KEY?.replace(/\\n/g, '\n') ?? '';
+    const publicKeyPem = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n') ?? '';
+    const tokenService = new TokenService(privateKeyPem, publicKeyPem, deps.refreshTokenRepository);
 
     const app = new Hono<HonoEnv>()
-        .route('/api', createAuthRoutes(deps, sessionSecret))
-        .route('/api', createExpenseRoutes(deps, sessionSecret))
-        .route('/api', createBudgetRoutes(deps, sessionSecret))
-        .route('/api', createUserRoutes(deps, sessionSecret));
+        .route('/api', createAuthRoutes(deps, tokenService))
+        .route('/api', createExpenseRoutes(deps, tokenService))
+        .route('/api', createBudgetRoutes(deps, tokenService))
+        .route('/api', createUserRoutes(deps, tokenService));
 
     app.onError((err, c) => {
         if (err instanceof DomainException) {

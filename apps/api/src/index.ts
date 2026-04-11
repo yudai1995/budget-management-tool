@@ -14,9 +14,7 @@ const port = Number(process.env.PORT ?? 3001);
 AppDataSource.initialize()
     .then(() => {
         const deps = buildDeps();
-        const app = createApp(deps, {
-            sessionSecret: process.env.SESSION_KEY,
-        });
+        const app = createApp(deps);
 
         serve({ fetch: app.fetch, port }, () => {
             console.log(`Hono server has started on port ${port}. Open http://localhost:${port}/api/docs`);

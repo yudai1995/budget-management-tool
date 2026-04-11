@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as path from 'node:path';
 import { BudgetDataModel } from './entity/BudgetDataModel';
+import { RefreshTokenDataModel } from './entity/RefreshTokenDataModel';
 import { UserDataModel } from './entity/UserDataModel';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -17,7 +18,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME || 'budgetdb',
     synchronize: false,
     logging: true,
-    entities: [BudgetDataModel, UserDataModel],
+    entities: [BudgetDataModel, UserDataModel, RefreshTokenDataModel],
     migrations: [path.join(__dirname, 'migrations', '**/*{.ts,.js}')],
     migrationsTableName: 'migrations',
     subscribers: [],

@@ -1,10 +1,26 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import { generateKeyPairSync } from 'node:crypto';
 import { createApp } from '../../app';
 import { Expense } from '../../domain/models/Expense';
 import type { IUserRepository } from '../../domain/repositories/IUserRepository';
 import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository';
 import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
+import type { IRefreshTokenRepository } from '../../domain/repositories/IRefreshTokenRepository';
 import { TestAgent, testRequest } from '../helpers/testClient';
+
+// --- テスト用 RSA 鍵ペア ---
+let privateKeyPem: string;
+let publicKeyPem: string;
+
+beforeAll(() => {
+    const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+        publicKeyEncoding: { type: 'spki', format: 'pem' },
+    });
+    privateKeyPem = privateKey;
+    publicKeyPem = publicKey;
+});
 
 const mockExpense = Expense.reconstruct({
     id: 'test-id-01',
@@ -41,21 +57,29 @@ const mockBudgetRepository = {
     remove: vi.fn(),
 } as unknown as IBudgetRepository;
 
+const mockRefreshTokenRepository = {
+    save: vi.fn(),
+    findByHash: vi.fn(),
+    revoke: vi.fn(),
+    revokeAllByUserId: vi.fn(),
+    deleteExpired: vi.fn(),
+} as unknown as IRefreshTokenRepository;
+
 function buildApp() {
-    return createApp(
-        {
-            userRepository: mockUserRepository,
-            expenseRepository: mockExpenseRepository,
-            budgetRepository: mockBudgetRepository,
-        },
-        { sessionSecret: 'test-secret' }
-    );
+    process.env.JWT_PRIVATE_KEY = privateKeyPem.replace(/\n/g, '\\n');
+    process.env.JWT_PUBLIC_KEY = publicKeyPem.replace(/\n/g, '\\n');
+    return createApp({
+        userRepository: mockUserRepository,
+        expenseRepository: mockExpenseRepository,
+        budgetRepository: mockBudgetRepository,
+        refreshTokenRepository: mockRefreshTokenRepository,
+    });
 }
 
 /** ログイン済みエージェントを返すヘルパー */
 async function loginClient(app: ReturnType<typeof buildApp>) {
     const client = new TestAgent(app);
-    await client.post('/api/login', { userId: 'user-1', password: 'password123' });
+    await client.login('/api/login', { userId: 'user-1', password: 'password123' });
     return client;
 }
 
@@ -63,6 +87,7 @@ describe('GET /api/expense', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(mockUserRepository.login).mockResolvedValue(true);
+        vi.mocked(mockRefreshTokenRepository.save).mockResolvedValue(undefined);
     });
 
     it('200: 支出一覧を返す', async () => {
@@ -75,11 +100,10 @@ describe('GET /api/expense', () => {
         expect((res.body as Record<string, unknown[]>).expense).toHaveLength(1);
     });
 
-    it('403: 未認証ならAuth Error', async () => {
+    it('401: 未認証なら 401 を返す', async () => {
         const app = buildApp();
         const res = await testRequest(app, '/api/expense');
-        expect(res.status).toBe(403);
-        expect((res.body as Record<string, unknown>).message).toBe('Auth Error');
+        expect(res.status).toBe(401);
     });
 
     it('500: リポジトリ例外でエラー', async () => {
@@ -106,6 +130,7 @@ describe('POST /api/expense', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(mockUserRepository.login).mockResolvedValue(true);
+        vi.mocked(mockRefreshTokenRepository.save).mockResolvedValue(undefined);
         vi.mocked(mockUserRepository.one).mockResolvedValue({
             userId: 'user-1',
             userName: 'Test',
@@ -123,7 +148,7 @@ describe('POST /api/expense', () => {
         expect((res.body as Record<string, unknown>).expense).toBeDefined();
     });
 
-    it('400: バリデーションエラーでZodエラーを返す', async () => {
+    it('400: バリデーションエラーで Zod エラーを返す', async () => {
         const app = buildApp();
         const client = await loginClient(app);
 
@@ -134,14 +159,14 @@ describe('POST /api/expense', () => {
         expect((res.body as Record<string, unknown>).result).toBe('error');
     });
 
-    it('403: 未認証ならAuth Error', async () => {
+    it('401: 未認証なら 401 を返す', async () => {
         const app = buildApp();
         const res = await testRequest(app, '/api/expense', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(validBody),
         });
-        expect(res.status).toBe(403);
+        expect(res.status).toBe(401);
     });
 
     it('500: 予期しない例外でエラー', async () => {
@@ -158,6 +183,7 @@ describe('DELETE /api/expense/:id', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(mockUserRepository.login).mockResolvedValue(true);
+        vi.mocked(mockRefreshTokenRepository.save).mockResolvedValue(undefined);
     });
 
     it('200: 支出を削除する', async () => {
@@ -169,9 +195,9 @@ describe('DELETE /api/expense/:id', () => {
         expect(res.status).toBe(200);
     });
 
-    it('403: 未認証ならAuth Error', async () => {
+    it('401: 未認証なら 401 を返す', async () => {
         const app = buildApp();
         const res = await testRequest(app, '/api/expense/test-id-01', { method: 'DELETE' });
-        expect(res.status).toBe(403);
+        expect(res.status).toBe(401);
     });
 });
