@@ -1,0 +1,392 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: 家計簿管理ツール API
+  description: 支出（Expense）の登録・管理を行う REST API。セッション Cookie による認証が必要。
+servers:
+  - url: http://localhost:3001
+    description: ローカル開発
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+  schemas:
+    ExpenseResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Expense ID (ULID)
+          example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+        amount:
+          type: integer
+          description: 金額（円）
+          example: 1000
+        balanceType:
+          anyOf:
+            - type: number
+              enum:
+                - 0
+            - type: number
+              enum:
+                - 1
+          description: "収支区分: 0=支出, 1=収入"
+          example: 0
+        userId:
+          type: string
+          description: ユーザーID
+          example: user01
+        categoryId:
+          type: integer
+          description: カテゴリID
+          example: 1
+        content:
+          type: string
+          nullable: true
+          description: 備考
+          example: 昼食代
+        date:
+          type: string
+          description: 日付 (YYYY-MM-DD)
+          example: 2024-03-15
+        createdDate:
+          type: string
+          description: 作成日時 (ISO 8601)
+          example: 2024-03-15T12:00:00.000Z
+        updatedDate:
+          type: string
+          description: 更新日時 (ISO 8601)
+          example: 2024-03-15T12:00:00.000Z
+        deletedDate:
+          type: string
+          nullable: true
+          description: 削除日時 (ISO 8601)
+          example: null
+      required:
+        - id
+        - amount
+        - balanceType
+        - userId
+        - categoryId
+        - content
+        - date
+        - createdDate
+        - updatedDate
+        - deletedDate
+    ErrorResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - error
+          example: error
+        message:
+          type: string
+          example: Auth Error
+      required:
+        - result
+        - message
+    LoginResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+            - failed
+          example: success
+        userId:
+          type: string
+          example: user01
+        message:
+          type: string
+          example: ログインに失敗しました
+      required:
+        - result
+    LogoutResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+            - error
+          example: success
+        message:
+          type: string
+          example: Logout Success
+      required:
+        - result
+        - message
+    CreateExpenseRequest:
+      type: object
+      properties:
+        newData:
+          type: object
+          properties:
+            amount:
+              type: integer
+              minimum: 1
+              description: 金額（円）
+              example: 1500
+            balanceType:
+              anyOf:
+                - type: number
+                  enum:
+                    - 0
+                - type: number
+                  enum:
+                    - 1
+              description: "収支区分: 0=支出, 1=収入"
+              example: 0
+            userId:
+              type: string
+              minLength: 1
+              description: ユーザーID
+              example: user01
+            date:
+              type: string
+              minLength: 1
+              description: 日付 (YYYY-MM-DD)
+              example: 2024-03-15
+            content:
+              type: string
+              nullable: true
+              description: 備考
+              example: 昼食代
+          required:
+            - amount
+            - balanceType
+            - userId
+            - date
+          description: 支出データ
+      required:
+        - newData
+    LoginRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - userId
+        - password
+    GetExpensesResponse:
+      type: object
+      properties:
+        expense:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExpenseResponse"
+      required:
+        - expense
+    GetExpenseResponse:
+      type: object
+      properties:
+        expense:
+          $ref: "#/components/schemas/ExpenseResponse"
+      required:
+        - expense
+  parameters: {}
+paths:
+  /api/login:
+    post:
+      summary: ログイン
+      description: セッション Cookie を発行する
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/logout:
+    post:
+      summary: ログアウト
+      description: セッション Cookie を無効化する
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "403":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/expense:
+    get:
+      summary: 支出一覧取得
+      tags:
+        - Expense
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: 支出一覧
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExpensesResponse"
+        "403":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: 支出登録
+      tags:
+        - Expense
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseRequest"
+      responses:
+        "200":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExpenseResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/expense/{id}:
+    get:
+      summary: 支出詳細取得
+      tags:
+        - Expense
+      security:
+        - cookieAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: Expense ID (ULID)
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: 支出詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExpenseResponse"
+        "403":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      summary: 支出更新
+      tags:
+        - Expense
+      security:
+        - cookieAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: Expense ID (ULID)
+          required: true
+          name: id
+          in: path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExpenseRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExpenseResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      summary: 支出削除
+      tags:
+        - Expense
+      security:
+        - cookieAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: Expense ID (ULID)
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetExpenseResponse"
+        "403":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
