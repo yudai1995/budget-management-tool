@@ -35,12 +35,18 @@ export function createApiClient(baseUrl: string, init?: RequestInit) {
     return createFetchClient<paths>({ baseUrl, ...init });
 }
 
-// コンポーネントスキーマの便利な型エイリアス
+// コンポーネントスキーマの便利な型エイリアス（新スキーマ名）
 export type ExpenseResponse = components['schemas']['ExpenseResponse'];
-export type CreateExpenseRequest = components['schemas']['CreateExpenseRequest'];
+export type CreateExpenseBody = components['schemas']['CreateExpenseBody'];
 export type LoginRequest = components['schemas']['LoginRequest'];
-export type LoginResponse = components['schemas']['LoginResponse'];
+export type TokenPairResponse = components['schemas']['TokenPairResponse'];
 export type LogoutResponse = components['schemas']['LogoutResponse'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];
-export type GetExpensesResponse = components['schemas']['GetExpensesResponse'];
-export type GetExpenseResponse = components['schemas']['GetExpenseResponse'];
+export type ExpenseListResponse = components['schemas']['ExpenseListResponse'];
+export type ExpenseDetailResponse = components['schemas']['ExpenseDetailResponse'];
+
+// 旧スキーマ名の後方互換エイリアス（削除禁止: web / テストが参照中）
+export type CreateExpenseRequest = CreateExpenseBody;
+export type LoginResponse = TokenPairResponse;
+export type GetExpensesResponse = ExpenseListResponse;
+export type GetExpenseResponse = ExpenseDetailResponse;

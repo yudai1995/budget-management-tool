@@ -55,9 +55,24 @@ cp .env.example .env
 - `DB_NAME` … データベース名
 - `DB_USER` … DB ユーザー名
 - `DB_PASSWORD` … DB パスワード
-- `SESSION_KEY` … セッション用シークレット
-- `GUEST_PASSWORD` … ゲストログイン用パスワード
+- `JWT_PRIVATE_KEY` … RS256 署名用秘密鍵（改行を `\n` に変換したシングルライン形式）
+- `JWT_PUBLIC_KEY` … RS256 検証用公開鍵（同上）
 - `TZ` … タイムゾーン
+
+### RSA 鍵ペアの生成
+
+JWT RS256 認証には RSA 鍵ペアが必要です。以下のコマンドで生成し、`.env` に自動で追記されます（初回のみ）。
+
+```bash
+pnpm gen:keys
+```
+
+生成された `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` の値を `apps/web/.env.local` にも設定してください（Next.js のサーバーサイドでトークン検証に使用）。
+
+```bash
+# apps/web/.env.local（git 管理対象外）
+JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+```
 
 ## Docker Compose（MySQL 8.0）
 
@@ -85,13 +100,17 @@ cp .env.example .env
 ```text
 .
 ├── apps
-│   ├── api       … Express + TypeORM（バックエンド API）
-│   ├── web       … Next.js（App Router）
-│   └── sandbox   … Vite + React + TypeScript（移行検証用）
-├── docs          … ドキュメント
+│   ├── api          … Hono + TypeORM（バックエンド API）
+│   ├── web          … Next.js（App Router）
+│   └── sandbox      … Vite + React + TypeScript（移行検証用）
+├── packages
+│   ├── common       … FE/BE 共用の型定義・Zod スキーマ
+│   ├── api-spec     … 生成された OpenAPI スペック（openapi.yaml）
+│   └── api-client   … 生成された API 型定義（schema.d.ts）
+├── docs             … ドキュメント
 ├── mysql
-│   ├── init      … 初回 DB 初期化用 SQL
-│   └── my.cnf    … MySQL 設定
+│   ├── init         … 初回 DB 初期化用 SQL
+│   └── my.cnf       … MySQL 設定
 ├── docker-compose.yml
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -215,6 +234,7 @@ pnpm test:e2e
 | コマンド | 内容 |
 |---|---|
 | `pnpm setup` | 初回セットアップ（install + .env + DB + migration） |
+| `pnpm gen:keys` | JWT RS256 用の RSA 鍵ペアを生成し `.env` に追記 |
 | `pnpm dev` | 全スタック起動（DB + codegen + api + web） |
 | `pnpm dev:api` | API のみ起動 |
 | `pnpm dev:web` | Web のみ起動 |
@@ -223,9 +243,20 @@ pnpm test:e2e
 | `pnpm db:stop` | DB コンテナを停止 |
 | `pnpm db:reset` | DB コンテナを完全リセット（volume 削除） |
 | `pnpm db:start:test` | テスト用 DB（port 3307）を起動 |
-| `pnpm codegen` | OpenAPI スペックと型定義を再生成 |
+| `pnpm generate:openapi` | OpenAPI スペック（`packages/api-spec/openapi.yaml`）を再生成 |
+| `pnpm codegen` | OpenAPI スペック生成 → 型定義生成（`api-client`）→ ビルド を一括実行 |
 | `pnpm build` | 全体ビルド |
 | `pnpm lint` | 全体 lint |
+
+### OpenAPI スペックの同期
+
+ルート定義（`createRoute()`）を変更したあとは、スペックを手動で再生成してください。
+コミット時に Lefthook が差分を検知してガードします。
+
+```bash
+pnpm generate:openapi
+git add packages/api-spec/openapi.yaml
+```
 
 ## DB スキーマ共有（DBML / dbdocs.io）
 

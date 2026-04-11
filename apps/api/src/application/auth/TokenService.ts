@@ -71,7 +71,7 @@ export class TokenService {
      * - 失効済みトークンが提示された場合は全セッションを即時無効化する（侵害検知）。
      * - 返り値は { accessToken, refreshToken }。
      */
-    async rotateRefreshToken(rawToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+    async rotateRefreshToken(rawToken: string): Promise<{ accessToken: string; refreshToken: string; userId: string }> {
         const tokenHash = RefreshToken.hash(rawToken);
         const stored = await this.refreshTokenRepo.findByHash(tokenHash);
 
@@ -97,7 +97,7 @@ export class TokenService {
             this.issueRefreshToken(stored.userId),
         ]);
 
-        return { accessToken, refreshToken };
+        return { accessToken, refreshToken, userId: stored.userId };
     }
 
     /** リフレッシュトークンを失効させる（ログアウト） */
