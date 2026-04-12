@@ -24,10 +24,11 @@ export type LoginState = {
 type TokenPair = {
   accessToken: string;
   refreshToken: string;
+  userId?: string;
 };
 
 /** ログイン成功後に JWT Cookie をセットする */
-async function setTokenCookies({ accessToken, refreshToken }: TokenPair): Promise<void> {
+async function setTokenCookies({ accessToken, refreshToken, userId }: TokenPair): Promise<void> {
   const cookieStore = await cookies();
   const secure = process.env.NODE_ENV === "production";
 
@@ -46,6 +47,17 @@ async function setTokenCookies({ accessToken, refreshToken }: TokenPair): Promis
     maxAge: REFRESH_TOKEN_MAX_AGE,
     path: "/",
   });
+
+  if (userId) {
+    // ヘッダー表示用（httpOnly 不要）
+    cookieStore.set("user_id", userId, {
+      httpOnly: false,
+      secure,
+      sameSite: "strict",
+      maxAge: REFRESH_TOKEN_MAX_AGE,
+      path: "/",
+    });
+  }
 }
 
 /** Cookie に保存された JWT を削除する */
@@ -53,6 +65,7 @@ async function clearTokenCookies(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete("access_token");
   cookieStore.delete("refresh_token");
+  cookieStore.delete("user_id");
 }
 
 /** ログイン Server Action */
@@ -76,7 +89,7 @@ export async function loginAction(
       method: "POST",
       body: JSON.stringify(result.data),
     });
-    await setTokenCookies(res);
+    await setTokenCookies({ ...res, userId: res.userId });
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       return { error: "ユーザー名またはパスワードが正しくありません" };
@@ -84,7 +97,7 @@ export async function loginAction(
     return { error: "サーバーに接続できませんでした" };
   }
 
-  redirect("/expenses");
+  redirect("/");
 }
 
 /** ゲストログイン Server Action */
@@ -92,8 +105,8 @@ export async function guestLoginAction(): Promise<void> {
   const res = await serverFetch<LoginResponse & TokenPair>("/api/guest-login", {
     method: "POST",
   });
-  await setTokenCookies(res);
-  redirect("/expenses");
+  await setTokenCookies({ ...res, userId: res.userId });
+  redirect("/");
 }
 
 /** ログアウト Server Action */

@@ -6,14 +6,14 @@ import { getExpenses } from "@/lib/api/expense";
 import { ApiError } from "@/lib/api/client";
 import { Header } from "@/components/layout/Header";
 import { TodayReport } from "@/components/report/TodayReport";
-import { RecentGraph } from "@/components/report/RecentGraph";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
+import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
 
 export const metadata: Metadata = {
-  title: "ホーム | 家計管理",
+  title: "カレンダー | 家計管理",
 };
 
-async function DashboardContent() {
+async function CalendarContent() {
   let expenses;
   try {
     const data = await getExpenses();
@@ -39,15 +39,15 @@ async function DashboardContent() {
             <ExpenseCreateForm userId={userId} />
           </div>
 
-          {/* 右カラム：直近のレポートグラフ */}
-          <RecentGraph expenses={expenses} />
+          {/* 右カラム：月次カレンダー */}
+          <MonthlyCalendar expenses={expenses} />
         </div>
       </main>
     </>
   );
 }
 
-export default function HomePage() {
+export default function CalendarPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Suspense
@@ -57,7 +57,7 @@ export default function HomePage() {
           </div>
         }
       >
-        <DashboardContent />
+        <CalendarContent />
       </Suspense>
     </div>
   );

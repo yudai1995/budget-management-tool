@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { createExpenseAction } from "@/lib/actions/expense";
 import type { ExpenseActionState } from "@/lib/actions/expense";
+import { getCategoriesByType } from "@/lib/constants/categories";
 
 type Props = {
   /** ログイン中のユーザー ID */
@@ -11,115 +12,144 @@ type Props = {
 
 const initialState: ExpenseActionState = { error: null, success: false };
 
-/** フィールドエラーを表示するヘルパー */
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
   return (
-    <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-      {messages[0]}
-    </p>
+    <p className="mt-1 text-xs text-[var(--color-expense)]">{messages[0]}</p>
   );
 }
 
 export function ExpenseCreateForm({ userId }: Props) {
+  const [balanceType, setBalanceType] = useState<0 | 1>(0);
   const [state, formAction, isPending] = useActionState(
     createExpenseAction,
     initialState,
   );
+  const categories = getCategoriesByType(balanceType);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-800">
-      <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-        新規登録
+    <section id="form" className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
+      <h2 className="mb-4 text-center text-sm font-semibold text-zinc-700">
+        収支の入力
       </h2>
 
-      {/* hidden field: userId */}
-      <input type="hidden" name="userId" value={userId} />
+      {/* 収支タブ */}
+      <div className="mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setBalanceType(0)}
+          className={[
+            "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
+            balanceType === 0
+              ? "bg-[var(--color-brand-primary)] text-white"
+              : "border border-[var(--color-brand-primary)] text-[var(--color-brand-primary)] hover:bg-[var(--color-expense-light)]",
+          ].join(" ")}
+        >
+          支出
+        </button>
+        <button
+          type="button"
+          onClick={() => setBalanceType(1)}
+          className={[
+            "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
+            balanceType === 1
+              ? "bg-[var(--color-income)] text-white"
+              : "border border-[var(--color-income)] text-[var(--color-income)] hover:bg-[var(--color-income-light)]",
+          ].join(" ")}
+        >
+          収入
+        </button>
+      </div>
 
-      <div className="flex gap-3">
-        {/* 収支区分 */}
-        <div className="flex flex-col gap-1">
-          <label htmlFor="balanceType" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            種別
-          </label>
-          <select
-            id="balanceType"
-            name="balanceType"
-            defaultValue="0"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
-          >
-            <option value="0">支出</option>
-            <option value="1">収入</option>
-          </select>
-          <FieldError messages={state.fieldErrors?.balanceType} />
-        </div>
+      <form action={formAction} className="flex flex-col gap-3">
+        <input type="hidden" name="userId" value={userId} />
+        <input type="hidden" name="balanceType" value={balanceType} />
 
         {/* 金額 */}
-        <div className="flex flex-1 flex-col gap-1">
-          <label htmlFor="amount" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            金額
-          </label>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="amount" className="text-xs text-zinc-500">金額</label>
           <input
             id="amount"
             name="amount"
             type="number"
             min={1}
             required
-            placeholder="金額を入力"
-            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+            placeholder="金額をご入力ください"
+            className="border-b border-zinc-300 bg-transparent py-2 text-sm outline-none placeholder:text-zinc-400 focus:border-[var(--color-brand-primary)]"
           />
           <FieldError messages={state.fieldErrors?.amount} />
         </div>
-      </div>
 
-      {/* 日付 */}
-      <div className="flex flex-col gap-1">
-        <label htmlFor="date" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          日付
-        </label>
-        <input
-          id="date"
-          name="date"
-          type="date"
-          required
-          defaultValue={new Date().toISOString().split("T")[0]}
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
-        />
-        <FieldError messages={state.fieldErrors?.date} />
-      </div>
+        {/* 日付 */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="date" className="text-xs text-zinc-500">日付</label>
+          <div className="flex items-center gap-2 border-b border-zinc-300 py-2 focus-within:border-[var(--color-brand-primary)]">
+            <input
+              id="date"
+              name="date"
+              type="date"
+              required
+              defaultValue={new Date().toISOString().split("T")[0]}
+              className="flex-1 bg-transparent text-sm outline-none"
+            />
+            <svg className="h-4 w-4 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <FieldError messages={state.fieldErrors?.date} />
+        </div>
 
-      {/* 内容（任意） */}
-      <div className="flex flex-col gap-1">
-        <label htmlFor="content" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          内容（任意）
-        </label>
-        <input
-          id="content"
-          name="content"
-          type="text"
-          placeholder="内容を入力（任意）"
-          className="rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
-        />
-      </div>
+        {/* カテゴリ */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="categoryId" className="text-xs text-zinc-500">カテゴリ</label>
+          <div className="relative border-b border-zinc-300 focus-within:border-[var(--color-brand-primary)]">
+            <select
+              id="categoryId"
+              name="categoryId"
+              defaultValue={0}
+              className="w-full appearance-none bg-transparent py-2 text-sm text-zinc-700 outline-none"
+            >
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+            <svg className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
 
-      {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
-          {state.error}
-        </p>
-      )}
-      {state.success && (
-        <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-          登録しました
-        </p>
-      )}
+        {/* 内容 */}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="content" className="text-xs text-zinc-500">内容</label>
+          <input
+            id="content"
+            name="content"
+            type="text"
+            placeholder="内容をご入力ください（任意）"
+            className="border-b border-zinc-300 bg-transparent py-2 text-sm outline-none placeholder:text-zinc-400 focus:border-[var(--color-brand-primary)]"
+          />
+        </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
-        {isPending ? "登録中..." : "追加する"}
-      </button>
-    </form>
+        {state.error && (
+          <p className="rounded-lg bg-[var(--color-expense-light)] px-3 py-2 text-sm text-[var(--color-expense)]">
+            {state.error}
+          </p>
+        )}
+        {state.success && (
+          <p className="rounded-lg bg-[var(--color-income-light)] px-3 py-2 text-sm text-[var(--color-income)]">
+            登録しました
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={isPending}
+          className="mt-2 rounded-full bg-[var(--color-brand-primary)] py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {isPending ? "登録中..." : "追加する"}
+        </button>
+      </form>
+    </section>
   );
 }

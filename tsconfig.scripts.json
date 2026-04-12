@@ -5,7 +5,8 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,
-    "outDir": "dist-scripts"
+    "outDir": "dist-scripts",
+    "types": ["node"]
   },
   "include": ["scripts/**/*.ts"]
 }
