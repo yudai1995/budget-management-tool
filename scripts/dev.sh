@@ -6,12 +6,13 @@
 #   pnpm dev -- --filter @budget/api — API のみ起動（turbo フィルタ）
 # 実行順序:
 #   1. .env の確認（なければ .env.example からコピー）
-#   2. docker compose up -d（DB 起動 + healthcheck 待機）
-#   3. @budget/common のビルド（ts-node + tsconfig-paths が dist/ を参照）
-#   4. DB マイグレーション実行（冪等）
-#   5. Seed データ投入（冪等）
-#   6. pnpm run codegen（OpenAPI 型定義の最新化）
-#   7. turbo run dev（apps/api + apps/web 並列起動）
+#   2. JWT RSA 鍵ペアの生成（プレースホルダーを実値に置換、冪等）
+#   3. docker compose up -d（DB 起動 + healthcheck 待機）
+#   4. @budget/common のビルド（ts-node + tsconfig-paths が dist/ を参照）
+#   5. DB マイグレーション実行（冪等）
+#   6. Seed データ投入（冪等）
+#   7. pnpm run codegen（OpenAPI 型定義の最新化）
+#   8. turbo run dev（apps/api + apps/web 並列起動）
 # ============================================================
 
 set -euo pipefail
@@ -24,6 +25,10 @@ if [ ! -f .env ]; then
   cp .env.example .env
   echo "[dev] .env を .env.example から生成しました"
 fi
+
+# JWT RSA 鍵ペアを生成（プレースホルダー or 未設定の場合のみ、冪等）
+echo "[dev] JWT 鍵ペアを確認しています..."
+pnpm run gen:keys
 
 # DB コンテナを起動（既に起動中なら冪等）
 echo "[dev] DB コンテナを起動しています..."
