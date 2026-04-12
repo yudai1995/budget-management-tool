@@ -1,19 +1,19 @@
-import { AppDataSource } from './infrastructure/persistence/data-source';
-import { TypeORMBudgetRepository } from './infrastructure/persistence/TypeORMBudgetRepository';
-import { TypeORMExpenseRepository } from './infrastructure/persistence/TypeORMExpenseRepository';
-import { TypeORMRefreshTokenRepository } from './infrastructure/persistence/TypeORMRefreshTokenRepository';
-import { TypeORMUserRepository } from './infrastructure/persistence/TypeORMUserRepository';
+import { prisma } from './infrastructure/persistence/prisma-client';
+import { PrismaBudgetRepository } from './infrastructure/persistence/PrismaBudgetRepository';
+import { PrismaExpenseRepository } from './infrastructure/persistence/PrismaExpenseRepository';
+import { PrismaRefreshTokenRepository } from './infrastructure/persistence/PrismaRefreshTokenRepository';
+import { PrismaUserRepository } from './infrastructure/persistence/PrismaUserRepository';
 import type { AppDeps } from './app';
 
 /**
  * 本番用依存関係コンテナ。
- * AppDataSource の初期化後に呼び出すこと。
+ * PrismaClient は prisma-client.ts のシングルトンを使用する。
  */
 export function buildDeps(): AppDeps {
     return {
-        userRepository: new TypeORMUserRepository(AppDataSource),
-        expenseRepository: new TypeORMExpenseRepository(AppDataSource),
-        budgetRepository: new TypeORMBudgetRepository(AppDataSource),
-        refreshTokenRepository: new TypeORMRefreshTokenRepository(AppDataSource),
+        userRepository: new PrismaUserRepository(prisma),
+        expenseRepository: new PrismaExpenseRepository(prisma),
+        budgetRepository: new PrismaBudgetRepository(prisma),
+        refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
     };
 }

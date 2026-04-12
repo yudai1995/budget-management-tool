@@ -5,10 +5,10 @@
 # 実行内容:
 #   1. 依存関係のインストール（pnpm install）
 #   2. .env の自動生成（.env.example からのコピー）
-#   3. JWT RSA 鍵ペアの生成（gen:keys でプレースホルダーを実値に置換）
-#   4. 共通パッケージのビルド（@budget/common）
-#   5. DB コンテナの起動と healthcheck 待機
-#   6. DB マイグレーションの実行
+#   3. JWT RSA 鍵ペアと DATABASE_URL の生成（gen:keys）
+#   4. DB コンテナの起動と healthcheck 待機
+#   5. Prisma マイグレーションの実行（prisma migrate deploy）
+#   6. Prisma Client + DBML の生成（prisma generate）
 #   7. Seed データの投入
 # ============================================================
 
@@ -43,29 +43,19 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 3. JWT RSA 鍵ペアの生成
-#    .env のプレースホルダー（"..."）を実際の鍵で置換する
-#    有効な鍵が既に設定されている場合はスキップ（冪等）
+# 3. JWT RSA 鍵ペアと DATABASE_URL の生成
+#    プレースホルダーを実値に置換する（冪等: 有効な値があればスキップ）
 # ------------------------------------------------------------------
 echo ""
-echo "[3/7] JWT 鍵ペアを生成しています..."
+echo "[3/7] JWT 鍵ペアと DATABASE_URL を設定しています..."
 pnpm run gen:keys
-echo "  ✅ JWT 鍵ペア設定完了"
+echo "  ✅ 環境変数設定完了"
 
 # ------------------------------------------------------------------
-# 4. 共通パッケージのビルド（@budget/common）
-#    ts-node + tsconfig-paths が dist/ を参照するため、フレッシュクローン後に必須
+# 4. DB コンテナの起動と healthcheck 待機
 # ------------------------------------------------------------------
 echo ""
-echo "[4/7] 共通パッケージをビルドしています..."
-pnpm --filter @budget/common run build
-echo "  ✅ @budget/common ビルド完了"
-
-# ------------------------------------------------------------------
-# 5. DB コンテナの起動と healthcheck 待機
-# ------------------------------------------------------------------
-echo ""
-echo "[5/7] データベースを起動しています..."
+echo "[4/7] データベースを起動しています..."
 docker compose up -d
 
 echo "  → DB の起動を待機中（healthcheck）..."
@@ -86,12 +76,24 @@ echo ""
 echo "  ✅ DB が正常に起動しました"
 
 # ------------------------------------------------------------------
-# 6. DB マイグレーションの実行
+# 5. Prisma マイグレーション（prisma migrate deploy）
+#    冪等: 適用済みマイグレーションはスキップ
+#    DATABASE_URL をルートの .env から読み込んでエクスポート
 # ------------------------------------------------------------------
 echo ""
-echo "[6/7] マイグレーションを実行しています..."
-pnpm --filter @budget/api run migration:run
+echo "[5/7] Prisma マイグレーションを実行しています..."
+set -a; source .env; set +a
+pnpm --filter @budget/api exec prisma migrate deploy
 echo "  ✅ マイグレーション完了"
+
+# ------------------------------------------------------------------
+# 6. Prisma Client + DBML の生成
+#    schema.prisma から型定義と docs/database/schema.dbml を自動生成
+# ------------------------------------------------------------------
+echo ""
+echo "[6/7] Prisma Client と DBML を生成しています..."
+pnpm --filter @budget/api exec prisma generate
+echo "  ✅ Prisma Client + docs/database/schema.dbml 生成完了"
 
 # ------------------------------------------------------------------
 # 7. Seed データの投入（ゲストユーザー等、アプリ起動に必須なレコード）
@@ -107,4 +109,7 @@ echo "  ✅ セットアップが完了しました！"
 echo ""
 echo "  開発を開始するには:"
 echo "    pnpm dev"
+echo ""
+echo "  DB 設計書を更新するには:"
+echo "    pnpm run db:docs"
 echo "========================================="

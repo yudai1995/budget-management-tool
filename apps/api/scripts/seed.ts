@@ -14,19 +14,21 @@
  * @see apps/api/src/presentation/routes/auth.ts - /guest-login ルート
  */
 
-import 'reflect-metadata';
+import * as path from 'node:path';
+import { PrismaClient } from '@prisma/client';
+
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: bcrypt は CommonJS モジュールのため require を使用
 const bcrypt = require('bcrypt') as { hash: (data: string, rounds: number) => Promise<string> };
-import { AppDataSource } from '../src/infrastructure/persistence/data-source';
-import { UserDataModel } from '../src/infrastructure/persistence/entity/UserDataModel';
 
 const GUEST_USER_ID = 'Guest';
 const GUEST_USER_NAME = 'ゲスト';
 
-async function seedGuestUser(): Promise<void> {
-    const repo = AppDataSource.getRepository(UserDataModel);
-
-    const existing = await repo.findOneBy({ userId: GUEST_USER_ID });
+async function seedGuestUser(prisma: PrismaClient): Promise<void> {
+    const existing = await prisma.userList.findUnique({ where: { userId: GUEST_USER_ID } });
     if (existing) {
         console.log(`  → ゲストユーザーは既に存在します（スキップ）: userId=${GUEST_USER_ID}`);
         return;
@@ -35,10 +37,12 @@ async function seedGuestUser(): Promise<void> {
     // ゲストログインはパスワード不要だが、カラムは NOT NULL のためプレースホルダーを設定する
     const placeholderHash = await bcrypt.hash(`guest-placeholder-${Date.now()}`, 10);
 
-    await repo.save({
-        userId: GUEST_USER_ID,
-        userName: GUEST_USER_NAME,
-        password: placeholderHash,
+    await prisma.userList.create({
+        data: {
+            userId: GUEST_USER_ID,
+            userName: GUEST_USER_NAME,
+            password: placeholderHash,
+        },
     });
 
     console.log(`  ✅ ゲストユーザーを作成しました: userId=${GUEST_USER_ID}`);
@@ -48,16 +52,17 @@ async function main(): Promise<void> {
     console.log('');
     console.log('🌱 Seed データを投入しています...');
 
-    await AppDataSource.initialize();
+    const prisma = new PrismaClient();
+    await prisma.$connect();
     console.log('  → DB 接続完了');
 
     try {
-        await seedGuestUser();
+        await seedGuestUser(prisma);
 
         console.log('');
         console.log('✅ Seed 完了');
     } finally {
-        await AppDataSource.destroy();
+        await prisma.$disconnect();
     }
 }
 

@@ -101,3 +101,68 @@ web → common ← api
 
 - `api-spec` は `api` が生成し、`api-client` と `web` が参照する
 - `common` はドメイン型を共有するが、UI・インフラの詳細を含まない
+
+---
+
+## ADR-005: Hono への移行とクリーンアーキテクチャの採用
+
+**日付**: 2026-04-12
+**ステータス**: 採用（ADR-002 と連動）
+
+### 決定
+- バックエンドフレームワークを Express から Hono に移行する
+- Onion Architecture（Domain → Application → Infrastructure → Presentation）を採用する
+
+### 背景
+- Express は Node.js 専用であり、Edge Runtime や Cloudflare Workers への移行コストが高い
+- フレームワークにビジネスロジックが依存していたため、テスト・移植が困難だった
+
+### 理由（Hono 選定）
+- ランタイム非依存（Node.js / Bun / Deno / Edge）により将来の実行環境変更に対応できる
+- `@hono/zod-openapi` による `createRoute()` で、リクエスト/レスポンスの型安全性を E2E で確保できる
+- Web Standard API（`Request` / `Response`）ベースのため、フレームワーク固有 API への依存が最小化される
+
+### 理由（クリーンアーキテクチャ採用）
+- Domain 層はフレームワーク・ORM・DB に一切依存しないため、ビジネスロジックの資産価値が永続する
+- ORM の乗り換え（TypeORM → Prisma 等）はインフラ層のみで完結し、ドメイン・アプリケーション層に影響しない
+- UseCase の単体テストが ORM・DB なしで書ける
+
+### 影響
+- ルートハンドラ（Presentation 層）は `IXxxRepository` インターフェースのみに依存する
+- インフラ実装の詳細（Prisma 型等）をドメイン層に漏洩させてはならない
+
+---
+
+## ADR-006: ORM を TypeORM から Prisma に移行
+
+**日付**: 2026-04-13
+**ステータス**: 採用
+
+### 決定
+- ORM を TypeORM 0.3.x から Prisma 6.x に完全移行する
+- `apps/api/prisma/schema.prisma` をデータベーススキーマの唯一の正解（SSOT）とする
+- `prisma-dbml-generator` により `npx prisma generate` で `docs/database/schema.dbml` を自動更新する
+- DBML ファイルの手動編集を禁止する
+
+### 背景
+- TypeORM はデコレータ（`@Entity`, `@Column` 等）でスキーマを定義するため、実際の DB スキーマと乖離が生じやすかった
+- `emitDecoratorMetadata: true` を必要とするため、`tsx` / esbuild 系ツールと相性が悪く、開発体験が低下していた
+- マイグレーション生成の信頼性が低く、差分検出が不安定なケースがあった
+- TypeScript 型と DB スキーマの同期が自動化されていなかった（Entity 変更後に型エラーが発生しないケースがあった）
+
+### 理由（Prisma 選定）
+- スキーマ駆動開発: `schema.prisma` を変更 → `prisma migrate dev` → `prisma generate` の 3 ステップで型・DB・DBML がすべて同期される
+- 型安全性: `@prisma/client` の生成型により、テーブルの変更が TypeScript エラーとして即座に検出される
+- マイグレーション信頼性: マイグレーション SQL は `prisma/migrations/` に明示的に保存され、差分が透明
+- 開発体験: デコレータ不要（`emitDecoratorMetadata` 廃止）、`tsx` で直接実行可能
+- DBML 自動連携: `prisma-dbml-generator` により、非エンジニアでも `dbdocs` で最新の設計書を参照できる
+
+### クリーンアーキテクチャとの整合
+- Prisma 型（`UserList`, `BudgetList` 等）は Infrastructure 層にのみ留まる
+- 各 Prisma リポジトリ内でドメインモデルへの変換（`toDomain()` 関数）を実施し、UseCase / Domain 層への漏洩を防ぐ
+
+### 影響
+- `typeorm`, `reflect-metadata`, `tsconfig-paths`, `ts-node`, `typeorm-ts-node-commonjs` を削除
+- API サーバー起動コマンドが `ts-node -r tsconfig-paths/register` → `tsx src/index.ts` に変更
+- `migration:run` が `TypeORM DataSource.runMigrations()` → `prisma migrate deploy` に変更
+- `db:docs` が `generate-dbml.ts` スクリプト → `prisma generate` に変更（自動化）
