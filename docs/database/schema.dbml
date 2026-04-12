@@ -1,20 +1,35 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
 Table user_list {
-  userId varchar [pk]
-  userName varchar
-  password varchar
+  userId String [pk]
+  userName String [not null]
+  password String [not null]
+  budgets budget_list [not null]
 }
 
 Table budget_list {
-  id varchar [pk]
-  amount integer
-  balanceType enum
-  userId varchar
-  categoryId integer [default: 1]
-  content varchar [null]
-  date varchar
-  createdDate datetime
-  updatedDate datetime
-  deletedDate datetime
+  id String [pk]
+  amount Int [not null]
+  balanceType Int [not null]
+  userId String [not null]
+  categoryId Int [not null, default: 1]
+  content String
+  date String [not null]
+  createdDate DateTime [default: `now()`, not null]
+  updatedDate DateTime [not null]
+  deletedDate DateTime
+  user user_list [not null]
 }
 
-Ref: budget_list.userId > user_list.userId
+Table refresh_tokens {
+  id String [pk]
+  tokenHash String [unique, not null]
+  userId String [not null]
+  expiresAt DateTime [not null]
+  revokedAt DateTime
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Ref: budget_list.userId > user_list.userId [delete: Cascade]

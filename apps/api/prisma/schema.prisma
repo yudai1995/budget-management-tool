@@ -1,0 +1,65 @@
+// ============================================================
+// schema.prisma — データベーススキーマの Single Source of Truth
+//
+// このファイルを変更した後:
+//   1. npx prisma migrate dev --name <変更内容>  → マイグレーション生成・反映
+//   2. npx prisma generate                       → Prisma Client + DBML 自動更新
+//   3. dbdocs build docs/database/schema.dbml    → 外部設計書の同期
+//
+// 詳細手順: docs/operation/db-update-flow.md を参照
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider   = "prisma-dbml-generator"
+  output     = "../../../docs/database"
+  outputName = "schema.dbml"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザー（認証アカウント）
+model UserList {
+  userId   String       @id @db.VarChar(255) @map("userId")
+  userName String       @db.VarChar(255) @map("userName")
+  password String       @db.VarChar(255) @map("password")
+  budgets  BudgetList[]
+
+  @@map("user_list")
+}
+
+// 支出・収入レコード（balanceType: 0=支出, 1=収入）
+model BudgetList {
+  id          String    @id @db.VarChar(255)
+  amount      Int
+  balanceType Int       @map("balanceType")
+  userId      String    @db.VarChar(255) @map("userId")
+  categoryId  Int       @default(1) @map("categoryId")
+  content     String?   @db.VarChar(255)
+  date        String    @db.VarChar(255)
+  createdDate DateTime  @default(now()) @db.DateTime(6) @map("createdDate")
+  updatedDate DateTime  @updatedAt @db.DateTime(6) @map("updatedDate")
+  deletedDate DateTime? @db.DateTime(6) @map("deletedDate")
+  user        UserList  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("budget_list")
+}
+
+// JWT リフレッシュトークン
+model RefreshToken {
+  id        String    @id @db.VarChar(26)
+  tokenHash String    @unique @db.VarChar(64) @map("token_hash")
+  userId    String    @db.VarChar(255) @map("user_id")
+  expiresAt DateTime  @db.DateTime @map("expires_at")
+  revokedAt DateTime? @db.DateTime @map("revoked_at")
+  createdAt DateTime  @default(now()) @db.DateTime(6) @map("created_at")
+
+  @@index([userId], map: "IDX_refresh_tokens_user_id")
+  @@map("refresh_tokens")
+}

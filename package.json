@@ -43,7 +43,10 @@
       "axios": "1.14.0"
     },
     "onlyBuiltDependencies": [
-      "lefthook"
+      "lefthook",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma"
     ]
   }
 }
