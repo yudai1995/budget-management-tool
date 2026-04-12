@@ -14,6 +14,7 @@
 
 # development
 .serena
+.claude/settings.local.json
 
 # 環境変数（機密情報）
 # .env.test はテスト用デフォルト値のためバージョン管理対象

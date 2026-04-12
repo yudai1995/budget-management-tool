@@ -59,6 +59,7 @@ if (hasPrivateKey && !hasKeyPlaceholder) {
     writeFileSync(ENV_PATH, envContent, 'utf-8');
     console.log(`\n✅ .env のプレースホルダーを実際の鍵で置換しました: ${ENV_PATH}`);
 } else {
+    // 鍵が存在しない場合は追記
     envContent += `\n${privateKeyLine}\n${publicKeyLine}\n`;
     writeFileSync(ENV_PATH, envContent, 'utf-8');
     console.log(`\n✅ .env に鍵を追記しました: ${ENV_PATH}`);
@@ -95,6 +96,7 @@ if (hasDatabaseUrl && !hasDatabaseUrlPlaceholder) {
 // JWT 公開鍵 → apps/web/.env.local への書き込み
 // ─────────────────────────────────────────
 let webEnvContent = existsSync(WEB_ENV_PATH) ? readFileSync(WEB_ENV_PATH, 'utf-8') : '';
+
 const webHasPublicKey = webEnvContent.includes('JWT_PUBLIC_KEY=');
 const webHasPlaceholder = isPlaceholder(webEnvContent, 'JWT_PUBLIC_KEY');
 
