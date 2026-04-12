@@ -1,22 +1,86 @@
 @import "tailwindcss";
 
+/**
+ * デザイントークン定義（CSS 変数）
+ *
+ * @generated:start 〜 @generated:end のブロックは
+ * scripts/sync-tokens.ts により Figma Variables から自動生成・更新される。
+ * このブロックを直接編集してはならない。
+ * 変更が必要な場合は docs/design/figma-tokens.json を更新し、
+ * `pnpm run sync:tokens` を実行すること。
+ */
+
+/* @generated:start by scripts/sync-tokens.ts */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* カラートークン */
+  --color-brand-primary: #f08030;
+  --color-brand-secondary: #e06020;
+  --color-surface-default: #ffffff;
+  --color-surface-subtle: #fef5ee;
+  --color-expense: #f08030;
+  --color-expense-light: #fff5ec;
+  --color-income: #2bb5a0;
+  --color-income-light: #ecfaf8;
+  /* スペーシングトークン */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  /* ボーダー半径トークン */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-card: 12px;
+  --radius-full: 9999px;
+}
+/* @generated:end */
+
+/* ── 手動管理: @generated に含まれない静的トークン ──────────────── */
+:root {
+  /* スクリーンショットのウォームベージュ背景 */
+  --background: #fef5ee;
+  --foreground: #1a1a1a;
 }
 
+/* ── ダークモード オーバーライド ────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1008;
+    --foreground: #f0ebe5;
+
+    --color-brand-primary: #f09050;
+    --color-brand-secondary: #e07040;
+
+    --color-surface-default: #241a10;
+    --color-surface-subtle: #2e2418;
+
+    --color-expense: #f09050;
+    --color-expense-light: #3a1a08;
+    --color-income: #3dc8b4;
+    --color-income-light: #082e28;
+  }
+}
+
+/* ── Tailwind v4 @theme マッピング ──────────────────────────────
+   CSS 変数を Tailwind ユーティリティクラスで参照可能にする。
+   ──────────────────────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-brand-primary: var(--color-brand-primary);
+  --color-brand-secondary: var(--color-brand-secondary);
+
+  --color-surface-default: var(--color-surface-default);
+  --color-surface-subtle: var(--color-surface-subtle);
+
+  --color-expense: var(--color-expense);
+  --color-expense-light: var(--color-expense-light);
+  --color-income: var(--color-income);
+  --color-income-light: var(--color-income-light);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {

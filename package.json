@@ -25,13 +25,17 @@
     "test:integration": "pnpm --filter @budget/api run test:integration",
     "test:e2e": "playwright test",
     "generate:openapi": "pnpm --filter @budget/api run generate:openapi",
+    "generate:spec": "pnpm --filter @budget/api run generate:spec",
+    "sync:tokens": "tsx --tsconfig tsconfig.scripts.json scripts/sync-tokens.ts",
+    "sync:tokens:figma": "tsx --tsconfig tsconfig.scripts.json scripts/sync-tokens.ts --figma",
     "codegen": "pnpm run generate:openapi && openapi-typescript packages/api-spec/openapi.yaml -o packages/api-client/src/schema.d.ts && pnpm --filter @budget/api-client run build",
-    "gen:keys": "ts-node --project tsconfig.scripts.json scripts/gen-keys.ts"
+    "gen:keys": "tsx --tsconfig tsconfig.scripts.json scripts/gen-keys.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "lefthook": "^2.1.5",
     "openapi-typescript": "^7.13.0",
+    "tsx": "^4.21.0",
     "turbo": "^2.8.21"
   },
   "pnpm": {

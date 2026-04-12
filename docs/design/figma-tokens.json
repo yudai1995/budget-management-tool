@@ -1,0 +1,28 @@
+{
+  "_comment": "Figma Variables のエクスポートJSON。Figma Plugin（例: Variables Import/Export）でエクスポートし、このファイルを上書きしてください。",
+  "_usage": "pnpm run sync:tokens でこのファイルから globals.css のCSS変数を自動更新します。",
+  "_source": "スクリーンショット解析による初期値（2026-04-12）",
+  "colors": {
+    "brand/primary": { "value": "#f08030", "type": "color" },
+    "brand/secondary": { "value": "#e06020", "type": "color" },
+    "surface/default": { "value": "#ffffff", "type": "color" },
+    "surface/subtle": { "value": "#fef5ee", "type": "color" },
+    "expense": { "value": "#f08030", "type": "color" },
+    "expense/light": { "value": "#fff5ec", "type": "color" },
+    "income": { "value": "#2bb5a0", "type": "color" },
+    "income/light": { "value": "#ecfaf8", "type": "color" }
+  },
+  "spacing": {
+    "xs": { "value": "4", "type": "dimension", "unit": "px" },
+    "sm": { "value": "8", "type": "dimension", "unit": "px" },
+    "md": { "value": "16", "type": "dimension", "unit": "px" },
+    "lg": { "value": "24", "type": "dimension", "unit": "px" },
+    "xl": { "value": "32", "type": "dimension", "unit": "px" }
+  },
+  "borderRadius": {
+    "sm": { "value": "4", "type": "dimension", "unit": "px" },
+    "md": { "value": "8", "type": "dimension", "unit": "px" },
+    "card": { "value": "12", "type": "dimension", "unit": "px" },
+    "full": { "value": "9999", "type": "dimension", "unit": "px" }
+  }
+}
