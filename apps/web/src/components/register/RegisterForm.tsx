@@ -28,12 +28,13 @@ export function RegisterForm() {
     const [userId, setUserId] = useState("");
     const [password, setPassword] = useState("");
     const [questions, setQuestions] = useState<SecurityQuestion[]>([]);
+    const [questionsError, setQuestionsError] = useState(false);
 
     // 秘密の質問一覧をロード
     useEffect(() => {
         publicFetch<{ questions: SecurityQuestion[] }>("/security-questions")
             .then((res) => setQuestions(res.questions))
-            .catch(() => {});
+            .catch(() => setQuestionsError(true));
     }, []);
 
     return (
@@ -106,16 +107,25 @@ export function RegisterForm() {
                             <label htmlFor="securityQuestionId" className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                                 質問を選択
                             </label>
-                            <select
-                                id="securityQuestionId"
-                                name="securityQuestionId"
-                                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
-                            >
-                                <option value="">-- 質問を選んでください --</option>
-                                {questions.map((q) => (
-                                    <option key={q.id} value={q.id}>{q.text}</option>
-                                ))}
-                            </select>
+                            {questionsError ? (
+                                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                                    質問の読み込みに失敗しました。APIサーバーが起動しているか確認してください。
+                                </p>
+                            ) : (
+                                <select
+                                    id="securityQuestionId"
+                                    name="securityQuestionId"
+                                    disabled={questions.length === 0}
+                                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                                >
+                                    <option value="">
+                                        {questions.length === 0 ? "読み込み中..." : "-- 質問を選んでください --"}
+                                    </option>
+                                    {questions.map((q) => (
+                                        <option key={q.id} value={q.id}>{q.text}</option>
+                                    ))}
+                                </select>
+                            )}
                             <FieldError messages={state.fieldErrors?.securityQuestionId} />
                         </div>
 
