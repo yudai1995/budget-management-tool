@@ -1,12 +1,11 @@
 // ============================================================
 // schema.prisma — データベーススキーマの Single Source of Truth
 //
-// このファイルを変更した後:
-//   1. npx prisma migrate dev --name <変更内容>  → マイグレーション生成・反映
-//   2. npx prisma generate                       → Prisma Client + DBML 自動更新
-//   3. dbdocs build docs/database/schema.dbml    → 外部設計書の同期
+// スキーマを変更した後は必ず以下を実行すること（手書き SQL は禁止）:
+//   1. pnpm db:migrate:dev --name <変更内容>  → migration.sql 自動生成 + DB 反映
+//   2. pnpm db:docs                           → Prisma Client + DBML 自動更新
 //
-// 詳細手順: docs/operation/db-update-flow.md を参照
+// 詳細手順: README.md「DB スキーマの変更手順」参照
 // ============================================================
 
 generator client {

@@ -17,6 +17,8 @@
     "db:reset": "docker compose down -v && docker compose up -d",
     "db:start:test": "docker compose -f docker-compose.test.yml up -d",
     "db:stop:test": "docker compose -f docker-compose.test.yml down",
+    "db:migrate:dev": "pnpm --filter @budget/api run migration:dev",
+    "db:migrate:deploy": "pnpm --filter @budget/api run migration:run",
     "db:docs": "pnpm --filter @budget/api run db:docs",
     "db:share": "pnpm --filter @budget/api run db:share",
     "logs": "docker compose logs -f",

@@ -16,7 +16,7 @@ INSERT INTO `security_question_presets` (`text`) VALUES
 -- ユーザーが選択した秘密の質問と回答（answerHashはbcrypt）
 CREATE TABLE `user_security_answers` (
   `id`          VARCHAR(26)  NOT NULL,
-  `user_id`     VARCHAR(255) NOT NULL,
+  `user_id`     VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `question_id` INT          NOT NULL,
   `answer_hash` VARCHAR(255) NOT NULL,
   `created_at`  DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -26,13 +26,13 @@ CREATE TABLE `user_security_answers` (
   KEY `IDX_user_security_answers_user_id` (`user_id`),
   CONSTRAINT `fk_usa_question` FOREIGN KEY (`question_id`) REFERENCES `security_question_presets` (`id`),
   CONSTRAINT `fk_usa_user`     FOREIGN KEY (`user_id`)     REFERENCES `user_list` (`userId`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- パスワードリセット用一時トークン
 CREATE TABLE `password_reset_tokens` (
   `id`         VARCHAR(26)  NOT NULL,
   `token_hash` VARCHAR(64)  NOT NULL,
-  `user_id`    VARCHAR(255) NOT NULL,
+  `user_id`    VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `expires_at` DATETIME     NOT NULL,
   `used_at`    DATETIME     NULL,
   `created_at` DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -40,4 +40,4 @@ CREATE TABLE `password_reset_tokens` (
   UNIQUE KEY `password_reset_tokens_token_hash_key` (`token_hash`),
   KEY `IDX_password_reset_tokens_user_id` (`user_id`),
   CONSTRAINT `fk_prt_user` FOREIGN KEY (`user_id`) REFERENCES `user_list` (`userId`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
