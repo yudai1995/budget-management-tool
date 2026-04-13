@@ -3,6 +3,8 @@ import { PrismaBudgetRepository } from './infrastructure/persistence/PrismaBudge
 import { PrismaExpenseRepository } from './infrastructure/persistence/PrismaExpenseRepository';
 import { PrismaRefreshTokenRepository } from './infrastructure/persistence/PrismaRefreshTokenRepository';
 import { PrismaUserRepository } from './infrastructure/persistence/PrismaUserRepository';
+import { PrismaSecurityAnswerRepository } from './infrastructure/persistence/PrismaSecurityAnswerRepository';
+import { PrismaPasswordResetTokenRepository } from './infrastructure/persistence/PrismaPasswordResetTokenRepository';
 import type { AppDeps } from './app';
 
 /**
@@ -15,5 +17,7 @@ export function buildDeps(): AppDeps {
         expenseRepository: new PrismaExpenseRepository(prisma),
         budgetRepository: new PrismaBudgetRepository(prisma),
         refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
+        securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
+        passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
     };
 }

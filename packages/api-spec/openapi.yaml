@@ -429,6 +429,137 @@ components:
           example: success
       required:
         - result
+    RegisterBody:
+      type: object
+      properties:
+        userId:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: ^[a-zA-Z0-9_-]+$
+          description: ログインIDを兼ねるユーザー名
+          example: yamada_taro
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: 表示名（省略時はuserIdと同値）
+          example: 山田太郎
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: パスワード（平文）
+        securityQuestionId:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          description: 秘密の質問ID
+          example: 1
+        securityAnswer:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: 秘密の質問の回答（平文）
+          example: ○○市
+      required:
+        - userId
+        - password
+        - securityQuestionId
+        - securityAnswer
+    CheckUserNameResponse:
+      type: object
+      properties:
+        available:
+          type: boolean
+          description: 使用可能かどうか
+          example: true
+      required:
+        - available
+    SecurityQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 質問ID
+          example: 1
+        text:
+          type: string
+          description: 質問文
+          example: 幼少期に住んでいた町・村の名前は？
+      required:
+        - id
+        - text
+    SecurityQuestionListResponse:
+      type: object
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SecurityQuestion"
+      required:
+        - questions
+    RecoveryQuestionResponse:
+      type: object
+      properties:
+        questionId:
+          type: integer
+          description: 質問ID
+          example: 1
+        questionText:
+          type: string
+          description: 質問文
+          example: 幼少期に住んでいた町・村の名前は？
+      required:
+        - questionId
+        - questionText
+    PasswordResetTokenResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+        resetToken:
+          type: string
+          description: パスワードリセット用一時トークン（30分有効）
+        expiresAt:
+          type: string
+          description: 有効期限 (ISO 8601)
+      required:
+        - result
+        - resetToken
+        - expiresAt
+    VerifyRecoveryBody:
+      type: object
+      properties:
+        userId:
+          type: string
+          minLength: 1
+          description: ユーザーID
+          example: yamada_taro
+        answer:
+          type: string
+          minLength: 1
+          description: 秘密の質問の回答
+      required:
+        - userId
+        - answer
+    ResetPasswordBody:
+      type: object
+      properties:
+        resetToken:
+          type: string
+          minLength: 1
+          description: パスワードリセット用一時トークン
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: 新しいパスワード（平文）
+      required:
+        - resetToken
+        - newPassword
   parameters: {}
 paths:
   /api/login:
@@ -1032,6 +1163,184 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/register:
+    post:
+      tags:
+        - Auth
+      summary: 自己登録
+      description: メールアドレス不要の匿名登録。秘密の質問もあわせて設定する。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/UserResponse"
+                required:
+                  - user
+        "400":
+          description: バリデーションエラー / ユーザーID重複
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/register/check-username:
+    get:
+      tags:
+        - Auth
+      summary: ユーザー名使用可能確認
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: 確認するユーザーID
+            example: yamada_taro
+          required: true
+          name: userId
+          in: query
+      responses:
+        "200":
+          description: 確認結果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckUserNameResponse"
+  /api/security-questions:
+    get:
+      tags:
+        - Recovery
+      summary: 秘密の質問一覧取得
+      responses:
+        "200":
+          description: 質問一覧
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecurityQuestionListResponse"
+  /api/recovery/question:
+    get:
+      tags:
+        - Recovery
+      summary: "パスワードリカバリ: 秘密の質問取得"
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+          required: true
+          name: userId
+          in: query
+      responses:
+        "200":
+          description: 質問取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryQuestionResponse"
+        "404":
+          description: ユーザーが存在しないか質問未設定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/recovery/verify:
+    post:
+      tags:
+        - Recovery
+      summary: "パスワードリカバリ: 回答照合"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyRecoveryBody"
+      responses:
+        "200":
+          description: 照合成功。リセットトークンを返す（30分有効）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetTokenResponse"
+        "401":
+          description: 回答が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: ユーザーが存在しないか質問未設定
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/recovery/reset-password:
+    post:
+      tags:
+        - Recovery
+      summary: "パスワードリカバリ: パスワードリセット"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordBody"
+      responses:
+        "200":
+          description: パスワード更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: トークンが無効または期限切れ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/export/expenses:
+    get:
+      tags:
+        - Export
+      summary: 全取引データのエクスポート
+      description: ログイン中ユーザーの全取引データを JSON または CSV 形式でダウンロードする。
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - json
+              - csv
+            default: json
+            description: エクスポート形式
+            example: json
+          required: false
+          name: format
+          in: query
+      responses:
+        "200":
+          description: エクスポートデータ
+          content:
+            application/json:
+              schema:
+                nullable: true
+            text/csv:
+              schema:
+                nullable: true
+        "401":
+          description: 未認証
           content:
             application/json:
               schema:

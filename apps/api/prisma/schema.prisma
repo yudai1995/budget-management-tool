@@ -81,3 +81,39 @@ model RefreshToken {
   @@index([userId], map: "IDX_refresh_tokens_user_id")
   @@map("refresh_tokens")
 }
+
+// パスワードリカバリ用「秘密の質問」プリセット
+model SecurityQuestionPreset {
+  id       Int                    @id @default(autoincrement())
+  text     String                 @db.VarChar(255)
+  answers  UserSecurityAnswer[]
+
+  @@map("security_question_presets")
+}
+
+// ユーザーが選択した秘密の質問と回答（bcryptハッシュ）
+model UserSecurityAnswer {
+  id         String                 @id @db.VarChar(26)
+  userId     String                 @unique @db.VarChar(255) @map("user_id")
+  questionId Int                    @map("question_id")
+  answerHash String                 @db.VarChar(255) @map("answer_hash")
+  createdAt  DateTime               @default(now()) @db.DateTime(6) @map("created_at")
+  updatedAt  DateTime               @updatedAt @db.DateTime(6) @map("updated_at")
+  question   SecurityQuestionPreset @relation(fields: [questionId], references: [id])
+
+  @@index([userId], map: "IDX_user_security_answers_user_id")
+  @@map("user_security_answers")
+}
+
+// パスワードリセット用一時トークン
+model PasswordResetToken {
+  id        String    @id @db.VarChar(26)
+  tokenHash String    @unique @db.VarChar(64) @map("token_hash")
+  userId    String    @db.VarChar(255) @map("user_id")
+  expiresAt DateTime  @db.DateTime @map("expires_at")
+  usedAt    DateTime? @db.DateTime @map("used_at")
+  createdAt DateTime  @default(now()) @db.DateTime(6) @map("created_at")
+
+  @@index([userId], map: "IDX_password_reset_tokens_user_id")
+  @@map("password_reset_tokens")
+}

@@ -931,6 +931,339 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 自己登録
+         * @description メールアドレス不要の匿名登録。秘密の質問もあわせて設定する。
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RegisterBody"];
+                };
+            };
+            responses: {
+                /** @description 登録成功 */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            user: components["schemas"]["UserResponse"];
+                        };
+                    };
+                };
+                /** @description バリデーションエラー / ユーザーID重複 */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/register/check-username": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ユーザー名使用可能確認 */
+        get: {
+            parameters: {
+                query: {
+                    userId: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 確認結果 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CheckUserNameResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/security-questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 秘密の質問一覧取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 質問一覧 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SecurityQuestionListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recovery/question": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** パスワードリカバリ: 秘密の質問取得 */
+        get: {
+            parameters: {
+                query: {
+                    userId: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description 質問取得成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RecoveryQuestionResponse"];
+                    };
+                };
+                /** @description ユーザーが存在しないか質問未設定 */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recovery/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** パスワードリカバリ: 回答照合 */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VerifyRecoveryBody"];
+                };
+            };
+            responses: {
+                /** @description 照合成功。リセットトークンを返す（30分有効） */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PasswordResetTokenResponse"];
+                    };
+                };
+                /** @description 回答が不正 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description ユーザーが存在しないか質問未設定 */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/recovery/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** パスワードリカバリ: パスワードリセット */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ResetPasswordBody"];
+                };
+            };
+            responses: {
+                /** @description パスワード更新成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SuccessResponse"];
+                    };
+                };
+                /** @description トークンが無効または期限切れ */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/export/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 全取引データのエクスポート
+         * @description ログイン中ユーザーの全取引データを JSON または CSV 形式でダウンロードする。
+         */
+        get: {
+            parameters: {
+                query?: {
+                    format?: "json" | "csv";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description エクスポートデータ */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                        "text/csv": unknown;
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1222,6 +1555,87 @@ export interface components {
              * @enum {string}
              */
             result: "success";
+        };
+        RegisterBody: {
+            /**
+             * @description ログインIDを兼ねるユーザー名
+             * @example yamada_taro
+             */
+            userId: string;
+            /**
+             * @description 表示名（省略時はuserIdと同値）
+             * @example 山田太郎
+             */
+            displayName?: string;
+            /** @description パスワード（平文） */
+            password: string;
+            /**
+             * @description 秘密の質問ID
+             * @example 1
+             */
+            securityQuestionId: number;
+            /**
+             * @description 秘密の質問の回答（平文）
+             * @example ○○市
+             */
+            securityAnswer: string;
+        };
+        CheckUserNameResponse: {
+            /**
+             * @description 使用可能かどうか
+             * @example true
+             */
+            available: boolean;
+        };
+        SecurityQuestion: {
+            /**
+             * @description 質問ID
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description 質問文
+             * @example 幼少期に住んでいた町・村の名前は？
+             */
+            text: string;
+        };
+        SecurityQuestionListResponse: {
+            questions: components["schemas"]["SecurityQuestion"][];
+        };
+        RecoveryQuestionResponse: {
+            /**
+             * @description 質問ID
+             * @example 1
+             */
+            questionId: number;
+            /**
+             * @description 質問文
+             * @example 幼少期に住んでいた町・村の名前は？
+             */
+            questionText: string;
+        };
+        PasswordResetTokenResponse: {
+            /** @enum {string} */
+            result: "success";
+            /** @description パスワードリセット用一時トークン（30分有効） */
+            resetToken: string;
+            /** @description 有効期限 (ISO 8601) */
+            expiresAt: string;
+        };
+        VerifyRecoveryBody: {
+            /**
+             * @description ユーザーID
+             * @example yamada_taro
+             */
+            userId: string;
+            /** @description 秘密の質問の回答 */
+            answer: string;
+        };
+        ResetPasswordBody: {
+            /** @description パスワードリセット用一時トークン */
+            resetToken: string;
+            /** @description 新しいパスワード（平文） */
+            newPassword: string;
         };
     };
     responses: never;

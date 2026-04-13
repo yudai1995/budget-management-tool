@@ -213,3 +213,102 @@ export const UpdateUserBodySchema = z
 export const UserIdParamSchema = z.object({
     userId: z.string().openapi({ description: 'ユーザーID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' }),
 });
+
+// ─── 自己登録 (Register) ──────────────────────────────────────────
+
+export const RegisterBodySchema = z
+    .object({
+        userId: z
+            .string()
+            .min(3, 'ユーザー名は3文字以上で入力してください')
+            .max(30, 'ユーザー名は30文字以内で入力してください')
+            .regex(/^[a-zA-Z0-9_-]+$/, '半角英数字・アンダースコア・ハイフンのみ使用できます')
+            .openapi({ description: 'ログインIDを兼ねるユーザー名', example: 'yamada_taro' }),
+        displayName: z
+            .string()
+            .min(1, '表示名を入力してください')
+            .max(50, '表示名は50文字以内で入力してください')
+            .optional()
+            .openapi({ description: '表示名（省略時はuserIdと同値）', example: '山田太郎' }),
+        password: z
+            .string()
+            .min(8, 'パスワードは8文字以上で入力してください')
+            .max(128)
+            .openapi({ description: 'パスワード（平文）' }),
+        securityQuestionId: z.number().int().positive().openapi({ description: '秘密の質問ID', example: 1 }),
+        securityAnswer: z
+            .string()
+            .min(1, '回答を入力してください')
+            .max(100)
+            .openapi({ description: '秘密の質問の回答（平文）', example: '○○市' }),
+    })
+    .openapi('RegisterBody');
+
+export const CheckUserNameQuerySchema = z.object({
+    userId: z.string().min(1).openapi({ description: '確認するユーザーID', example: 'yamada_taro' }),
+});
+
+export const CheckUserNameResponseSchema = z
+    .object({
+        available: z.boolean().openapi({ description: '使用可能かどうか', example: true }),
+    })
+    .openapi('CheckUserNameResponse');
+
+// ─── セキュリティ質問 (Security Questions) ──────────────────────────
+
+export const SecurityQuestionSchema = z
+    .object({
+        id: z.number().int().openapi({ description: '質問ID', example: 1 }),
+        text: z.string().openapi({ description: '質問文', example: '幼少期に住んでいた町・村の名前は？' }),
+    })
+    .openapi('SecurityQuestion');
+
+export const SecurityQuestionListResponseSchema = z
+    .object({
+        questions: z.array(SecurityQuestionSchema),
+    })
+    .openapi('SecurityQuestionListResponse');
+
+export const SaveSecurityAnswerBodySchema = z
+    .object({
+        questionId: z.number().int().positive().openapi({ description: '秘密の質問ID', example: 1 }),
+        answer: z.string().min(1).max(100).openapi({ description: '回答（平文）' }),
+    })
+    .openapi('SaveSecurityAnswerBody');
+
+// ─── パスワードリカバリ (Recovery) ──────────────────────────────────
+
+export const RecoveryQuestionResponseSchema = z
+    .object({
+        questionId: z.number().int().openapi({ description: '質問ID', example: 1 }),
+        questionText: z.string().openapi({ description: '質問文', example: '幼少期に住んでいた町・村の名前は？' }),
+    })
+    .openapi('RecoveryQuestionResponse');
+
+export const VerifyRecoveryBodySchema = z
+    .object({
+        userId: z.string().min(1).openapi({ description: 'ユーザーID', example: 'yamada_taro' }),
+        answer: z.string().min(1).openapi({ description: '秘密の質問の回答' }),
+    })
+    .openapi('VerifyRecoveryBody');
+
+export const PasswordResetTokenResponseSchema = z
+    .object({
+        result: z.literal('success'),
+        resetToken: z.string().openapi({ description: 'パスワードリセット用一時トークン（30分有効）' }),
+        expiresAt: z.string().openapi({ description: '有効期限 (ISO 8601)' }),
+    })
+    .openapi('PasswordResetTokenResponse');
+
+export const ResetPasswordBodySchema = z
+    .object({
+        resetToken: z.string().min(1).openapi({ description: 'パスワードリセット用一時トークン' }),
+        newPassword: z.string().min(8).max(128).openapi({ description: '新しいパスワード（平文）' }),
+    })
+    .openapi('ResetPasswordBody');
+
+// ─── データエクスポート (Export) ─────────────────────────────────────
+
+export const ExportQuerySchema = z.object({
+    format: z.enum(['json', 'csv']).default('json').openapi({ description: 'エクスポート形式', example: 'json' }),
+});

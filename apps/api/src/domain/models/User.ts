@@ -54,6 +54,29 @@ export class User {
     }
 
     /**
+     * 自己登録用ファクトリメソッド。
+     * userId をユーザーが指定する（ログインID兼PK）。
+     */
+    static createWithId(input: { userId: string; userName: string; email?: string | null; role?: UserRole }): User {
+        User.validateUserId(input.userId);
+        User.validateUserName(input.userName);
+        if (input.email) {
+            User.validateEmail(input.email);
+        }
+
+        return new User({
+            userId: input.userId,
+            userName: input.userName,
+            password: '',
+            email: input.email ?? null,
+            role: input.role ?? 'USER',
+            status: 'ACTIVE',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+    }
+
+    /**
      * DB から復元するファクトリメソッド（バリデーション省略）。
      * インフラ層（PrismaUserRepository）からのみ呼び出す。
      */
@@ -62,6 +85,12 @@ export class User {
     }
 
     // ─── バリデーション（ドメイン不変条件） ─────────────────────
+    private static validateUserId(userId: string): void {
+        if (!/^[a-zA-Z0-9_-]{3,30}$/.test(userId)) {
+            throw new ValidationError('ユーザーIDは半角英数字・アンダースコア・ハイフンで3〜30文字で入力してください');
+        }
+    }
+
     private static validateUserName(userName: string): void {
         const trimmed = userName.trim();
         if (trimmed.length === 0) {
