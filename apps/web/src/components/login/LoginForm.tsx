@@ -6,6 +6,7 @@ import type { LoginState } from "@/lib/actions/auth";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { SecurityBadges } from "@/components/common/SecurityBadges";
 
 const initialState: LoginState = { error: null };
 
@@ -45,15 +46,9 @@ export function LoginForm() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900">
       <section className="w-full max-w-sm rounded-xl bg-white p-8 shadow dark:bg-zinc-800">
-        <h1 className="mb-4 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <h1 className="mb-6 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
           ログイン
         </h1>
-
-        {/* セキュリティ宣言 */}
-        <div className="mb-5 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-4 py-3 text-xs text-blue-700 dark:text-blue-300 space-y-1">
-          <p>🔒 データは暗号化されサーバーに安全に保存されます</p>
-          <p>👤 メールアドレス不要。プライバシーを保護した匿名利用が可能です</p>
-        </div>
 
         <Suspense>
           <NotificationBanner />
@@ -130,6 +125,10 @@ export function LoginForm() {
               新規登録
             </Link>
           </p>
+          {/* セキュリティバッジ: ホバーでツールチップ表示 */}
+          <div className="flex justify-center pt-1">
+            <SecurityBadges />
+          </div>
         </div>
       </section>
     </div>

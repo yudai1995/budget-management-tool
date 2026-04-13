@@ -5,6 +5,7 @@ import { registerAction } from "@/lib/actions/register";
 import type { RegisterState } from "@/lib/actions/register";
 import { PasswordStrengthMeter } from "@/components/common/PasswordStrengthMeter";
 import { UserNameInput } from "@/components/common/UserNameInput";
+import { SecurityBadges } from "@/components/common/SecurityBadges";
 import { publicFetch } from "@/lib/api/public-client";
 import Link from "next/link";
 
@@ -38,14 +39,12 @@ export function RegisterForm() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900 py-12">
             <section className="w-full max-w-md rounded-xl bg-white p-8 shadow dark:bg-zinc-800">
-                <h1 className="mb-2 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-                    アカウント登録
-                </h1>
-
-                {/* セキュリティ宣言 */}
-                <div className="mb-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 px-4 py-3 text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                    <p>🔒 データは暗号化されサーバーに安全に保存されます</p>
-                    <p>👤 メールアドレス不要。プライバシーを保護した匿名利用が可能です</p>
+                <div className="mb-6 flex items-start justify-between gap-4">
+                    <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                        アカウント登録
+                    </h1>
+                    {/* セキュリティバッジ: ホバーでツールチップ表示 */}
+                    <SecurityBadges />
                 </div>
 
                 <form action={formAction} className="flex flex-col gap-4">
@@ -94,7 +93,7 @@ export function RegisterForm() {
                         <FieldError messages={state.fieldErrors?.password} />
                     </div>
 
-                    {/* セキュリティ質問 */}
+                    {/* 秘密の質問 */}
                     <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 space-y-3">
                         <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
                             秘密の質問
