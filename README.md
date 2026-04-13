@@ -243,6 +243,8 @@ pnpm test:e2e
 | `pnpm db:stop` | DB コンテナを停止 |
 | `pnpm db:reset` | DB コンテナを完全リセット（volume 削除） |
 | `pnpm db:start:test` | テスト用 DB（port 3307）を起動 |
+| `pnpm db:migrate:dev --name <名前>` | スキーマ変更を migration.sql に自動生成して開発 DB に適用 |
+| `pnpm db:migrate:deploy` | 既存の migration.sql を本番 DB に適用（SQL は生成しない） |
 | `pnpm generate:openapi` | OpenAPI スペック（`packages/api-spec/openapi.yaml`）を再生成 |
 | `pnpm codegen` | OpenAPI スペック生成 → 型定義生成（`api-client`）→ ビルド を一括実行 |
 | `pnpm build` | 全体ビルド |
@@ -257,6 +259,50 @@ pnpm test:e2e
 pnpm generate:openapi
 git add packages/api-spec/openapi.yaml
 ```
+
+## DB スキーマの変更手順（Prisma マイグレーション）
+
+### 基本ルール
+
+**`migration.sql` は手書き禁止。必ず `prisma migrate dev` で自動生成する。**
+
+手書きすると COLLATE・文字コード・FK の非互換など、Prisma が自動で解決するミスを手動で管理しなければならない。
+
+### スキーマ変更の手順
+
+```bash
+# 1. apps/api/prisma/schema.prisma を編集する
+
+# 2. migration.sql を自動生成して開発 DB に適用する
+pnpm db:migrate:dev --name <変更内容の説明>
+#   例: pnpm db:migrate:dev --name add_user_profile_table
+#   → apps/api/prisma/migrations/<timestamp>_<name>/migration.sql が生成される
+#   → 開発 DB に即時適用される
+#   → prisma generate（Prisma Client 再生成）も自動で行われる
+
+# 3. DBML を再生成する（DB 設計書の同期）
+pnpm db:docs
+```
+
+> `pnpm db:migrate:dev` は shadow DB（一時 DB）を使って差分を計算するため、`DATABASE_URL` で指定した DB への接続権限に加え、一時 DB の作成権限が必要です。ローカル開発環境では通常問題ありません。
+
+### 本番 / CI へのデプロイ
+
+```bash
+# 既存の migration.sql をそのまま実行する（SQL は生成しない）
+pnpm db:migrate:deploy
+```
+
+`pnpm setup` 内でも自動的に `prisma migrate deploy` が呼ばれます。
+
+### マイグレーション失敗時のリカバリ
+
+| 状況 | コマンド |
+|---|---|
+| failed 状態のマイグレーションをロールバック済みとしてマーク | `DATABASE_URL=... pnpm exec prisma migrate resolve --rolled-back <migration_name>` |
+| 部分適用されたテーブルを手動で DROP してから再実行 | `pnpm db:migrate:deploy` |
+
+---
 
 ## DB スキーマ共有（DBML / dbdocs.io）
 
