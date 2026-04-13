@@ -3,18 +3,24 @@ import type { IBudgetRepository } from './domain/repositories/IBudgetRepository'
 import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
 import type { IUserRepository } from './domain/repositories/IUserRepository';
 import type { IRefreshTokenRepository } from './domain/repositories/IRefreshTokenRepository';
+import type { ISecurityAnswerRepository } from './domain/repositories/ISecurityAnswerRepository';
+import type { IPasswordResetTokenRepository } from './domain/repositories/IPasswordResetTokenRepository';
 import { TokenService } from './application/auth/TokenService';
 import { DomainException } from './shared/errors/DomainException';
 import { createAuthRoutes } from './presentation/routes/auth';
 import { createBudgetRoutes } from './presentation/routes/budget';
 import { createExpenseRoutes } from './presentation/routes/expense';
 import { createUserRoutes } from './presentation/routes/user';
+import { createRecoveryRoutes } from './presentation/routes/recovery';
+import { createExportRoutes } from './presentation/routes/export';
 
 export type AppDeps = {
     userRepository: IUserRepository;
     expenseRepository: IExpenseRepository;
     budgetRepository: IBudgetRepository;
     refreshTokenRepository: IRefreshTokenRepository;
+    securityAnswerRepository: ISecurityAnswerRepository;
+    passwordResetTokenRepository: IPasswordResetTokenRepository;
 };
 
 /** Hono context の型変数定義（認証済みルートで userId を参照するために使用） */
@@ -42,6 +48,8 @@ export function createApp(deps: AppDeps) {
     app.route('/api', createExpenseRoutes(deps, tokenService));
     app.route('/api', createBudgetRoutes(deps, tokenService));
     app.route('/api', createUserRoutes(deps, tokenService));
+    app.route('/api', createRecoveryRoutes(deps));
+    app.route('/api', createExportRoutes(deps, tokenService));
 
     app.onError((err, c) => {
         if (err instanceof DomainException) {

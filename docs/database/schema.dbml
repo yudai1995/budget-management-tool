@@ -37,6 +37,31 @@ Table refresh_tokens {
   createdAt DateTime [default: `now()`, not null]
 }
 
+Table security_question_presets {
+  id Int [pk, increment]
+  text String [not null]
+  answers user_security_answers [not null]
+}
+
+Table user_security_answers {
+  id String [pk]
+  userId String [unique, not null]
+  questionId Int [not null]
+  answerHash String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  question security_question_presets [not null]
+}
+
+Table password_reset_tokens {
+  id String [pk]
+  tokenHash String [unique, not null]
+  userId String [not null]
+  expiresAt DateTime [not null]
+  usedAt DateTime
+  createdAt DateTime [default: `now()`, not null]
+}
+
 Enum UserRole {
   ADMIN
   USER
@@ -49,3 +74,5 @@ Enum UserStatus {
 }
 
 Ref: budget_list.userId > user_list.userId [delete: Cascade]
+
+Ref: user_security_answers.questionId > security_question_presets.id
