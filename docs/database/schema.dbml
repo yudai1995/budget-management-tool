@@ -5,7 +5,12 @@
 Table user_list {
   userId String [pk]
   userName String [not null]
+  email String [unique]
   password String [not null]
+  role UserRole [not null, default: 'USER']
+  status UserStatus [not null, default: 'ACTIVE']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
   budgets budget_list [not null]
 }
 
@@ -30,6 +35,17 @@ Table refresh_tokens {
   expiresAt DateTime [not null]
   revokedAt DateTime
   createdAt DateTime [default: `now()`, not null]
+}
+
+Enum UserRole {
+  ADMIN
+  USER
+  GUEST
+}
+
+Enum UserStatus {
+  ACTIVE
+  INACTIVE
 }
 
 Ref: budget_list.userId > user_list.userId [delete: Cascade]

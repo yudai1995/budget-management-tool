@@ -13,7 +13,7 @@ export class CreateExpenseUseCase {
 
     async execute(input: CreateExpenseInput): Promise<Expense> {
         // ユーザー存在確認
-        const user = await this.userRepository.one(input.userId);
+        const user = await this.userRepository.findById(input.userId);
         if (!user) {
             throw new Error(`ユーザーが見つかりません: ${input.userId}`);
         }

@@ -4,9 +4,15 @@ import { createOpenAPIApp } from '../../lib/openapi-app';
 import type { TokenService } from '../../application/auth/TokenService';
 import type { User } from '../../domain/models/User';
 import type { AppDeps } from '../../app';
+import { CreateUserUseCase } from '../../application/use-cases/user/CreateUserUseCase';
+import { GetUsersUseCase } from '../../application/use-cases/user/GetUsersUseCase';
+import { GetUserByIdUseCase } from '../../application/use-cases/user/GetUserByIdUseCase';
+import { UpdateUserUseCase } from '../../application/use-cases/user/UpdateUserUseCase';
+import { DeleteUserUseCase } from '../../application/use-cases/user/DeleteUserUseCase';
 import {
     CreateUserBodySchema,
     ErrorResponseSchema,
+    SuccessResponseSchema,
     UpdateUserBodySchema,
     UserIdParamSchema,
     UserResponseSchema,
@@ -71,7 +77,7 @@ const createUserRoute = createRoute({
         body: { content: { 'application/json': { schema: CreateUserBodySchema } }, required: true },
     },
     responses: {
-        200: {
+        201: {
             content: { 'application/json': { schema: UserDetailResponseSchema } },
             description: '登録成功',
         },
@@ -109,6 +115,10 @@ const updateUserRoute = createRoute({
             content: { 'application/json': { schema: ErrorResponseSchema } },
             description: '未認証',
         },
+        404: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'リソースが見つからない',
+        },
     },
 });
 
@@ -121,62 +131,85 @@ const deleteUserRoute = createRoute({
     request: { params: UserIdParamSchema },
     responses: {
         200: {
-            content: { 'application/json': { schema: z.object({ result: z.literal('success') }) } },
+            content: { 'application/json': { schema: SuccessResponseSchema } },
             description: '削除成功',
         },
         401: {
             content: { 'application/json': { schema: ErrorResponseSchema } },
             description: '未認証',
         },
+        404: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'リソースが見つからない',
+        },
     },
 });
 
-// ─── Handler 実装 ────────────────────────────────────────────────
+// ─── DTO 変換 ─────────────────────────────────────────────────────
 
-/** パスワードフィールドを除去してユーザー情報を返す */
-function sanitizeUser({ userId, userName }: User): { userId: string; userName: string } {
-    return { userId, userName };
+/** パスワードフィールドを除去し、レスポンス用 DTO に変換する */
+function serializeUser(user: User) {
+    return {
+        userId: user.userId,
+        userName: user.userName,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+    };
 }
+
+// ─── Handler 実装 ────────────────────────────────────────────────
 
 export function createUserRoutes(deps: AppDeps, tokenService: TokenService) {
     const { userRepository } = deps;
     const auth = createAuthMiddleware(tokenService);
     const app = createOpenAPIApp();
 
+    // UseCase のインスタンスを生成（すべての操作は UseCase 経由）
+    const getUsersUseCase = new GetUsersUseCase(userRepository);
+    const getUserByIdUseCase = new GetUserByIdUseCase(userRepository);
+    const createUserUseCase = new CreateUserUseCase(userRepository);
+    const updateUserUseCase = new UpdateUserUseCase(userRepository);
+    const deleteUserUseCase = new DeleteUserUseCase(userRepository);
+
     // 全 User ルートに Bearer 認証を適用
     app.use('/user', auth);
     app.use('/user/*', auth);
 
     app.openapi(getUsersRoute, async (c) => {
-        const users = await userRepository.all();
-        return c.json({ user: users.map(sanitizeUser) }, 200);
+        const users = await getUsersUseCase.execute();
+        return c.json({ user: users.map(serializeUser) }, 200);
     });
 
     app.openapi(getUserRoute, async (c) => {
         const { userId } = c.req.valid('param');
-        const user = await userRepository.one(userId);
-        if (!user) {
-            return c.json({ result: 'error' as const, message: 'リソースが見つかりません' }, 404);
-        }
-        return c.json({ user: sanitizeUser(user) }, 200);
+        const user = await getUserByIdUseCase.execute(userId);
+        return c.json({ user: serializeUser(user) }, 200);
     });
 
     app.openapi(createUserRoute, async (c) => {
-        const { userId, userName, password } = c.req.valid('json');
-        const user = await userRepository.save(userId ?? '', userName, password);
-        return c.json({ user: sanitizeUser(user) }, 200);
+        const body = c.req.valid('json');
+        const user = await createUserUseCase.execute({
+            userName: body.userName,
+            password: body.password,
+            email: body.email,
+            role: body.role,
+        });
+        return c.json({ user: serializeUser(user) }, 201);
     });
 
     app.openapi(updateUserRoute, async (c) => {
         const { userId } = c.req.valid('param');
-        const { userName, password } = c.req.valid('json');
-        const user = await userRepository.save(userId, userName, password);
-        return c.json({ user: sanitizeUser(user) }, 200);
+        const body = c.req.valid('json');
+        const user = await updateUserUseCase.execute(userId, body);
+        return c.json({ user: serializeUser(user) }, 200);
     });
 
     app.openapi(deleteUserRoute, async (c) => {
         const { userId } = c.req.valid('param');
-        await userRepository.remove(userId);
+        await deleteUserUseCase.execute(userId);
         return c.json({ result: 'success' as const }, 200);
     });
 

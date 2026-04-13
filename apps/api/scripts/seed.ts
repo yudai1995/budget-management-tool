@@ -42,6 +42,8 @@ async function seedGuestUser(prisma: PrismaClient): Promise<void> {
             userId: GUEST_USER_ID,
             userName: GUEST_USER_NAME,
             password: placeholderHash,
+            role: 'GUEST',
+            status: 'ACTIVE',
         },
     });
 

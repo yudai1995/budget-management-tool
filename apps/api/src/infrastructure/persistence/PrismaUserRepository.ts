@@ -1,5 +1,5 @@
-import type { PrismaClient } from '@prisma/client';
-import { errorModel } from '../../domain/models/errorModel';
+import type { PrismaClient, UserList } from '@prisma/client';
+import type { UpdateUserInput } from '@budget/common';
 import { User } from '../../domain/models/User';
 import type { IUserRepository } from '../../domain/repositories/IUserRepository';
 
@@ -9,35 +9,79 @@ const bcrypt = require('bcrypt') as {
     compare: (data: string, encrypted: string) => Promise<boolean>;
 };
 
+/** Prisma レコード → ドメインエンティティへの変換（インフラ型のドメイン層への漏洩防止） */
+function toDomain(record: UserList): User {
+    return User.reconstruct({
+        userId: record.userId,
+        userName: record.userName,
+        password: record.password,
+        email: record.email,
+        role: record.role as User['role'],
+        status: record.status as User['status'],
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+    });
+}
+
 export class PrismaUserRepository implements IUserRepository {
     constructor(private readonly prisma: PrismaClient) {}
 
-    async all(): Promise<User[]> {
-        const records = await this.prisma.userList.findMany();
-        return records.map((r) => User.reconstruct({ userId: r.userId, userName: r.userName, password: r.password }));
+    async findAll(): Promise<User[]> {
+        const records = await this.prisma.userList.findMany({
+            orderBy: { createdAt: 'desc' },
+        });
+        return records.map(toDomain);
     }
 
-    async one(userId: string): Promise<User | null> {
+    async findById(userId: string): Promise<User | null> {
         const record = await this.prisma.userList.findUnique({ where: { userId } });
-        if (!record) return null;
-        return User.reconstruct({ userId: record.userId, userName: record.userName, password: record.password });
+        return record ? toDomain(record) : null;
     }
 
-    async save(userId: string, userName: string, password: string): Promise<User> {
-        const hashed = await bcrypt.hash(password, 10);
-        const record = await this.prisma.userList.create({ data: { userId, userName, password: hashed } });
-        return User.reconstruct({ userId: record.userId, userName: record.userName, password: record.password });
+    async findByEmail(email: string): Promise<User | null> {
+        const record = await this.prisma.userList.findUnique({ where: { email } });
+        return record ? toDomain(record) : null;
+    }
+
+    async create(user: User, plaintextPassword: string): Promise<User> {
+        const hashed = await bcrypt.hash(plaintextPassword, 10);
+        const record = await this.prisma.userList.create({
+            data: {
+                userId: user.userId,
+                userName: user.userName,
+                email: user.email,
+                password: hashed,
+                role: user.role,
+                status: user.status,
+            },
+        });
+        return toDomain(record);
+    }
+
+    async update(userId: string, input: UpdateUserInput): Promise<User> {
+        // Prisma の型に合わせてフィールドを個別に組み立てる
+        const record = await this.prisma.userList.update({
+            where: { userId },
+            data: {
+                ...(input.userName !== undefined && { userName: input.userName }),
+                ...(input.email !== undefined && { email: input.email }),
+                ...(input.role !== undefined && { role: input.role }),
+                ...(input.status !== undefined && { status: input.status }),
+                ...(input.password !== undefined && {
+                    password: await bcrypt.hash(input.password, 10),
+                }),
+            },
+        });
+        return toDomain(record);
     }
 
     async remove(userId: string): Promise<void> {
         await this.prisma.userList.delete({ where: { userId } });
     }
 
-    async login(userId: string, password: string): Promise<true | errorModel> {
+    async verifyPassword(userId: string, plaintextPassword: string): Promise<boolean> {
         const record = await this.prisma.userList.findUnique({ where: { userId } });
-        if (!record) return errorModel.NOT_FOUND;
-        if (!record.password) return errorModel.AUTHENTICATION_FAILD;
-        const matched = await bcrypt.compare(password, record.password);
-        return matched ? true : errorModel.AUTHENTICATION_FAILD;
+        if (!record?.password) return false;
+        return bcrypt.compare(plaintextPassword, record.password);
     }
 }

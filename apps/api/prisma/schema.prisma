@@ -24,12 +24,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ユーザーロール
+enum UserRole {
+  ADMIN
+  USER
+  GUEST
+}
+
+// ユーザーステータス
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
 // ユーザー（認証アカウント）
 model UserList {
-  userId   String       @id @db.VarChar(255) @map("userId")
-  userName String       @db.VarChar(255) @map("userName")
-  password String       @db.VarChar(255) @map("password")
-  budgets  BudgetList[]
+  userId    String       @id @db.VarChar(255) @map("userId")
+  userName  String       @db.VarChar(255) @map("userName")
+  email     String?      @unique @db.VarChar(255) @map("email")
+  password  String       @db.VarChar(255) @map("password")
+  role      UserRole     @default(USER) @map("role")
+  status    UserStatus   @default(ACTIVE) @map("status")
+  createdAt DateTime     @default(now()) @db.DateTime(6) @map("created_at")
+  updatedAt DateTime     @updatedAt @db.DateTime(6) @map("updated_at")
+  budgets   BudgetList[]
 
   @@map("user_list")
 }
