@@ -145,28 +145,71 @@ export const CreateBudgetBodySchema = z
 
 // ─── ユーザー (User) ──────────────────────────────────────────────
 
+export const UserRoleSchema = z
+    .enum(['ADMIN', 'USER', 'GUEST'])
+    .openapi({ description: 'ユーザーロール', example: 'USER' });
+
+export const UserStatusSchema = z
+    .enum(['ACTIVE', 'INACTIVE'])
+    .openapi({ description: 'ユーザーステータス', example: 'ACTIVE' });
+
 export const UserResponseSchema = z
     .object({
-        userId: z.string().openapi({ description: 'ユーザーID', example: 'user01' }),
+        userId: z.string().openapi({ description: 'ユーザーID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' }),
         userName: z.string().openapi({ description: 'ユーザー名', example: '山田太郎' }),
+        email: z.string().nullable().openapi({ description: 'メールアドレス', example: 'taro@example.com' }),
+        role: UserRoleSchema,
+        status: UserStatusSchema,
+        createdAt: z.string().openapi({ description: '作成日時 (ISO 8601)', example: '2026-04-13T00:00:00.000Z' }),
+        updatedAt: z.string().openapi({ description: '更新日時 (ISO 8601)', example: '2026-04-13T00:00:00.000Z' }),
     })
     .openapi('UserResponse');
 
 export const CreateUserBodySchema = z
     .object({
-        userId: z.string().optional().openapi({ description: 'ユーザーID（省略時自動生成）', example: 'user01' }),
-        userName: z.string().min(1).openapi({ description: 'ユーザー名', example: '山田太郎' }),
-        password: z.string().min(1).openapi({ description: 'パスワード' }),
+        userName: z
+            .string()
+            .min(1, 'ユーザー名を入力してください')
+            .max(50, 'ユーザー名は50文字以内で入力してください')
+            .openapi({ description: 'ユーザー名', example: '山田太郎' }),
+        password: z
+            .string()
+            .min(8, 'パスワードは8文字以上で入力してください')
+            .openapi({ description: 'パスワード（平文）' }),
+        email: z
+            .string()
+            .email('メールアドレスの形式が不正です')
+            .nullable()
+            .optional()
+            .openapi({ description: 'メールアドレス', example: 'taro@example.com' }),
+        role: UserRoleSchema.optional(),
     })
     .openapi('CreateUserBody');
 
 export const UpdateUserBodySchema = z
     .object({
-        userName: z.string().min(1).openapi({ description: 'ユーザー名', example: '山田太郎' }),
-        password: z.string().min(1).openapi({ description: 'パスワード' }),
+        userName: z
+            .string()
+            .min(1, 'ユーザー名を入力してください')
+            .max(50, 'ユーザー名は50文字以内で入力してください')
+            .optional()
+            .openapi({ description: 'ユーザー名', example: '山田太郎' }),
+        password: z
+            .string()
+            .min(8, 'パスワードは8文字以上で入力してください')
+            .optional()
+            .openapi({ description: '新しいパスワード（平文）。省略時は変更なし' }),
+        email: z
+            .string()
+            .email('メールアドレスの形式が不正です')
+            .nullable()
+            .optional()
+            .openapi({ description: 'メールアドレス', example: 'taro@example.com' }),
+        role: UserRoleSchema.optional(),
+        status: UserStatusSchema.optional(),
     })
     .openapi('UpdateUserBody');
 
 export const UserIdParamSchema = z.object({
-    userId: z.string().openapi({ description: 'ユーザーID', example: 'user01' }),
+    userId: z.string().openapi({ description: 'ユーザーID', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' }),
 });

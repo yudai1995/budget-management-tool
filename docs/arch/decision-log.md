@@ -166,3 +166,54 @@ web → common ← api
 - API サーバー起動コマンドが `ts-node -r tsconfig-paths/register` → `tsx src/index.ts` に変更
 - `migration:run` が `TypeORM DataSource.runMigrations()` → `prisma migrate deploy` に変更
 - `db:docs` が `generate-dbml.ts` スクリプト → `prisma generate` に変更（自動化）
+
+---
+
+## ADR-007: ユーザー管理機能の設計方針
+
+**日付**: 2026-04-13
+**ステータス**: 採用
+
+### 決定
+
+1. **認証・認可の責務配置**: 認証（パスワード検証・トークン発行）は Application 層（TokenService / UseCase）で担い、Domain 層はパスワードのハッシュ値を保持するのみとする
+2. **バリデーション**: メールアドレス形式・ユーザー名長さ等の不変条件は Domain 層（`User.create()` ファクトリ）で検証し、`ValidationError` をスローする
+3. **パスワード秘匿化**: 生パスワードの Domain 層への持ち込みを禁止する。bcrypt ハッシュ化は Infrastructure 層（`PrismaUserRepository`）のみで実施する
+
+### 背景
+
+- 既存の `user.ts` ルートハンドラがリポジトリを直接呼び出しており、UseCase を通さないアクセスが発生していた（禁止事項違反）
+- `User` エンティティに `role`/`status` が存在せず、権限管理の基盤がなかった
+- `IUserRepository.login()` が `errorModel` を返す設計で、Use Case 層での再利用性が低かった
+
+### 理由
+
+- UseCase 層を必ず経由させることで、所有者チェック・権限検証・ビジネスルール適用を一箇所に集約できる
+- `User.create()` ファクトリがバリデーションを担うことで、どのルートから生成されても不正な状態のエンティティが作られない
+- bcrypt をインフラ層に閉じ込めることで、Domain/Application 層はパスワード処理ライブラリに依存しない（テスト容易性向上）
+
+### ドメインモデルの不変条件
+
+```
+userName : 1〜50文字
+email    : RFC 5321 形式（null 許容）
+role     : 'ADMIN' | 'USER' | 'GUEST'
+status   : 'ACTIVE' | 'INACTIVE'
+password : 常にハッシュ済み文字列（Domain 層では生値を受け取らない）
+```
+
+### IUserRepository インターフェース変更
+
+```typescript
+// 旧: all(), one(), save(userId, userName, password), login()
+// 新: findAll(), findById(), create(), update(), remove(), verifyPassword(), findByEmail()
+```
+
+`save()` の廃止により「作成」と「更新」が明確に分離され、意図のないデータ上書きを防止する。
+
+### 影響
+
+- `presentation/routes/user.ts`: リポジトリ直接呼び出しをすべて UseCase 経由に変更
+- `presentation/routes/auth.ts`: `login()` → `verifyPassword()` + `findById()` に変更
+- `prisma/schema.prisma`: `UserList` に `email`, `role`, `status`, `createdAt`, `updatedAt` を追加
+- `packages/common/src/types/user.ts`: `UserRole`, `UserStatus` 型を追加

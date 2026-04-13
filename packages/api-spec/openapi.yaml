@@ -306,14 +306,47 @@ components:
         userId:
           type: string
           description: ユーザーID
-          example: user01
+          example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
         userName:
           type: string
           description: ユーザー名
           example: 山田太郎
+        email:
+          type: string
+          nullable: true
+          description: メールアドレス
+          example: taro@example.com
+        role:
+          type: string
+          enum: &a1
+            - ADMIN
+            - USER
+            - GUEST
+          description: ユーザーロール
+          example: USER
+        status:
+          type: string
+          enum: &a2
+            - ACTIVE
+            - INACTIVE
+          description: ユーザーステータス
+          example: ACTIVE
+        createdAt:
+          type: string
+          description: 作成日時 (ISO 8601)
+          example: 2026-04-13T00:00:00.000Z
+        updatedAt:
+          type: string
+          description: 更新日時 (ISO 8601)
+          example: 2026-04-13T00:00:00.000Z
       required:
         - userId
         - userName
+        - email
+        - role
+        - status
+        - createdAt
+        - updatedAt
     UserListResponse:
       type: object
       properties:
@@ -333,19 +366,27 @@ components:
     CreateUserBody:
       type: object
       properties:
-        userId:
-          type: string
-          description: ユーザーID（省略時自動生成）
-          example: user01
         userName:
           type: string
           minLength: 1
+          maxLength: 50
           description: ユーザー名
           example: 山田太郎
         password:
           type: string
-          minLength: 1
-          description: パスワード
+          minLength: 8
+          description: パスワード（平文）
+        email:
+          type: string
+          nullable: true
+          format: email
+          description: メールアドレス
+          example: taro@example.com
+        role:
+          type: string
+          enum: *a1
+          description: ユーザーロール
+          example: USER
       required:
         - userName
         - password
@@ -355,15 +396,39 @@ components:
         userName:
           type: string
           minLength: 1
+          maxLength: 50
           description: ユーザー名
           example: 山田太郎
         password:
           type: string
-          minLength: 1
-          description: パスワード
+          minLength: 8
+          description: 新しいパスワード（平文）。省略時は変更なし
+        email:
+          type: string
+          nullable: true
+          format: email
+          description: メールアドレス
+          example: taro@example.com
+        role:
+          type: string
+          enum: *a1
+          description: ユーザーロール
+          example: USER
+        status:
+          type: string
+          enum: *a2
+          description: ユーザーステータス
+          example: ACTIVE
+    SuccessResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+          example: success
       required:
-        - userName
-        - password
+        - result
   parameters: {}
 paths:
   /api/login:
@@ -841,7 +906,7 @@ paths:
             schema:
               $ref: "#/components/schemas/CreateUserBody"
       responses:
-        "200":
+        "201":
           description: 登録成功
           content:
             application/json:
@@ -870,7 +935,7 @@ paths:
         - schema:
             type: string
             description: ユーザーID
-            example: user01
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
           required: true
           name: userId
           in: path
@@ -903,7 +968,7 @@ paths:
         - schema:
             type: string
             description: ユーザーID
-            example: user01
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
           required: true
           name: userId
           in: path
@@ -932,6 +997,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       tags:
         - User
@@ -942,7 +1013,7 @@ paths:
         - schema:
             type: string
             description: ユーザーID
-            example: user01
+            example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
           required: true
           name: userId
           in: path
@@ -952,16 +1023,15 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    enum:
-                      - success
-                required:
-                  - result
+                $ref: "#/components/schemas/SuccessResponse"
         "401":
           description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
           content:
             application/json:
               schema:

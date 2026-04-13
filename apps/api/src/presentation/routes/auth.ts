@@ -1,6 +1,5 @@
 import { createRoute } from '@hono/zod-openapi';
 import { createOpenAPIApp } from '../../lib/openapi-app';
-import { errorModel } from '../../domain/models/errorModel';
 import type { TokenService } from '../../application/auth/TokenService';
 import type { AppDeps } from '../../app';
 import {
@@ -136,8 +135,8 @@ export function createAuthRoutes(deps: AppDeps, tokenService: TokenService) {
     app.openapi(loginRoute, async (c) => {
         const { userId, password } = c.req.valid('json');
         try {
-            const loginResult = await userRepository.login(userId, password);
-            if (loginResult === errorModel.NOT_FOUND || loginResult === errorModel.AUTHENTICATION_FAILD) {
+            const ok = await userRepository.verifyPassword(userId, password);
+            if (!ok) {
                 return c.json({ result: 'error' as const, message: '認証に失敗しました' }, 401);
             }
             return c.json(await respondWithTokens(userId), 200);
@@ -149,7 +148,7 @@ export function createAuthRoutes(deps: AppDeps, tokenService: TokenService) {
 
     app.openapi(guestLoginRoute, async (c) => {
         try {
-            const guest = await userRepository.one(GUEST_USER_ID);
+            const guest = await userRepository.findById(GUEST_USER_ID);
             if (!guest) {
                 return c.json({ result: 'error' as const, message: 'ゲストユーザーが存在しません' }, 404);
             }

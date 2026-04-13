@@ -748,7 +748,7 @@ export interface paths {
             };
             responses: {
                 /** @description 登録成功 */
-                200: {
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -873,6 +873,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
+                /** @description リソースが見つからない */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         post?: never;
@@ -894,14 +903,20 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": {
-                            /** @enum {string} */
-                            result: "success";
-                        };
+                        "application/json": components["schemas"]["SuccessResponse"];
                     };
                 };
                 /** @description 未認証 */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description リソースが見つからない */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1111,7 +1126,7 @@ export interface components {
         UserResponse: {
             /**
              * @description ユーザーID
-             * @example user01
+             * @example 01ARZ3NDEKTSV4RRFFQ69G5FAV
              */
             userId: string;
             /**
@@ -1119,6 +1134,33 @@ export interface components {
              * @example 山田太郎
              */
             userName: string;
+            /**
+             * @description メールアドレス
+             * @example taro@example.com
+             */
+            email: string | null;
+            /**
+             * @description ユーザーロール
+             * @example USER
+             * @enum {string}
+             */
+            role: "ADMIN" | "USER" | "GUEST";
+            /**
+             * @description ユーザーステータス
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status: "ACTIVE" | "INACTIVE";
+            /**
+             * @description 作成日時 (ISO 8601)
+             * @example 2026-04-13T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * @description 更新日時 (ISO 8601)
+             * @example 2026-04-13T00:00:00.000Z
+             */
+            updatedAt: string;
         };
         UserListResponse: {
             user: components["schemas"]["UserResponse"][];
@@ -1128,26 +1170,58 @@ export interface components {
         };
         CreateUserBody: {
             /**
-             * @description ユーザーID（省略時自動生成）
-             * @example user01
-             */
-            userId?: string;
-            /**
              * @description ユーザー名
              * @example 山田太郎
              */
             userName: string;
-            /** @description パスワード */
+            /** @description パスワード（平文） */
             password: string;
+            /**
+             * Format: email
+             * @description メールアドレス
+             * @example taro@example.com
+             */
+            email?: string | null;
+            /**
+             * @description ユーザーロール
+             * @example USER
+             * @enum {string}
+             */
+            role?: "ADMIN" | "USER" | "GUEST";
         };
         UpdateUserBody: {
             /**
              * @description ユーザー名
              * @example 山田太郎
              */
-            userName: string;
-            /** @description パスワード */
-            password: string;
+            userName?: string;
+            /** @description 新しいパスワード（平文）。省略時は変更なし */
+            password?: string;
+            /**
+             * Format: email
+             * @description メールアドレス
+             * @example taro@example.com
+             */
+            email?: string | null;
+            /**
+             * @description ユーザーロール
+             * @example USER
+             * @enum {string}
+             */
+            role?: "ADMIN" | "USER" | "GUEST";
+            /**
+             * @description ユーザーステータス
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "INACTIVE";
+        };
+        SuccessResponse: {
+            /**
+             * @example success
+             * @enum {string}
+             */
+            result: "success";
         };
     };
     responses: never;
