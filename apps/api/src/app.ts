@@ -13,6 +13,7 @@ import { createExpenseRoutes } from './presentation/routes/expense';
 import { createUserRoutes } from './presentation/routes/user';
 import { createRecoveryRoutes } from './presentation/routes/recovery';
 import { createExportRoutes } from './presentation/routes/export';
+import { createXDayRoutes } from './presentation/routes/xday';
 
 export type AppDeps = {
     userRepository: IUserRepository;
@@ -50,6 +51,7 @@ export function createApp(deps: AppDeps) {
     app.route('/api', createUserRoutes(deps, tokenService));
     app.route('/api', createRecoveryRoutes(deps));
     app.route('/api', createExportRoutes(deps, tokenService));
+    app.route('/api', createXDayRoutes(deps, tokenService));
 
     app.onError((err, c) => {
         if (err instanceof DomainException) {
