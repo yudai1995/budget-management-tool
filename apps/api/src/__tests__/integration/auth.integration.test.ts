@@ -12,38 +12,46 @@
 
 import { API_PATHS } from '@budget/api-client';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { PrismaClient } from '@prisma/client';
 import { createApp } from '../../app';
-import { TypeORMExpenseRepository } from '../../infrastructure/persistence/TypeORMExpenseRepository';
-import { TypeORMUserRepository } from '../../infrastructure/persistence/TypeORMUserRepository';
-import { TypeORMBudgetRepository } from '../../infrastructure/persistence/TypeORMBudgetRepository';
-import { TestDataSource, resetDatabase, seedTestData } from '../helpers/db';
+import { PrismaBudgetRepository } from '../../infrastructure/persistence/PrismaBudgetRepository';
+import { PrismaExpenseRepository } from '../../infrastructure/persistence/PrismaExpenseRepository';
+import { PrismaPasswordResetTokenRepository } from '../../infrastructure/persistence/PrismaPasswordResetTokenRepository';
+import { PrismaRefreshTokenRepository } from '../../infrastructure/persistence/PrismaRefreshTokenRepository';
+import { PrismaSecurityAnswerRepository } from '../../infrastructure/persistence/PrismaSecurityAnswerRepository';
+import { PrismaUserRepository } from '../../infrastructure/persistence/PrismaUserRepository';
+import { testPrisma, resetDatabase, seedTestData } from '../helpers/db';
 import { TestAgent, testRequest } from '../helpers/testClient';
 
 // DB に接続できない場合はスキップ
-const dbAvailable = await TestDataSource.initialize()
-    .then(() => true)
-    .catch(() => false);
+let dbAvailable = false;
+try {
+    await testPrisma.$connect();
+    dbAvailable = true;
+} catch {
+    dbAvailable = false;
+}
 
 const describeIf = dbAvailable ? describe : describe.skip;
 
 describeIf('Auth 統合テスト（実 DB）', () => {
-    const app = createApp(
-        {
-            userRepository: new TypeORMUserRepository(TestDataSource),
-            expenseRepository: new TypeORMExpenseRepository(TestDataSource),
-            budgetRepository: new TypeORMBudgetRepository(TestDataSource),
-        },
-        { sessionSecret: 'integration-test-secret' }
-    );
+    const prisma = new PrismaClient();
+    const app = createApp({
+        userRepository: new PrismaUserRepository(prisma),
+        expenseRepository: new PrismaExpenseRepository(prisma),
+        budgetRepository: new PrismaBudgetRepository(prisma),
+        refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
+        securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
+        passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
+    });
 
     beforeAll(async () => {
         if (!dbAvailable) return;
     });
 
     afterAll(async () => {
-        if (dbAvailable && TestDataSource.isInitialized) {
-            await TestDataSource.destroy();
-        }
+        await testPrisma.$disconnect();
+        await prisma.$disconnect();
     });
 
     beforeEach(async () => {
@@ -70,14 +78,14 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             expect((res.body as Record<string, unknown>).userId).toBe(userId);
         });
 
-        it('正常系: ログイン後のセッションで認証が維持される', async () => {
+        it('正常系: ログイン後のトークンで認証が維持される', async () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const { userId } = users[0];
             const client = new TestAgent(app);
 
-            await client.post(API_PATHS.LOGIN, { userId, password: 'password123' });
+            await client.login(API_PATHS.LOGIN, { userId, password: 'password123' });
 
-            // セッション維持確認: 認証が必要なエンドポイントにアクセスできる
+            // JWT トークン保持確認: 認証が必要なエンドポイントにアクセスできる
             const res = await client.get(API_PATHS.EXPENSE);
             expect(res.status).toBe(200);
         });
@@ -138,7 +146,7 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const client = new TestAgent(app);
 
-            await client.post(API_PATHS.LOGIN, { userId: users[0].userId, password: 'password123' });
+            await client.login(API_PATHS.LOGIN, { userId: users[0].userId, password: 'password123' });
 
             const res = await client.post(API_PATHS.LOGOUT);
             expect(res.status).toBe(200);
@@ -154,7 +162,7 @@ describeIf('Auth 統合テスト（実 DB）', () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const client = new TestAgent(app);
 
-            await client.post(API_PATHS.LOGIN, { userId: users[0].userId, password: 'password123' });
+            await client.login(API_PATHS.LOGIN, { userId: users[0].userId, password: 'password123' });
             await client.post(API_PATHS.LOGOUT);
 
             const res = await client.get(API_PATHS.EXPENSE);
