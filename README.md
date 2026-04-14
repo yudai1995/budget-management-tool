@@ -235,6 +235,52 @@ pnpm test:e2e
 
 > E2E テストの詳細は `e2e/` ディレクトリを参照してください。
 
+### 6. Lefthook による自動実行タイミング
+
+| フック | 実行内容 | 条件 |
+|--------|---------|------|
+| `pre-commit` | type-check / lint / format / openapi-sync / design-tokens-sync / **unit-test** | 常時 |
+| `pre-push` | **統合テスト** | テスト用 DB（port 3307）が起動中のみ |
+
+---
+
+### テスト追加ガイドライン（新規コード時の必須事項）
+
+新規コードを追加・既存コードを修正する際は、以下を基準にテストを作成してください。**テストなしの実装はマージしません。**
+
+#### テスト配置マップ
+
+```
+apps/
+  web/src/__tests__/
+    components/   ← コンポーネント・hooks（Vitest + RTL）
+    actions/      ← Server Actions（Vitest）
+  api/src/__tests__/
+    unit/         ← UseCase・ドメインロジック（Vitest）
+    integration/  ← API エンドポイント（Supertest + 実 DB）
+    e2e/          ← API 全行程（Supertest）
+packages/
+  common/src/__tests__/
+    schemas/      ← Zod スキーマ（Vitest）
+e2e/              ← ブラウザ操作全行程（Playwright）
+```
+
+#### 必須テストケース
+
+| 区分 | 内容 |
+|------|------|
+| **正常系** | 想定入力で想定出力が返ること |
+| **異常系** | 不正入力・エラー時に適切なハンドリングが行われること |
+| **境界値** | 最小値・最大値・空文字・null・0 などの境界を検証すること |
+
+#### テスト名規約
+
+```ts
+// 「〜のとき、〜になる」形式
+it('金額が0のとき、バリデーションエラーになる', ...)
+it('未ログイン状態でアクセスしたとき、ログインページにリダイレクトされる', ...)
+```
+
 ---
 
 ## よく使うコマンド

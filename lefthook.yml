@@ -41,3 +41,26 @@ pre-commit:
           echo "docs/design/figma-tokens.json が存在しないためスキップします。"
         fi
       fail_text: "デザイントークンが最新ではありません。`pnpm run sync:tokens` を実行し、生成結果をステージングしてください。"
+
+    # 6. ユニット・コンポーネントテスト（DB 不要・高速）
+    #    common / api / web の全ユニットテストを実行する
+    #    新規コード追加時は対応するテストが存在しなければコミットをブロックする
+    unit-test:
+      run: pnpm turbo run test:unit
+      fail_text: "ユニットテストが失敗しました。`pnpm test:unit` を実行して確認してください。新規コードには対応するテストを追加してください。"
+
+# pre-push フック: 統合テスト（テスト用 DB が起動中の場合のみ実行）
+# push 前に実 DB を使った API ↔ DB 貫通テストを検証する
+pre-push:
+  parallel: false
+  commands:
+    integration-test:
+      run: |
+        if docker compose -f docker-compose.test.yml ps 2>/dev/null | grep -q "healthy"; then
+          echo "テスト用 DB が起動中です。統合テストを実行します..."
+          pnpm test:integration
+        else
+          echo "テスト用 DB が未起動のため統合テストをスキップします。"
+          echo "統合テストを実行するには: docker compose -f docker-compose.test.yml up -d"
+        fi
+      fail_text: "統合テストが失敗しました。`pnpm test:integration` を確認してください。"
