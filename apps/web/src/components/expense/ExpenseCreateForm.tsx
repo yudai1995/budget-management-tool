@@ -8,6 +8,8 @@ import { getCategoriesByType } from "@/lib/constants/categories";
 type Props = {
   /** ログイン中のユーザー ID */
   userId: string;
+  /** 初期表示する日付（YYYY-MM-DD 形式。省略時は今日） */
+  defaultDate?: string;
 };
 
 const initialState: ExpenseActionState = { error: null, success: false };
@@ -19,7 +21,7 @@ function FieldError({ messages }: { messages?: string[] }) {
   );
 }
 
-export function ExpenseCreateForm({ userId }: Props) {
+export function ExpenseCreateForm({ userId, defaultDate }: Props) {
   const [balanceType, setBalanceType] = useState<0 | 1>(0);
   const [state, formAction, isPending] = useActionState(
     createExpenseAction,
@@ -89,7 +91,7 @@ export function ExpenseCreateForm({ userId }: Props) {
               name="date"
               type="date"
               required
-              defaultValue={new Date().toISOString().split("T")[0]}
+              defaultValue={defaultDate ?? new Date().toISOString().split("T")[0]}
               className="flex-1 bg-transparent text-sm outline-none"
             />
             <svg className="h-4 w-4 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
