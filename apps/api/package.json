@@ -16,7 +16,8 @@
     "migration:dev": "prisma migrate dev",
     "seed": "tsx scripts/seed.ts",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
-    "generate:spec": "tsx scripts/generate-spec.ts"
+    "generate:spec": "tsx scripts/generate-spec.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.4",
