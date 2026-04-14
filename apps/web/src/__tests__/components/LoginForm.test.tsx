@@ -9,6 +9,11 @@ vi.mock('@/lib/actions/auth', () => ({
     guestLoginAction: vi.fn(),
 }))
 
+// useSearchParams が jsdom で null を返す問題を回避
+vi.mock('next/navigation', () => ({
+    useSearchParams: vi.fn().mockReturnValue(new URLSearchParams()),
+}))
+
 // ESM環境ではvi.spyOnは不可。vi.mockでuseActionStateをモックする
 vi.mock('react', async (importOriginal) => {
     const actual = await importOriginal<typeof import('react')>()

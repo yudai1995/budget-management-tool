@@ -33,7 +33,7 @@ describe('ExpenseCreateForm', () => {
 
         expect(screen.getByLabelText('金額')).toBeInTheDocument()
         expect(screen.getByLabelText('日付')).toBeInTheDocument()
-        expect(screen.getByLabelText('種別')).toBeInTheDocument()
+        expect(screen.getByLabelText('カテゴリ')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: '追加する' })).toBeInTheDocument()
     })
 
@@ -47,18 +47,6 @@ describe('ExpenseCreateForm', () => {
         render(<ExpenseCreateForm userId="user-1" />)
 
         expect(screen.getByText('金額は1以上の値を入力してください')).toBeInTheDocument()
-    })
-
-    it('fieldErrors.balanceType があるとき、エラーメッセージを表示する', () => {
-        vi.mocked(React.useActionState).mockReturnValue([
-            { error: null, success: false, fieldErrors: { balanceType: ['種別を選択してください'] } },
-            vi.fn(),
-            false,
-        ] as unknown as ReturnType<typeof React.useActionState>)
-
-        render(<ExpenseCreateForm userId="user-1" />)
-
-        expect(screen.getByText('種別を選択してください')).toBeInTheDocument()
     })
 
     it('state.error があるとき、エラーメッセージを表示する', () => {

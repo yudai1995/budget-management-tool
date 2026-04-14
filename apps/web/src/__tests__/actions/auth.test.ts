@@ -49,12 +49,12 @@ describe('guestLoginAction', () => {
         expect(serverFetch).toHaveBeenCalledWith('/api/guest-login', { method: 'POST' })
     })
 
-    it('ログイン成功後に /expenses へリダイレクトする', async () => {
+    it('ログイン成功後に / へリダイレクトする', async () => {
         vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
         await guestLoginAction()
 
-        expect(redirect).toHaveBeenCalledWith('/expenses')
+        expect(redirect).toHaveBeenCalledWith('/')
     })
 
     it('API エラー時は ApiError をスローする', async () => {
@@ -106,7 +106,7 @@ describe('loginAction', () => {
         expect(redirect).not.toHaveBeenCalled()
     })
 
-    it('ログイン成功後に /expenses へリダイレクトする', async () => {
+    it('ログイン成功後に / へリダイレクトする', async () => {
         vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
         const formData = new FormData()
@@ -115,6 +115,6 @@ describe('loginAction', () => {
 
         await loginAction(initialState, formData)
 
-        expect(redirect).toHaveBeenCalledWith('/expenses')
+        expect(redirect).toHaveBeenCalledWith('/')
     })
 })
