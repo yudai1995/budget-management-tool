@@ -109,8 +109,8 @@ export function MonthlyCalendar({ expenses }: Props) {
 
   const handleDayClick = (day: DayData) => {
     if (!day.isCurrentMonth) return;
-    // クリックした日付をクエリパラメータで渡してフォームへ
-    router.push(`/?date=${day.dateStr}#form`);
+    // クリックした日付をクエリパラメータで渡して入力ページへ
+    router.push(`/expenses/new?date=${day.dateStr}`);
   };
 
   return (

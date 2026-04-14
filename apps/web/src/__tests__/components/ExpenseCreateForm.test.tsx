@@ -73,6 +73,19 @@ describe('ExpenseCreateForm', () => {
         expect(screen.getByText('登録しました')).toBeInTheDocument()
     })
 
+    it('defaultDate が渡されたとき、日付入力に反映される', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null, success: false },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<ExpenseCreateForm userId="user-1" defaultDate="2026-04-13" />)
+
+        const dateInput = screen.getByLabelText('日付') as HTMLInputElement
+        expect(dateInput.defaultValue).toBe('2026-04-13')
+    })
+
     it('isPending=true のとき、ボタンが disabled になる', () => {
         vi.mocked(React.useActionState).mockReturnValue([
             { error: null, success: false },

@@ -13,7 +13,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "ホーム", href: "/" },
   { label: "カレンダー", href: "/calendar" },
   { label: "レポート", href: "/report" },
-  { label: "入力", href: "/#form" },
+  { label: "記録する", href: "/expenses/new" },
 ];
 
 type Props = {
