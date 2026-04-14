@@ -14,34 +14,42 @@
 import { API_PATHS } from '@budget/api-client';
 import type { ExpenseResponse, GetExpensesResponse } from '@budget/api-client';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { PrismaClient } from '@prisma/client';
 import { createApp } from '../../app';
-import { TypeORMBudgetRepository } from '../../infrastructure/persistence/TypeORMBudgetRepository';
-import { TypeORMExpenseRepository } from '../../infrastructure/persistence/TypeORMExpenseRepository';
-import { TypeORMUserRepository } from '../../infrastructure/persistence/TypeORMUserRepository';
-import { TestDataSource, resetDatabase, seedTestData } from '../helpers/db';
+import { PrismaBudgetRepository } from '../../infrastructure/persistence/PrismaBudgetRepository';
+import { PrismaExpenseRepository } from '../../infrastructure/persistence/PrismaExpenseRepository';
+import { PrismaPasswordResetTokenRepository } from '../../infrastructure/persistence/PrismaPasswordResetTokenRepository';
+import { PrismaRefreshTokenRepository } from '../../infrastructure/persistence/PrismaRefreshTokenRepository';
+import { PrismaSecurityAnswerRepository } from '../../infrastructure/persistence/PrismaSecurityAnswerRepository';
+import { PrismaUserRepository } from '../../infrastructure/persistence/PrismaUserRepository';
+import { testPrisma, resetDatabase, seedTestData } from '../helpers/db';
 import { TestAgent, testRequest } from '../helpers/testClient';
 
 // DB に接続できない場合はスキップ
-const dbAvailable = await TestDataSource.initialize()
-    .then(() => true)
-    .catch(() => false);
+let dbAvailable = false;
+try {
+    await testPrisma.$connect();
+    dbAvailable = true;
+} catch {
+    dbAvailable = false;
+}
 
 const describeIf = dbAvailable ? describe : describe.skip;
 
 describeIf('Expense 統合テスト（実 DB）', () => {
-    const app = createApp(
-        {
-            userRepository: new TypeORMUserRepository(TestDataSource),
-            expenseRepository: new TypeORMExpenseRepository(TestDataSource),
-            budgetRepository: new TypeORMBudgetRepository(TestDataSource),
-        },
-        { sessionSecret: 'integration-test-secret' }
-    );
+    const prisma = new PrismaClient();
+    const app = createApp({
+        userRepository: new PrismaUserRepository(prisma),
+        expenseRepository: new PrismaExpenseRepository(prisma),
+        budgetRepository: new PrismaBudgetRepository(prisma),
+        refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
+        securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
+        passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
+    });
 
     afterAll(async () => {
-        if (dbAvailable && TestDataSource.isInitialized) {
-            await TestDataSource.destroy();
-        }
+        await testPrisma.$disconnect();
+        await prisma.$disconnect();
     });
 
     beforeEach(async () => {
@@ -51,7 +59,7 @@ describeIf('Expense 統合テスト（実 DB）', () => {
     /** ログイン済みエージェントを返すヘルパー（seed された userId を使用） */
     async function loginClient(userId: string) {
         const client = new TestAgent(app);
-        await client.post(API_PATHS.LOGIN, { userId, password: 'password123' });
+        await client.login(API_PATHS.LOGIN, { userId, password: 'password123' });
         return client;
     }
 
