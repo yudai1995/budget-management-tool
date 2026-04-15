@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
-import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
+import { ExpenseNewForm } from "@/components/expense/ExpenseNewForm";
 
 export const metadata: Metadata = {
   title: "収支を記録する | 家計管理",
@@ -25,7 +25,7 @@ export default async function ExpenseNewPage({ searchParams }: Props) {
     <div className="flex min-h-screen flex-col bg-[var(--color-surface-subtle)]">
       <Header userName={userId} />
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8">
-        <ExpenseCreateForm userId={userId} defaultDate={defaultDate} />
+        <ExpenseNewForm userId={userId} defaultDate={defaultDate} />
       </main>
     </div>
   );
