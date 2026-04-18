@@ -36,3 +36,15 @@ variable "alert_email" {
   description = "コスト超過アラートの送信先メールアドレス"
   type        = string
 }
+
+variable "ssm_prefix" {
+  description = "SSM Parameter Store のパスプレフィックス（例: /budget/dev）"
+  type        = string
+  default     = "/budget/dev"
+}
+
+variable "initial_web_origin_ip" {
+  description = "CloudFront オリジンの初期 IP（terraform apply 後に scripts/update-cloudfront-origin.sh で自動更新）"
+  type        = string
+  default     = "127.0.0.1" # placeholder: 初回デプロイ後に自動更新される
+}
