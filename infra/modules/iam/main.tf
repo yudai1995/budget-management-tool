@@ -181,3 +181,36 @@ data "aws_iam_policy_document" "ecs_ssm_policy" {
     resources = [local.ssm_resource_arn]
   }
 }
+
+# ─── Layer 4: RDS IAM データベース認証 ───────────────────────────────────────
+# rds_resource_id が指定された場合のみ rds-db:connect 権限を付与する。
+# パスワード認証を廃止し、IAM 認証トークン（15分有効）で接続することで
+# 静的パスワードの漏洩リスクを排除する。
+#
+# アプリケーション側の対応（apps/api）:
+#   aws-sdk の RDS.Signer で generateAuthToken() を実行し、
+#   Prisma の DATABASE_URL のパスワード部分に動的トークンを設定する。
+#   （RDS インスタンス作成後に実装予定）
+
+resource "aws_iam_role_policy" "ecs_task_rds_iam_auth" {
+  count  = var.rds_resource_id != "" ? 1 : 0
+  name   = "${var.name_prefix}-ecs-rds-iam-auth-policy"
+  role   = aws_iam_role.ecs_task_execution.id
+  policy = data.aws_iam_policy_document.ecs_rds_iam_auth_policy[0].json
+}
+
+data "aws_iam_policy_document" "ecs_rds_iam_auth_policy" {
+  count = var.rds_resource_id != "" ? 1 : 0
+
+  statement {
+    sid    = "RDSIAMConnect"
+    effect = "Allow"
+    actions = [
+      "rds-db:connect",
+    ]
+    # リソース形式: arn:aws:rds-db:{region}:{account}:dbuser:{resource-id}/{db-user}
+    resources = [
+      "arn:aws:rds-db:${var.aws_region}:${local.account_id}:dbuser:${var.rds_resource_id}/api",
+    ]
+  }
+}

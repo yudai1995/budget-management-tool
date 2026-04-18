@@ -18,6 +18,12 @@ variable "github_repo" {
   type        = string
 }
 
+variable "rds_resource_id" {
+  description = "RDS インスタンスの Resource ID（例: db-XXXXXXXXXX）。IAM DB Auth の rds-db:connect リソース指定に使用。空文字の場合は権限を付与しない"
+  type        = string
+  default     = ""
+}
+
 variable "github_thumbprints" {
   description = "GitHub OIDC エンドポイントの TLS 証明書フィンガープリント（証明書ローテーション対応のため複数指定）"
   type        = list(string)

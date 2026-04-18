@@ -3,13 +3,13 @@
 #
 # フェーズ 1: VPC / IAM / ECR / SG の基盤リソース
 # フェーズ 2: ECS クラスター / タスク定義 / サービス
-# フェーズ 3: CloudFront ディストリビューション
+# フェーズ 3: CloudFront ディストリビューション（Origin Shield 付き）
+# フェーズ 4: 監視（CloudWatch Alarm + SNS + Budget 予測アラート）
 #
 # 適用順:
 #   1. cd ../bootstrap && terraform apply  (初回のみ)
-#   2. terraform init
-#   3. terraform plan
-#   4. terraform apply
+#   2. SSM に CF_ORIGIN_SECRET を事前登録: aws ssm put-parameter ...
+#   3. terraform init && terraform plan && terraform apply
 # ============================================================
 
 # ─── フェーズ 1: VPC ─────────────────────────────────────────────────────────
@@ -74,4 +74,20 @@ module "cloudfront" {
   # ECS タスク起動後に scripts/update-cloudfront-origin.sh で自動更新
   # 初回 apply 時は placeholder（terraform apply 後に手動で初回デプロイを実行）
   web_origin_domain = var.initial_web_origin_ip
+
+  # Layer 2: Origin Shield — CloudFront がこのシークレットをカスタムヘッダーで送出
+  # SSM に事前登録: aws ssm put-parameter --name /budget/dev/cf_origin_secret --type SecureString --value <ランダム文字列>
+  origin_shield_secret_ssm_path = "${var.ssm_prefix}/cf_origin_secret"
+}
+
+# ─── フェーズ 7: 監視（CloudWatch + SNS + Budget 予測アラート） ──────────────
+
+module "monitoring" {
+  source      = "../modules/monitoring"
+  name_prefix = local.name_prefix
+  alert_email = var.alert_email
+
+  ecs_cluster_name     = module.ecs.cluster_name
+  ecs_api_service_name = module.ecs.api_service_name
+  budget_limit_usd     = var.budget_limit_usd
 }

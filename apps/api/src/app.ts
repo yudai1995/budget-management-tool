@@ -1,4 +1,5 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { secureHeaders } from 'hono/secure-headers';
 import type { IBudgetRepository } from './domain/repositories/IBudgetRepository';
 import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
 import type { IUserRepository } from './domain/repositories/IUserRepository';
@@ -37,6 +38,25 @@ export function createApp(deps: AppDeps) {
     const tokenService = new TokenService(privateKeyPem, publicKeyPem, deps.refreshTokenRepository);
 
     const app = new OpenAPIHono<HonoEnv>();
+
+    // ─── Layer 3: セキュリティヘッダー（helmet 相当） ─────────────────────────────
+    // X-Content-Type-Options, X-Frame-Options, Referrer-Policy 等を付与
+    app.use('*', secureHeaders());
+
+    // ─── Layer 2: Origin Shield 検証 ─────────────────────────────────────────────
+    // CloudFront がカスタムヘッダー X-CF-Origin-Secret を付与して転送する。
+    // ヘッダーが存在しない（= ECS タスク IP への直接アクセス）場合は 403 で遮断する。
+    // 本番環境のみ適用（ローカル開発・テストは環境変数未設定のため無効）
+    const cfOriginSecret = process.env.CF_ORIGIN_SECRET;
+    if (cfOriginSecret) {
+        app.use('*', async (c, next) => {
+            const receivedSecret = c.req.header('X-CF-Origin-Secret');
+            if (receivedSecret !== cfOriginSecret) {
+                return c.json({ result: 'error', message: 'Forbidden' }, 403);
+            }
+            await next();
+        });
+    }
 
     // JWT Bearer 認証スキームをレジストリに登録（createRoute の security: [{ bearerAuth: [] }] と対応）
     app.openAPIRegistry.registerComponent('securitySchemes', 'bearerAuth', {

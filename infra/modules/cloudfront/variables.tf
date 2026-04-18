@@ -19,3 +19,8 @@ variable "price_class" {
   type        = string
   default     = "PriceClass_100"
 }
+
+variable "origin_shield_secret_ssm_path" {
+  description = "Origin Shield シークレットトークンを格納する SSM Parameter Store のパス（例: /budget/dev/cf_origin_secret）"
+  type        = string
+}
