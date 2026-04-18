@@ -24,17 +24,19 @@ export function Header({ userName }: Props) {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-10 border-b border-[var(--color-brand-primary)]/20 bg-white shadow-sm">
+    <header className="sticky top-0 z-10 border-b border-[#1c1410]/10 bg-[#fffdf5]">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         {/* ロゴ */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-base font-bold text-zinc-800"
-        >
-          <span className="flex h-7 w-7 items-center justify-center rounded bg-[var(--color-brand-primary)] text-xs font-bold text-white">
+        <Link href="/" className="flex items-center gap-2">
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-[#1c1410] bg-[#f18840] text-sm font-extrabold text-white"
+            style={{ boxShadow: "var(--shadow-pop-sm)" }}
+          >
             B
           </span>
-          家計簿管理ツール
+          <span className="text-base font-bold text-[#1c1410]">
+            家計簿
+          </span>
         </Link>
 
         {/* ナビゲーション */}
@@ -49,15 +51,15 @@ export function Header({ userName }: Props) {
                 key={item.href}
                 href={item.href}
                 className={[
-                  "relative px-4 py-4 text-sm font-medium transition-colors",
+                  "relative px-3 py-2 text-sm font-semibold transition-colors rounded-lg",
                   isActive
-                    ? "text-[var(--color-brand-primary)]"
-                    : "text-zinc-600 hover:text-[var(--color-brand-primary)]",
+                    ? "text-[#f18840] bg-[#fff6ee]"
+                    : "text-[#1c1410] hover:text-[#f18840] hover:bg-[#fff6ee]",
                 ].join(" ")}
               >
                 {item.label}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-brand-primary)]" />
+                  <span className="absolute -bottom-0.5 left-3 right-3 h-0.5 rounded-full bg-[#f18840]" />
                 )}
               </Link>
             );
@@ -67,13 +69,12 @@ export function Header({ userName }: Props) {
         {/* ユーザー情報 + ログアウト */}
         <div className="flex items-center gap-3">
           {userName && (
-            <span className="text-sm text-zinc-600">{userName}さん</span>
+            <span className="text-sm font-medium text-[#1c1410]/50">
+              {userName}さん
+            </span>
           )}
           <form action={logoutAction}>
-            <button
-              type="submit"
-              className="rounded-full bg-[var(--color-brand-primary)] px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            >
+            <button type="submit" className="btn-ghost text-xs px-3 py-1.5">
               ログアウト
             </button>
           </form>

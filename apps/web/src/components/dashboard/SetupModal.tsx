@@ -26,36 +26,47 @@ export function SetupModal({ onSave, defaultAssets, defaultIncome, onClose }: Pr
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1410]/50"
             onClick={onClose}
         >
-            { }
             <div
-                className="relative mx-4 w-full max-w-md rounded-[var(--radius-card)] border border-orange-200 bg-[var(--color-surface-subtle)] p-8 shadow-xl"
+                className="relative mx-4 w-full max-w-md rounded-2xl border-2 border-[#1c1410] bg-[#fffdf5] p-8"
+                style={{ boxShadow: "var(--shadow-pop)" }}
                 onClick={e => e.stopPropagation()}
             >
+                {/* 幾何学デコレーション */}
+                <div
+                    className="pointer-events-none absolute right-16 top-4 h-6 w-6 rounded-full border border-[#f18840]/20 bg-[#fff6ee]"
+                    aria-hidden="true"
+                />
+                <div
+                    className="pointer-events-none absolute left-6 bottom-6 h-4 w-4 rotate-12 rounded-sm border border-[#35b5a2]/20 bg-[#ecfaf8]"
+                    aria-hidden="true"
+                />
+
                 {/* 閉じるボタン（再設定時のみ表示） */}
                 {onClose && (
                     <button
                         type="button"
                         onClick={onClose}
                         aria-label="閉じる"
-                        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-orange-100 hover:text-zinc-600"
+                        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#1c1410] bg-white text-[#1c1410] transition-colors hover:bg-[#fff6ee]"
+                        style={{ boxShadow: "var(--shadow-pop-sm)" }}
                     >
-                        <X size={16} />
+                        <X size={14} />
                     </button>
                 )}
 
-                <p className="mb-1 text-xs font-medium text-zinc-400">
-                    {isReconfigure ? "家計の寿命 — 設定の更新" : "家計の寿命 — はじめに"}
+                <p className="mb-1 text-xs font-bold text-[#1c1410]/40 uppercase tracking-wider">
+                    {isReconfigure ? "設定の更新" : "はじめに"}
                 </p>
-                <h1 className="mb-2 text-xl font-bold text-zinc-800">
-                    {isReconfigure ? "資産データを更新する" : "あなたの家計の寿命を計算します"}
+                <h1 className="mb-2 text-xl font-extrabold text-[#1c1410]">
+                    {isReconfigure ? "資産データを更新する" : "家計の寿命を計算します"}
                 </h1>
                 {!isReconfigure && (
-                    <p className="mb-6 text-sm text-zinc-500">
+                    <p className="mb-6 text-sm text-[#1c1410]/60">
                         現在の資産と収入を入力すると、今のペースで
-                        <span className="font-medium text-[var(--color-brand-primary)]">
+                        <span className="font-bold text-[#f18840]">
                             あと何年・何ヶ月 自由に暮らせるか
                         </span>
                         がわかります。
@@ -64,7 +75,7 @@ export function SetupModal({ onSave, defaultAssets, defaultIncome, onClose }: Pr
 
                 <form onSubmit={handleSubmit} className={isReconfigure ? "mt-4 flex flex-col gap-5" : "flex flex-col gap-5"}>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-zinc-700" htmlFor="totalAssets">
+                        <label className="text-sm font-bold text-[#1c1410]" htmlFor="totalAssets">
                             現在の総資産（円）
                         </label>
                         <input
@@ -75,16 +86,17 @@ export function SetupModal({ onSave, defaultAssets, defaultIncome, onClose }: Pr
                             min={0}
                             defaultValue={defaultAssets}
                             placeholder="5,000,000"
-                            className="rounded-[var(--radius-md)] border border-orange-200 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none placeholder:text-zinc-300 focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-orange-100"
+                            className="input-pop"
                         />
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-[#1c1410]/40">
                             貯金・投資・現金の合計額を入力してください。
                         </p>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-zinc-700" htmlFor="monthlyIncome">
-                            月次の固定収入（円）— 任意
+                        <label className="text-sm font-bold text-[#1c1410]" htmlFor="monthlyIncome">
+                            月次の固定収入（円）
+                            <span className="ml-1 font-normal text-[#1c1410]/40">— 任意</span>
                         </label>
                         <input
                             id="monthlyIncome"
@@ -93,18 +105,15 @@ export function SetupModal({ onSave, defaultAssets, defaultIncome, onClose }: Pr
                             min={0}
                             defaultValue={defaultIncome ?? 0}
                             placeholder="0"
-                            className="rounded-[var(--radius-md)] border border-orange-200 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none placeholder:text-zinc-300 focus:border-[var(--color-brand-primary)] focus:ring-2 focus:ring-orange-100"
+                            className="input-pop"
                         />
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-[#1c1410]/40">
                             確定している収入のみ入力してください。不明な場合は 0 のままで構いません。
                         </p>
                     </div>
 
-                    <button
-                        type="submit"
-                        className="rounded-[var(--radius-md)] bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--color-brand-secondary)] active:opacity-80"
-                    >
-                        {isReconfigure ? "更新する →" : "家計の寿命を計算する →"}
+                    <button type="submit" className="btn-candy w-full py-3">
+                        {isReconfigure ? "更新する" : "家計の寿命を計算する"}
                     </button>
                 </form>
             </div>

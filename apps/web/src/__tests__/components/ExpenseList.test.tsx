@@ -54,7 +54,8 @@ describe('ExpenseList', () => {
     describe('支出リストの表示', () => {
         it('金額が「¥1,000」形式でフォーマットされて表示される', () => {
             render(<ExpenseList expenses={[buildExpense({ amount: 1000 })]} />);
-            expect(screen.getByText('¥1,000')).toBeInTheDocument();
+            // 支出（balanceType=0）は「-¥」プレフィックス付きで表示される
+            expect(screen.getByText('-¥1,000')).toBeInTheDocument();
         });
 
         it('日付が表示される', () => {
@@ -91,9 +92,10 @@ describe('ExpenseList', () => {
             ];
             render(<ExpenseList expenses={expenses} />);
 
-            expect(screen.getByText('¥500')).toBeInTheDocument();
-            expect(screen.getByText('¥2,000')).toBeInTheDocument();
-            expect(screen.getByText('¥3,000')).toBeInTheDocument();
+            // 支出（balanceType=0）は「-¥」プレフィックス付きで表示される
+            expect(screen.getByText('-¥500')).toBeInTheDocument();
+            expect(screen.getByText('-¥2,000')).toBeInTheDocument();
+            expect(screen.getByText('-¥3,000')).toBeInTheDocument();
         });
     });
 
@@ -116,12 +118,12 @@ describe('ExpenseList', () => {
     describe('エッジケース', () => {
         it('金額が 1 円（最小値）でも正しく表示される', () => {
             render(<ExpenseList expenses={[buildExpense({ amount: 1 })]} />);
-            expect(screen.getByText('¥1')).toBeInTheDocument();
+            expect(screen.getByText('-¥1')).toBeInTheDocument();
         });
 
         it('金額が大きい数値でも桁区切りでフォーマットされる', () => {
             render(<ExpenseList expenses={[buildExpense({ amount: 1000000 })]} />);
-            expect(screen.getByText('¥1,000,000')).toBeInTheDocument();
+            expect(screen.getByText('-¥1,000,000')).toBeInTheDocument();
         });
 
         it('未来日付のエントリも正常に表示される', () => {

@@ -1,16 +1,20 @@
 {
   "_comment": "Figma Variables のエクスポートJSON。Figma Plugin（例: Variables Import/Export）でエクスポートし、このファイルを上書きしてください。",
   "_usage": "pnpm run sync:tokens でこのファイルから globals.css のCSS変数を自動更新します。",
-  "_source": "スクリーンショット解析による初期値（2026-04-12）",
+  "_source": "Playful Geometric デザインシステム適用（2026-04-15）— オレンジ#f08030/ティール#2bb5a0 を既存踏襲",
   "colors": {
-    "brand/primary": { "value": "#f08030", "type": "color" },
-    "brand/secondary": { "value": "#e06020", "type": "color" },
+    "brand/primary": { "value": "#f18840", "type": "color" },
+    "brand/secondary": { "value": "#e07030", "type": "color" },
     "surface/default": { "value": "#ffffff", "type": "color" },
-    "surface/subtle": { "value": "#fef5ee", "type": "color" },
-    "expense": { "value": "#f08030", "type": "color" },
-    "expense/light": { "value": "#fff5ec", "type": "color" },
-    "income": { "value": "#2bb5a0", "type": "color" },
-    "income/light": { "value": "#ecfaf8", "type": "color" }
+    "surface/subtle": { "value": "#fffdf5", "type": "color" },
+    "expense": { "value": "#f18840", "type": "color" },
+    "expense/light": { "value": "#fff6ee", "type": "color" },
+    "income": { "value": "#35b5a2", "type": "color" },
+    "income/light": { "value": "#ecfaf8", "type": "color" },
+    "playful/coral": { "value": "#f87171", "type": "color" },
+    "playful/coral-light": { "value": "#fee2e2", "type": "color" },
+    "playful/amber": { "value": "#fbbf24", "type": "color" },
+    "playful/amber-light": { "value": "#fef3c7", "type": "color" }
   },
   "spacing": {
     "xs": { "value": "4", "type": "dimension", "unit": "px" },
@@ -21,8 +25,10 @@
   },
   "borderRadius": {
     "sm": { "value": "4", "type": "dimension", "unit": "px" },
-    "md": { "value": "8", "type": "dimension", "unit": "px" },
-    "card": { "value": "12", "type": "dimension", "unit": "px" },
+    "md": { "value": "12", "type": "dimension", "unit": "px" },
+    "card": { "value": "16", "type": "dimension", "unit": "px" },
+    "lg": { "value": "20", "type": "dimension", "unit": "px" },
+    "xl": { "value": "24", "type": "dimension", "unit": "px" },
     "full": { "value": "9999", "type": "dimension", "unit": "px" }
   }
 }

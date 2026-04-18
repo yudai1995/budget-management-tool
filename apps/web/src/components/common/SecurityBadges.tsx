@@ -11,7 +11,7 @@ export function SecurityBadges() {
             <Tooltip
                 content={
                     <span className="space-y-1 block">
-                        <strong className="font-medium text-zinc-800 dark:text-zinc-100">
+                        <strong className="font-bold text-[#1c1410]">
                             データ保護について
                         </strong>
                         <p className="leading-relaxed">
@@ -20,8 +20,8 @@ export function SecurityBadges() {
                     </span>
                 }
             >
-                <span className="inline-flex cursor-default items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400">
-                    <ShieldCheck size={12} strokeWidth={2} className="text-zinc-400 dark:text-zinc-500" />
+                <span className="inline-flex cursor-default items-center gap-1.5 rounded-full border border-[#e8c8b0] bg-[#fffdf5] px-2.5 py-1 text-xs font-bold text-[#1c1410]/60">
+                    <ShieldCheck size={12} strokeWidth={2} className="text-[#35b5a2]" />
                     暗号化通信
                 </span>
             </Tooltip>
@@ -29,7 +29,7 @@ export function SecurityBadges() {
             <Tooltip
                 content={
                     <span className="space-y-1 block">
-                        <strong className="font-medium text-zinc-800 dark:text-zinc-100">
+                        <strong className="font-bold text-[#1c1410]">
                             プライバシー配慮
                         </strong>
                         <p className="leading-relaxed">
@@ -38,8 +38,8 @@ export function SecurityBadges() {
                     </span>
                 }
             >
-                <span className="inline-flex cursor-default items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400">
-                    <UserRound size={12} strokeWidth={2} className="text-zinc-400 dark:text-zinc-500" />
+                <span className="inline-flex cursor-default items-center gap-1.5 rounded-full border border-[#e8c8b0] bg-[#fffdf5] px-2.5 py-1 text-xs font-bold text-[#1c1410]/60">
+                    <UserRound size={12} strokeWidth={2} className="text-[#f18840]" />
                     匿名利用可
                 </span>
             </Tooltip>

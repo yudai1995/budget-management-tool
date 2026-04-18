@@ -13,14 +13,18 @@
 /* @generated:start by scripts/sync-tokens.ts */
 :root {
   /* カラートークン */
-  --color-brand-primary: #f08030;
-  --color-brand-secondary: #e06020;
+  --color-brand-primary: #f18840;
+  --color-brand-secondary: #e07030;
   --color-surface-default: #ffffff;
-  --color-surface-subtle: #fef5ee;
-  --color-expense: #f08030;
-  --color-expense-light: #fff5ec;
-  --color-income: #2bb5a0;
+  --color-surface-subtle: #fffdf5;
+  --color-expense: #f18840;
+  --color-expense-light: #fff6ee;
+  --color-income: #35b5a2;
   --color-income-light: #ecfaf8;
+  --color-playful-coral: #f87171;
+  --color-playful-coral-light: #fee2e2;
+  --color-playful-amber: #fbbf24;
+  --color-playful-amber-light: #fef3c7;
   /* スペーシングトークン */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -29,17 +33,37 @@
   --spacing-xl: 32px;
   /* ボーダー半径トークン */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-card: 12px;
+  --radius-md: 12px;
+  --radius-card: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 }
 /* @generated:end */
 
 /* ── 手動管理: @generated に含まれない静的トークン ──────────────── */
 :root {
-  /* スクリーンショットのウォームベージュ背景 */
-  --background: #fef5ee;
-  --foreground: #1a1a1a;
+  /* ベースカラー（ウォームクリーム背景 / ディープウォームブラウン前景） */
+  --background: #fffdf5;
+  --foreground: #1c1410;
+
+  /* ボーダー */
+  --border-default: #e8c8b0;
+  --border-strong: #1c1410;
+
+  /* Soft Pop シャドウ（Refined Edition）
+   *  高優先UI（ボタン・モーダル）: 2px offset hard shadow
+   *  中優先カード: subtle soft shadow のみ
+   *  低優先ブロック: シャドウなし（bg差のみ）
+   */
+  --shadow-pop-sm: 1px 1px 0px 0px #1c1410;
+  --shadow-pop:    2px 2px 0px 0px #1c1410;
+  --shadow-pop-lg: 3px 3px 0px 0px #1c1410;
+  --shadow-card:   0 1px 4px 0 rgba(28, 20, 16, 0.07), 0 0 0 1px rgba(28, 20, 16, 0.06);
+  --shadow-card-hover: 0 4px 12px 0 rgba(28, 20, 16, 0.10), 0 0 0 1px rgba(28, 20, 16, 0.08);
+
+  /* モーションイージング（Material You: Emphasized） */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* ── ダークモード オーバーライド ────────────────────────────────── */
@@ -48,16 +72,30 @@
     --background: #1a1008;
     --foreground: #f0ebe5;
 
-    --color-brand-primary: #f09050;
-    --color-brand-secondary: #e07040;
+    --border-default: #4a3020;
+    --border-strong: #f0ebe5;
+
+    --shadow-pop-sm: 1px 1px 0px 0px #f0ebe5;
+    --shadow-pop:    2px 2px 0px 0px #f0ebe5;
+    --shadow-pop-lg: 3px 3px 0px 0px #f0ebe5;
+    --shadow-card:   0 1px 4px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+    --color-brand-primary: #f29050;
+    --color-brand-secondary: #e07840;
 
     --color-surface-default: #241a10;
     --color-surface-subtle: #2e2418;
 
-    --color-expense: #f09050;
+    --color-expense: #f29050;
     --color-expense-light: #3a1a08;
     --color-income: #3dc8b4;
     --color-income-light: #082e28;
+
+    --color-playful-coral: #f87171;
+    --color-playful-coral-light: #3a1010;
+    --color-playful-amber: #fbbf24;
+    --color-playful-amber-light: #3a2a00;
   }
 }
 
@@ -79,12 +117,79 @@
   --color-income: var(--color-income);
   --color-income-light: var(--color-income-light);
 
-  --font-sans: var(--font-geist-sans);
+  --color-playful-coral: var(--color-playful-coral);
+  --color-playful-coral-light: var(--color-playful-coral-light);
+  --color-playful-amber: var(--color-playful-amber);
+  --color-playful-amber-light: var(--color-playful-amber-light);
+
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
+}
+
+/* ── Refined Geometric コンポーネントパターン ────────────────────
+ *
+ *  情報優先度による使い分け:
+ *  高（メインボタン）: .btn-candy  — オレンジ + 2px ハードシャドウ
+ *  中（カード）      : .card-pop   — soft shadow + 1px ボーダー
+ *  低（背景要素）    : トーン差のみ（ボーダー・シャドウなし）
+ *
+   ──────────────────────────────────────────────────────────── */
+@layer components {
+  /* 中優先カード — soft shadow + 1px ボーダー（pop offset なし） */
+  .card-pop {
+    @apply bg-white rounded-2xl p-6;
+    border: 1px solid rgba(28, 20, 16, 0.12);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s var(--ease-standard);
+  }
+  .card-pop:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* 高優先プライマリボタン — オレンジ + 2px ハードシャドウ */
+  .btn-candy {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-[#f18840] border-2 border-[#1c1410] cursor-pointer select-none;
+    box-shadow: var(--shadow-pop);
+    transition: transform 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
+  }
+  .btn-candy:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--shadow-pop-lg);
+  }
+  .btn-candy:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+  }
+
+  /* セカンダリボタン — 1px ボーダー + ホバーでbg変化（シャドウなし） */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm bg-white cursor-pointer select-none text-[#1c1410];
+    border: 1px solid rgba(28, 20, 16, 0.25);
+    transition: background-color 0.2s var(--ease-standard), border-color 0.2s var(--ease-standard);
+  }
+  .btn-ghost:hover {
+    background-color: #fff6ee;
+    border-color: rgba(28, 20, 16, 0.40);
+  }
+  .btn-ghost:active {
+    background-color: #fff6ee;
+  }
+
+  /* 入力フィールド — フォーカス時にオレンジリング */
+  .input-pop {
+    @apply w-full rounded-xl bg-white px-3 py-2 text-sm outline-none;
+    border: 1px solid rgba(28, 20, 16, 0.18);
+    transition: border-color 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
+  }
+  .input-pop:focus {
+    border-color: #f18840;
+    box-shadow: 0 0 0 3px rgba(241, 136, 64, 0.14);
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-outfit), "Outfit", sans-serif;
 }

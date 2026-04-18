@@ -34,22 +34,31 @@ async function ExpenseListSection() {
     <div className="flex flex-col gap-4">
       {/* サマリー */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">支出合計</p>
-          <p className="mt-1 text-xl font-semibold text-red-600 dark:text-red-400">
+        <div
+          className="rounded-2xl border border-[#1c1410]/12 bg-white p-4"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          <p className="text-xs font-bold text-[#1c1410]/50">支出合計</p>
+          <p className="mt-1 text-xl font-extrabold tabular-nums" style={{ color: "var(--color-expense)" }}>
             ¥{totalOutgo.toLocaleString()}
           </p>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">収入合計</p>
-          <p className="mt-1 text-xl font-semibold text-emerald-600 dark:text-emerald-400">
+        <div
+          className="rounded-2xl border border-[#1c1410]/12 bg-white p-4"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          <p className="text-xs font-bold text-[#1c1410]/50">収入合計</p>
+          <p className="mt-1 text-xl font-extrabold tabular-nums" style={{ color: "var(--color-income)" }}>
             ¥{totalIncome.toLocaleString()}
           </p>
         </div>
       </div>
 
       {/* 支出リスト */}
-      <div className="rounded-xl border border-zinc-200 bg-white px-4 dark:border-zinc-700 dark:bg-zinc-800">
+      <div
+        className="rounded-2xl border border-[#1c1410]/12 bg-white px-4"
+        style={{ boxShadow: "var(--shadow-card)" }}
+      >
         <ExpenseList expenses={expenses} />
       </div>
     </div>
@@ -61,16 +70,14 @@ export default function ExpensesPage() {
   const userId = "Guest";
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-          家計管理
+    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
+      <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
+      <header className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-extrabold text-[#1c1410]">
+          支出一覧
         </h1>
         <form action={logoutAction}>
-          <button
-            type="submit"
-            className="rounded-full border border-zinc-300 px-4 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-700"
-          >
+          <button type="submit" className="btn-ghost text-xs px-3 py-1.5">
             ログアウト
           </button>
         </form>
@@ -82,13 +89,14 @@ export default function ExpensesPage() {
       {/* 支出一覧（Server Component + Suspense でストリーミング） */}
       <Suspense
         fallback={
-          <div className="py-12 text-center text-sm text-zinc-400">
+          <div className="py-12 text-center text-sm font-medium text-[#1c1410]/40">
             読み込み中...
           </div>
         }
       >
         <ExpenseListSection />
       </Suspense>
+      </div>
     </div>
   );
 }
