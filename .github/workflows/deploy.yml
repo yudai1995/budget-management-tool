@@ -4,21 +4,23 @@
 # フロー:
 #   1. 変更検出    — apps/web / apps/api の差分を検出し、不要なビルドをスキップ
 #   2. Build & Push — ECR へイメージをプッシュ
-#   3. DB Migration — ECS Run Task で prisma migrate deploy を実行
-#   4. ECS Deploy   — タスク定義を更新しサービスをローリングアップデート
-#   5. CF Update    — ECS タスクの Public IP を CloudFront オリジンに反映
+#   3. trivy スキャン — HIGH/CRITICAL 脆弱性を検知した場合デプロイを強制中断
+#   4. DB Migration — ECS Run Task で prisma migrate deploy を実行
+#   5. ECS Deploy   — タスク定義を更新しサービスをローリングアップデート
+#   6. CF Update    — ECS タスクの Public IP を CloudFront オリジンに反映
 #
 # 必須 GitHub Secrets:
 #   AWS_ROLE_ARN          — terraform output github_actions_role_arn の値
 #   AWS_REGION            — ap-northeast-1
 #   ECR_REGISTRY          — <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com
-#   ECS_CLUSTER           — budget-dev-cluster
-#   ECS_SERVICE_WEB       — budget-dev-web
-#   ECS_SERVICE_API       — budget-dev-api
-#   ECS_TASK_FAMILY_WEB   — budget-dev-web
-#   ECS_TASK_FAMILY_API   — budget-dev-api
+#   ECS_CLUSTER           — terraform output ecs_cluster_name の値
+#   ECS_SERVICE_WEB       — terraform output ecs_web_service_name の値
+#   ECS_SERVICE_API       — terraform output ecs_api_service_name の値
+#   ECS_TASK_FAMILY_WEB   — terraform output ecs_web_task_family の値
+#   ECS_TASK_FAMILY_API   — terraform output ecs_api_task_family の値
+#   ECS_SUBNETS           — terraform output public_subnet_ids の値（カンマ区切り）
+#   SG_API_ID             — terraform output sg_api_id の値
 #   CLOUDFRONT_DIST_ID    — terraform output cloudfront_distribution_id の値
-#   SSM_PREFIX            — /budget/dev
 # ============================================================
 
 name: Deploy to ECS
@@ -117,12 +119,70 @@ jobs:
             .
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
+  # ─── trivy 脆弱性スキャン ──────────────────────────────────────────────────────
+  # HIGH / CRITICAL が検出された場合はここで強制中断し、後続ジョブをすべてブロックする
+  trivy-scan:
+    name: Trivy Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: needs.build-and-push.outputs.web-image != '' || needs.build-and-push.outputs.api-image != ''
+    permissions:
+      security-events: write # SARIF 結果を GitHub Security タブへアップロードするために必要
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Scan web image
+        if: needs.build-and-push.outputs.web-image != ''
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-and-push.outputs.web-image }}
+          format: sarif
+          output: trivy-web.sarif
+          # HIGH / CRITICAL を検知した場合はステップを失敗させデプロイを中断
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload web scan results to GitHub Security
+        if: always() && needs.build-and-push.outputs.web-image != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-web.sarif
+          category: trivy-web
+
+      - name: Scan api image
+        if: needs.build-and-push.outputs.api-image != ''
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-and-push.outputs.api-image }}
+          format: sarif
+          output: trivy-api.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+      - name: Upload api scan results to GitHub Security
+        if: always() && needs.build-and-push.outputs.api-image != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-api.sarif
+          category: trivy-api
+
   # ─── DB マイグレーション ─────────────────────────────────────────────────────
   db-migrate:
     name: DB Migration
     runs-on: ubuntu-latest
-    needs: build-and-push
-    if: needs.build-and-push.outputs.api-image != ''
+    needs: [build-and-push, trivy-scan]
+    if: needs.build-and-push.outputs.api-image != '' && needs.trivy-scan.result == 'success'
     steps:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -178,11 +238,12 @@ jobs:
   deploy-ecs:
     name: Deploy ECS
     runs-on: ubuntu-latest
-    needs: [build-and-push, db-migrate]
-    # db-migrate がスキップ（API 変更なし）の場合も実行する
+    needs: [build-and-push, trivy-scan, db-migrate]
+    # db-migrate がスキップ（API 変更なし）の場合も実行する。trivy が失敗した場合は中断。
     if: |
       always() &&
       needs.build-and-push.result == 'success' &&
+      needs.trivy-scan.result == 'success' &&
       (needs.db-migrate.result == 'success' || needs.db-migrate.result == 'skipped')
     steps:
       - uses: actions/checkout@v4

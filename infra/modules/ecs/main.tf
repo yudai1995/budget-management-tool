@@ -134,7 +134,7 @@ resource "aws_ecs_task_definition" "api" {
         }
       ]
 
-      # SSM から DATABASE_URL 等のシークレットを注入
+      # SSM から DATABASE_URL 等のシークレットを注入（ハードコード禁止）
       secrets = [
         {
           name      = "DATABASE_URL"
@@ -143,6 +143,12 @@ resource "aws_ecs_task_definition" "api" {
         {
           name      = "JWT_SECRET"
           valueFrom = "${var.ssm_prefix}/jwt_secret"
+        },
+        # Layer 2: Origin Shield 検証用シークレット
+        # CloudFront が X-CF-Origin-Secret ヘッダーで送出する値と一致した場合のみリクエストを通過させる
+        {
+          name      = "CF_ORIGIN_SECRET"
+          valueFrom = "${var.ssm_prefix}/cf_origin_secret"
         }
       ]
 

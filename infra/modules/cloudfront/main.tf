@@ -4,6 +4,8 @@
 # 構成:
 #   - CloudFront ディストリビューション（HTTPS 終端）
 #   - オリジン: ECS web タスクの Public IP（scripts/update-cloudfront-origin.sh で自動更新）
+#   - Origin Shield: カスタムヘッダー X-CF-Origin-Secret を付与し、
+#     Hono 側で検証することで CloudFront 経由以外の直接アクセスを遮断する
 #   - キャッシュポリシー:
 #     - /_next/static/*: 長期キャッシュ（イミュータブルアセット）
 #     - /api/*: キャッシュ無効化（バックエンド API は常に通過）
@@ -13,6 +15,12 @@
 #   ALB は月 $16〜 かかるため、CloudFront → ECS Public IP の直接接続で代替。
 #   IP は ECS タスク再起動のたびに変わるため、デプロイパイプラインで自動更新する。
 # ============================================================
+
+# SSM から Origin Shield シークレットを取得
+data "aws_ssm_parameter" "cf_origin_secret" {
+  name            = var.origin_shield_secret_ssm_path
+  with_decryption = true
+}
 
 locals {
   origin_id = "${var.name_prefix}-web-origin"
@@ -35,6 +43,12 @@ resource "aws_cloudfront_distribution" "main" {
       https_port             = 443
       origin_protocol_policy = "http-only" # ECS タスクへは HTTP で接続（CloudFront が HTTPS 終端）
       origin_ssl_protocols   = ["TLSv1.2"]
+    }
+
+    # Origin Shield: このヘッダーがない直接アクセスを Hono ミドルウェアで拒絶する
+    custom_header {
+      name  = "X-CF-Origin-Secret"
+      value = data.aws_ssm_parameter.cf_origin_secret.value
     }
   }
 
