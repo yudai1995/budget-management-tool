@@ -1,0 +1,287 @@
+# ============================================================
+# deploy.yml — main ブランチへのプッシュで ECS へ自動デプロイ
+#
+# フロー:
+#   1. 変更検出    — apps/web / apps/api の差分を検出し、不要なビルドをスキップ
+#   2. Build & Push — ECR へイメージをプッシュ
+#   3. DB Migration — ECS Run Task で prisma migrate deploy を実行
+#   4. ECS Deploy   — タスク定義を更新しサービスをローリングアップデート
+#   5. CF Update    — ECS タスクの Public IP を CloudFront オリジンに反映
+#
+# 必須 GitHub Secrets:
+#   AWS_ROLE_ARN          — terraform output github_actions_role_arn の値
+#   AWS_REGION            — ap-northeast-1
+#   ECR_REGISTRY          — <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com
+#   ECS_CLUSTER           — budget-dev-cluster
+#   ECS_SERVICE_WEB       — budget-dev-web
+#   ECS_SERVICE_API       — budget-dev-api
+#   ECS_TASK_FAMILY_WEB   — budget-dev-web
+#   ECS_TASK_FAMILY_API   — budget-dev-api
+#   CLOUDFRONT_DIST_ID    — terraform output cloudfront_distribution_id の値
+#   SSM_PREFIX            — /budget/dev
+# ============================================================
+
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write  # OIDC トークン取得に必要
+  contents: read
+
+jobs:
+  # ─── 変更ファイルの検出 ──────────────────────────────────────────────────────
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Filter changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/common/**'
+              - 'packages/api-client/**'
+            api:
+              - 'apps/api/**'
+              - 'packages/common/**'
+
+  # ─── ECR へイメージをビルド & プッシュ ───────────────────────────────────────
+  build-and-push:
+    name: Build & Push
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web == 'true' || needs.detect-changes.outputs.api == 'true'
+    outputs:
+      web-image: ${{ steps.web-image.outputs.image }}
+      api-image: ${{ steps.api-image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & push web image
+        id: web-image
+        if: needs.detect-changes.outputs.web == 'true'
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE="${ECR_REGISTRY}/budget-dev-web:${IMAGE_TAG}"
+          docker buildx build \
+            --file apps/web/Dockerfile \
+            --tag "${IMAGE}" \
+            --tag "${ECR_REGISTRY}/budget-dev-web:latest" \
+            --cache-from type=registry,ref="${ECR_REGISTRY}/budget-dev-web:latest" \
+            --cache-to type=inline \
+            --push \
+            .
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push api image
+        id: api-image
+        if: needs.detect-changes.outputs.api == 'true'
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE="${ECR_REGISTRY}/budget-dev-api:${IMAGE_TAG}"
+          docker buildx build \
+            --file apps/api/Dockerfile \
+            --tag "${IMAGE}" \
+            --tag "${ECR_REGISTRY}/budget-dev-api:latest" \
+            --cache-from type=registry,ref="${ECR_REGISTRY}/budget-dev-api:latest" \
+            --cache-to type=inline \
+            --push \
+            .
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+  # ─── DB マイグレーション ─────────────────────────────────────────────────────
+  db-migrate:
+    name: DB Migration
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: needs.build-and-push.outputs.api-image != ''
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Run prisma migrate deploy via ECS Run Task
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER }}
+          TASK_FAMILY: ${{ secrets.ECS_TASK_FAMILY_API }}
+          SUBNETS: ${{ secrets.ECS_SUBNETS }}
+          SG_API: ${{ secrets.SG_API_ID }}
+        run: |
+          # 最新タスク定義 ARN を取得
+          TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition "${TASK_FAMILY}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          # マイグレーション専用タスクを実行（コマンド上書き）
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "${CLUSTER}" \
+            --task-definition "${TASK_DEF}" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${SUBNETS}],securityGroups=[${SG_API}],assignPublicIp=ENABLED}" \
+            --overrides '{"containerOverrides":[{"name":"api","command":["node","build/index.js","--migrate"]}]}' \
+            --query 'tasks[0].taskArn' \
+            --output text)
+
+          echo "Migration task ARN: ${TASK_ARN}"
+
+          # タスク完了を待機
+          aws ecs wait tasks-stopped \
+            --cluster "${CLUSTER}" \
+            --tasks "${TASK_ARN}"
+
+          # 終了コードを確認
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster "${CLUSTER}" \
+            --tasks "${TASK_ARN}" \
+            --query 'tasks[0].containers[0].exitCode' \
+            --output text)
+
+          if [ "${EXIT_CODE}" != "0" ]; then
+            echo "Migration failed with exit code ${EXIT_CODE}"
+            exit 1
+          fi
+
+          echo "Migration completed successfully"
+
+  # ─── ECS サービス更新 ────────────────────────────────────────────────────────
+  deploy-ecs:
+    name: Deploy ECS
+    runs-on: ubuntu-latest
+    needs: [build-and-push, db-migrate]
+    # db-migrate がスキップ（API 変更なし）の場合も実行する
+    if: |
+      always() &&
+      needs.build-and-push.result == 'success' &&
+      (needs.db-migrate.result == 'success' || needs.db-migrate.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy web service
+        if: needs.build-and-push.outputs.web-image != ''
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER }}
+          SERVICE: ${{ secrets.ECS_SERVICE_WEB }}
+          TASK_FAMILY: ${{ secrets.ECS_TASK_FAMILY_WEB }}
+          NEW_IMAGE: ${{ needs.build-and-push.outputs.web-image }}
+        run: |
+          # 現在のタスク定義を取得して image を差し替え
+          TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition "${TASK_FAMILY}" \
+            --query 'taskDefinition' \
+            --output json)
+
+          NEW_TASK_DEF=$(echo "${TASK_DEF}" | \
+            jq --arg IMAGE "${NEW_IMAGE}" \
+            '.containerDefinitions[0].image = $IMAGE |
+             del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)')
+
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "${NEW_TASK_DEF}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          aws ecs update-service \
+            --cluster "${CLUSTER}" \
+            --service "${SERVICE}" \
+            --task-definition "${NEW_TASK_DEF_ARN}" \
+            --force-new-deployment
+
+          echo "web-task-def=${NEW_TASK_DEF_ARN}" >> "$GITHUB_ENV"
+
+      - name: Deploy api service
+        if: needs.build-and-push.outputs.api-image != ''
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER }}
+          SERVICE: ${{ secrets.ECS_SERVICE_API }}
+          TASK_FAMILY: ${{ secrets.ECS_TASK_FAMILY_API }}
+          NEW_IMAGE: ${{ needs.build-and-push.outputs.api-image }}
+        run: |
+          TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition "${TASK_FAMILY}" \
+            --query 'taskDefinition' \
+            --output json)
+
+          NEW_TASK_DEF=$(echo "${TASK_DEF}" | \
+            jq --arg IMAGE "${NEW_IMAGE}" \
+            '.containerDefinitions[0].image = $IMAGE |
+             del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)')
+
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "${NEW_TASK_DEF}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          aws ecs update-service \
+            --cluster "${CLUSTER}" \
+            --service "${SERVICE}" \
+            --task-definition "${NEW_TASK_DEF_ARN}" \
+            --force-new-deployment
+
+      - name: Wait for web service stability
+        if: needs.build-and-push.outputs.web-image != ''
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER }}
+          SERVICE: ${{ secrets.ECS_SERVICE_WEB }}
+        run: |
+          aws ecs wait services-stable \
+            --cluster "${CLUSTER}" \
+            --services "${SERVICE}"
+
+  # ─── CloudFront オリジン更新 ─────────────────────────────────────────────────
+  update-cloudfront:
+    name: Update CloudFront Origin
+    runs-on: ubuntu-latest
+    needs: deploy-ecs
+    if: needs.deploy-ecs.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update CloudFront origin and invalidate cache
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER }}
+          SERVICE: ${{ secrets.ECS_SERVICE_WEB }}
+          CLOUDFRONT_DIST_ID: ${{ secrets.CLOUDFRONT_DIST_ID }}
+        run: bash scripts/update-cloudfront-origin.sh
