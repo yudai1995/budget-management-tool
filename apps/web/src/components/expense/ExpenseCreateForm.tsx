@@ -17,7 +17,7 @@ const initialState: ExpenseActionState = { error: null, success: false };
 function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
   return (
-    <p className="mt-1 text-xs text-[var(--color-expense)]">{messages[0]}</p>
+    <p className="mt-1 text-xs font-medium text-[#f87171]">{messages[0]}</p>
   );
 }
 
@@ -30,21 +30,25 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
   const categories = getCategoriesByType(balanceType);
 
   return (
-    <section id="form" className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-center text-sm font-semibold text-zinc-700">
+    <section
+      id="form"
+      className="rounded-2xl border-2 border-[#1c1410] bg-white p-5"
+      style={{ boxShadow: "var(--shadow-pop)" }}
+    >
+      <h2 className="mb-4 text-center text-sm font-extrabold text-[#1c1410] tracking-wide uppercase">
         収支の入力
       </h2>
 
       {/* 収支タブ */}
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex rounded-xl border-2 border-[#1c1410] overflow-hidden" style={{ boxShadow: "var(--shadow-pop-sm)" }}>
         <button
           type="button"
           onClick={() => setBalanceType(0)}
           className={[
-            "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
+            "flex-1 py-2 text-sm font-bold transition-colors",
             balanceType === 0
-              ? "bg-[var(--color-brand-primary)] text-white"
-              : "border border-[var(--color-brand-primary)] text-[var(--color-brand-primary)] hover:bg-[var(--color-expense-light)]",
+              ? "bg-[#f18840] text-white"
+              : "bg-white text-[#1c1410]/50 hover:bg-[#fff6ee]",
           ].join(" ")}
         >
           支出
@@ -53,10 +57,10 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
           type="button"
           onClick={() => setBalanceType(1)}
           className={[
-            "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
+            "flex-1 py-2 text-sm font-bold transition-colors",
             balanceType === 1
-              ? "bg-[var(--color-income)] text-white"
-              : "border border-[var(--color-income)] text-[var(--color-income)] hover:bg-[var(--color-income-light)]",
+              ? "bg-[#35b5a2] text-white"
+              : "bg-white text-[#1c1410]/50 hover:bg-[#ecfaf8]",
           ].join(" ")}
         >
           収入
@@ -69,7 +73,7 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
 
         {/* 金額 */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="amount" className="text-xs text-zinc-500">金額</label>
+          <label htmlFor="amount" className="text-xs font-bold text-[#1c1410]/50">金額</label>
           <input
             id="amount"
             name="amount"
@@ -77,69 +81,59 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
             min={1}
             required
             placeholder="金額をご入力ください"
-            className="border-b border-zinc-300 bg-transparent py-2 text-sm outline-none placeholder:text-zinc-400 focus:border-[var(--color-brand-primary)]"
+            className="input-pop"
           />
           <FieldError messages={state.fieldErrors?.amount} />
         </div>
 
         {/* 日付 */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="date" className="text-xs text-zinc-500">日付</label>
-          <div className="flex items-center gap-2 border-b border-zinc-300 py-2 focus-within:border-[var(--color-brand-primary)]">
-            <input
-              id="date"
-              name="date"
-              type="date"
-              required
-              defaultValue={defaultDate ?? new Date().toISOString().split("T")[0]}
-              className="flex-1 bg-transparent text-sm outline-none"
-            />
-            <svg className="h-4 w-4 shrink-0 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
+          <label htmlFor="date" className="text-xs font-bold text-[#1c1410]/50">日付</label>
+          <input
+            id="date"
+            name="date"
+            type="date"
+            required
+            defaultValue={defaultDate ?? new Date().toISOString().split("T")[0]}
+            className="input-pop"
+          />
           <FieldError messages={state.fieldErrors?.date} />
         </div>
 
         {/* カテゴリ */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="categoryId" className="text-xs text-zinc-500">カテゴリ</label>
-          <div className="relative border-b border-zinc-300 focus-within:border-[var(--color-brand-primary)]">
-            <select
-              id="categoryId"
-              name="categoryId"
-              defaultValue={0}
-              className="w-full appearance-none bg-transparent py-2 text-sm text-zinc-700 outline-none"
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-            <svg className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <label htmlFor="categoryId" className="text-xs font-bold text-[#1c1410]/50">カテゴリ</label>
+          <select
+            id="categoryId"
+            name="categoryId"
+            defaultValue={0}
+            className="input-pop"
+          >
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
         </div>
 
         {/* 内容 */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="content" className="text-xs text-zinc-500">内容</label>
+          <label htmlFor="content" className="text-xs font-bold text-[#1c1410]/50">内容</label>
           <input
             id="content"
             name="content"
             type="text"
             placeholder="内容をご入力ください（任意）"
-            className="border-b border-zinc-300 bg-transparent py-2 text-sm outline-none placeholder:text-zinc-400 focus:border-[var(--color-brand-primary)]"
+            className="input-pop"
           />
         </div>
 
         {state.error && (
-          <p className="rounded-lg bg-[var(--color-expense-light)] px-3 py-2 text-sm text-[var(--color-expense)]">
+          <p className="rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
             {state.error}
           </p>
         )}
         {state.success && (
-          <p className="rounded-lg bg-[var(--color-income-light)] px-3 py-2 text-sm text-[var(--color-income)]">
+          <p className="rounded-xl border border-[#35b5a2]/40 bg-[#ecfaf8] px-3 py-2 text-sm font-bold text-[#35b5a2]">
             登録しました
           </p>
         )}
@@ -147,7 +141,7 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
         <button
           type="submit"
           disabled={isPending}
-          className="mt-2 rounded-full bg-[var(--color-brand-primary)] py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="btn-candy w-full mt-2 disabled:opacity-50"
         >
           {isPending ? "登録中..." : "追加する"}
         </button>

@@ -16,7 +16,7 @@ interface SecurityQuestion {
 
 function FieldError({ messages }: { messages?: string[] }) {
     if (!messages?.length) return null;
-    return <p className="mt-1 text-xs text-red-600 dark:text-red-400">{messages[0]}</p>;
+    return <p className="mt-1 text-xs font-medium text-[#f87171]">{messages[0]}</p>;
 }
 
 export function RegisterForm() {
@@ -30,7 +30,6 @@ export function RegisterForm() {
     const [questions, setQuestions] = useState<SecurityQuestion[]>([]);
     const [questionsError, setQuestionsError] = useState(false);
 
-    // 秘密の質問一覧をロード
     useEffect(() => {
         publicFetch<{ questions: SecurityQuestion[] }>("/security-questions")
             .then((res) => setQuestions(res.questions))
@@ -38,13 +37,36 @@ export function RegisterForm() {
     }, []);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900 py-12">
-            <section className="w-full max-w-md rounded-xl bg-white p-8 shadow dark:bg-zinc-800">
+        <div className="flex min-h-screen items-center justify-center bg-[#fffdf5] px-4 py-12">
+            {/* 背景の幾何学デコレーション */}
+            <div
+                className="pointer-events-none fixed left-8 top-20 h-16 w-16 rounded-full border border-[#f18840]/20 bg-[#fff6ee]"
+                aria-hidden="true"
+            />
+            <div
+                className="pointer-events-none fixed right-12 bottom-24 h-10 w-10 rotate-12 rounded-md border border-[#35b5a2]/20 bg-[#ecfaf8]"
+                aria-hidden="true"
+            />
+
+            <section
+                className="w-full max-w-md rounded-2xl border-2 border-[#1c1410] bg-white p-8"
+                style={{ boxShadow: "var(--shadow-pop)" }}
+            >
                 <div className="mb-6 flex items-start justify-between gap-4">
-                    <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-                        アカウント登録
-                    </h1>
-                    {/* セキュリティバッジ: ホバーでツールチップ表示 */}
+                    <div className="flex items-center gap-3">
+                        <span
+                            className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#1c1410] bg-[#f18840] text-base font-extrabold text-white"
+                            style={{ boxShadow: "var(--shadow-pop-sm)" }}
+                        >
+                            B
+                        </span>
+                        <div>
+                            <h1 className="text-xl font-extrabold text-[#1c1410] leading-tight">
+                                アカウント登録
+                            </h1>
+                            <p className="text-xs text-[#1c1410]/50">まず無料ではじめよう</p>
+                        </div>
+                    </div>
                     <SecurityBadges />
                 </div>
 
@@ -56,13 +78,13 @@ export function RegisterForm() {
                         error={state.fieldErrors?.userId?.[0]}
                         disabled={isPending}
                     />
-                    {/* フォームの hidden フィールドとして値を渡す */}
                     <input type="hidden" name="userId" value={userId} />
 
                     {/* 表示名 */}
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="displayName" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                            表示名 <span className="text-zinc-400 font-normal">（省略可・後から変更可）</span>
+                        <label htmlFor="displayName" className="text-sm font-semibold text-[#1c1410]">
+                            表示名{" "}
+                            <span className="font-normal text-[#1c1410]/40">（省略可・後から変更可）</span>
                         </label>
                         <input
                             id="displayName"
@@ -70,14 +92,14 @@ export function RegisterForm() {
                             type="text"
                             autoComplete="name"
                             placeholder="ニックネームなど（省略時はユーザー名と同じ）"
-                            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                            className="input-pop"
                         />
                         <FieldError messages={state.fieldErrors?.displayName} />
                     </div>
 
                     {/* パスワード（強度メーター付き） */}
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="password" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                        <label htmlFor="password" className="text-sm font-semibold text-[#1c1410]">
                             パスワード
                         </label>
                         <input
@@ -88,27 +110,27 @@ export function RegisterForm() {
                             onChange={(e) => setPassword(e.target.value)}
                             autoComplete="new-password"
                             placeholder="8文字以上"
-                            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                            className="input-pop"
                         />
                         <PasswordStrengthMeter password={password} />
                         <FieldError messages={state.fieldErrors?.password} />
                     </div>
 
                     {/* 秘密の質問 */}
-                    <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 space-y-3">
-                        <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    <div className="rounded-xl border border-[#e8c8b0] bg-[#fffdf5] p-4 space-y-3">
+                        <p className="text-sm font-extrabold text-[#1c1410]">
                             秘密の質問
                         </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-[#1c1410]/50">
                             万が一パスワードを忘れても、この質問があれば安心して再設定できます
                         </p>
 
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="securityQuestionId" className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            <label htmlFor="securityQuestionId" className="text-xs font-bold text-[#1c1410]/60">
                                 質問を選択
                             </label>
                             {questionsError ? (
-                                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                                <p className="rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-xs font-medium text-[#1c1410]">
                                     質問の読み込みに失敗しました。APIサーバーが起動しているか確認してください。
                                 </p>
                             ) : (
@@ -116,7 +138,7 @@ export function RegisterForm() {
                                     id="securityQuestionId"
                                     name="securityQuestionId"
                                     disabled={questions.length === 0}
-                                    className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                                    className="input-pop disabled:opacity-50"
                                 >
                                     <option value="">
                                         {questions.length === 0 ? "読み込み中..." : "-- 質問を選んでください --"}
@@ -130,7 +152,7 @@ export function RegisterForm() {
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <label htmlFor="securityAnswer" className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                            <label htmlFor="securityAnswer" className="text-xs font-bold text-[#1c1410]/60">
                                 回答
                             </label>
                             <input
@@ -139,14 +161,14 @@ export function RegisterForm() {
                                 type="text"
                                 autoComplete="off"
                                 placeholder="回答を入力（大文字・小文字は区別されません）"
-                                className="rounded-lg border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                                className="input-pop"
                             />
                             <FieldError messages={state.fieldErrors?.securityAnswer} />
                         </div>
                     </div>
 
                     {state.error && (
-                        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                        <p className="rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
                             {state.error}
                         </p>
                     )}
@@ -154,16 +176,19 @@ export function RegisterForm() {
                     <button
                         type="submit"
                         disabled={isPending}
-                        className="mt-2 rounded-full bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                        className="btn-candy w-full mt-2 disabled:opacity-50"
                     >
                         {isPending ? "登録中..." : "アカウントを作成する"}
                     </button>
                 </form>
 
-                <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700 text-center">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <div className="mt-4 border-t border-[#e8c8b0] pt-4 text-center">
+                    <p className="text-sm text-[#1c1410]/60">
                         すでにアカウントをお持ちですか？{" "}
-                        <Link href="/login" className="text-zinc-800 dark:text-zinc-200 underline underline-offset-2">
+                        <Link
+                            href="/login"
+                            className="font-semibold text-[#f18840] underline underline-offset-2 hover:text-[#e07030] transition-colors"
+                        >
                             ログイン
                         </Link>
                     </p>

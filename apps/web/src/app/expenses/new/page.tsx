@@ -22,7 +22,7 @@ export default async function ExpenseNewPage({ searchParams }: Props) {
   const defaultDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--color-surface-subtle)]">
+    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
       <Header userName={userId} />
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8">
         <ExpenseCreateForm userId={userId} defaultDate={defaultDate} />

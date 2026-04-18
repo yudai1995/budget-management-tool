@@ -49,7 +49,6 @@ function LineChart({
     100,
   );
 
-  // Y軸目盛り（5段階）
   const yTicks = Array.from({ length: 6 }, (_, i) =>
     Math.round((maxVal / 5) * i),
   );
@@ -79,15 +78,17 @@ function LineChart({
             y1={toY(tick)}
             x2={W - PAD.right}
             y2={toY(tick)}
-            stroke="#e5e7eb"
+            stroke="#e8c8b0"
             strokeWidth="1"
+            strokeDasharray="4 2"
           />
           <text
             x={PAD.left - 6}
             y={toY(tick) + 4}
             textAnchor="end"
             fontSize="10"
-            fill="#9ca3af"
+            fill="#1c1410"
+            opacity="0.4"
           >
             {tick >= 1000 ? `${Math.round(tick / 100) * 100}円` : `${tick}円`}
           </text>
@@ -102,7 +103,9 @@ function LineChart({
           y={H - 4}
           textAnchor="middle"
           fontSize="10"
-          fill="#9ca3af"
+          fontWeight="700"
+          fill="#1c1410"
+          opacity="0.4"
         >
           {d.label}
         </text>
@@ -113,8 +116,9 @@ function LineChart({
         d={pathD("outgo")}
         fill="none"
         stroke="var(--color-expense)"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
 
       {/* 収入ライン */}
@@ -122,8 +126,9 @@ function LineChart({
         d={pathD("income")}
         fill="none"
         stroke="var(--color-income)"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
 
       {/* 支出ドット */}
@@ -132,8 +137,10 @@ function LineChart({
           key={`outgo-${d.date}`}
           cx={toX(i)}
           cy={toY(d.outgo)}
-          r="4"
-          fill="var(--color-expense)"
+          r="5"
+          fill="white"
+          stroke="var(--color-expense)"
+          strokeWidth="2.5"
         />
       ))}
 
@@ -143,8 +150,10 @@ function LineChart({
           key={`income-${d.date}`}
           cx={toX(i)}
           cy={toY(d.income)}
-          r="4"
-          fill="var(--color-income)"
+          r="5"
+          fill="white"
+          stroke="var(--color-income)"
+          strokeWidth="2.5"
         />
       ))}
     </svg>
@@ -160,7 +169,7 @@ function RecentList({ expenses }: { expenses: ExpenseResponse[] }) {
   if (recent.length === 0) return null;
 
   return (
-    <ul className="mt-2 divide-y divide-zinc-100">
+    <ul className="mt-2 divide-y divide-[#e8c8b0]">
       {recent.map((expense) => {
         const category: Category | undefined = getCategoryById(
           expense.balanceType,
@@ -169,28 +178,26 @@ function RecentList({ expenses }: { expenses: ExpenseResponse[] }) {
         const isOutgo = expense.balanceType === 0;
 
         return (
-          <li key={expense.id} className="flex items-center justify-between py-2">
+          <li key={expense.id} className="flex items-center justify-between py-2.5">
             <div className="flex items-center gap-2">
               {category && (
                 <span
-                  className="rounded-full px-2 py-0.5 text-xs text-white"
+                  className="rounded-full border border-[#1c1410]/10 px-2 py-0.5 text-xs font-bold text-white"
                   style={{ backgroundColor: category.color }}
                 >
                   {category.name}
                 </span>
               )}
               {expense.content && (
-                <span className="text-xs text-zinc-500">{expense.content}</span>
+                <span className="text-xs font-medium text-[#1c1410]/50">{expense.content}</span>
               )}
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={[
-                  "text-sm font-semibold",
-                  isOutgo
-                    ? "text-[var(--color-expense)]"
-                    : "text-[var(--color-income)]",
-                ].join(" ")}
+                className="text-sm font-extrabold tabular-nums"
+                style={{
+                  color: isOutgo ? "var(--color-expense)" : "var(--color-income)",
+                }}
               >
                 {isOutgo ? "-" : "+"}¥{expense.amount.toLocaleString()}
               </span>
@@ -207,23 +214,26 @@ export function RecentGraph({ expenses }: Props) {
   const data = buildGraphData(expenses);
 
   return (
-    <section className="flex h-full flex-col rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-center text-sm font-semibold text-zinc-700">
+    <section
+      className="flex h-full flex-col rounded-2xl border-2 border-[#1c1410] bg-white p-5"
+      style={{ boxShadow: "var(--shadow-pop)" }}
+    >
+      <h2 className="mb-4 text-center text-sm font-extrabold text-[#1c1410] tracking-wide uppercase">
         直近のレポート
       </h2>
 
       {/* 凡例 */}
-      <div className="mb-3 flex items-center justify-center gap-4 text-xs text-zinc-500">
-        <span className="flex items-center gap-1">
+      <div className="mb-3 flex items-center justify-center gap-4 text-xs font-bold text-[#1c1410]/50">
+        <span className="flex items-center gap-1.5">
           <span
-            className="inline-block h-3 w-6 rounded"
+            className="inline-block h-2.5 w-5 rounded-full"
             style={{ backgroundColor: "var(--color-expense)" }}
           />
           支出
         </span>
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1.5">
           <span
-            className="inline-block h-3 w-6 rounded"
+            className="inline-block h-2.5 w-5 rounded-full"
             style={{ backgroundColor: "var(--color-income)" }}
           />
           収入

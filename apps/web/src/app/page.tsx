@@ -72,7 +72,7 @@ async function DashboardContent() {
   return (
     <>
       <Header userName={userId} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 bg-[#fffdf5]">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_3fr]">
           {/* 左カラム：Xデーパネル + 今日のレポート + 入力フォーム */}
           <div className="flex flex-col gap-4">
@@ -97,10 +97,10 @@ async function DashboardContent() {
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
       <Suspense
         fallback={
-          <div className="flex flex-1 items-center justify-center text-sm text-zinc-400">
+          <div className="flex flex-1 items-center justify-center text-sm font-medium text-[#1c1410]/40">
             読み込み中...
           </div>
         }

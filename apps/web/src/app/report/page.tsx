@@ -78,7 +78,7 @@ async function ReportSection({ period }: { period: Period }) {
 
   if (budgets.length === 0) {
     return (
-      <p className="py-12 text-center text-sm text-zinc-400">
+      <p className="py-12 text-center text-sm font-medium text-[#1c1410]/40">
         この期間のデータはありません
       </p>
     );
@@ -91,18 +91,24 @@ async function ReportSection({ period }: { period: Period }) {
   const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {/* サマリー */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-zinc-100 bg-white p-4">
-          <p className="text-xs text-zinc-500">支出合計</p>
-          <p className="mt-1 text-xl font-semibold" style={{ color: "var(--color-expense)" }}>
+        <div
+          className="rounded-2xl border border-[#1c1410]/12 bg-white p-4"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          <p className="text-xs font-bold text-[#1c1410]/50">支出合計</p>
+          <p className="mt-1 text-xl font-extrabold tabular-nums" style={{ color: "var(--color-expense)" }}>
             ¥{totalOutgo.toLocaleString()}
           </p>
         </div>
-        <div className="rounded-xl border border-zinc-100 bg-white p-4">
-          <p className="text-xs text-zinc-500">収入合計</p>
-          <p className="mt-1 text-xl font-semibold" style={{ color: "var(--color-income)" }}>
+        <div
+          className="rounded-2xl border border-[#1c1410]/12 bg-white p-4"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          <p className="text-xs font-bold text-[#1c1410]/50">収入合計</p>
+          <p className="mt-1 text-xl font-extrabold tabular-nums" style={{ color: "var(--color-income)" }}>
             ¥{totalIncome.toLocaleString()}
           </p>
         </div>
@@ -111,27 +117,30 @@ async function ReportSection({ period }: { period: Period }) {
       {/* カテゴリ別バーチャート（支出） */}
       {categoryBreakdown.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700">
+          <h2 className="mb-3 text-sm font-extrabold text-[#1c1410]">
             支出カテゴリ内訳
           </h2>
-          <div className="flex flex-col gap-2 rounded-xl border border-zinc-100 bg-white p-4">
+          <div
+            className="flex flex-col gap-3 rounded-2xl border border-[#1c1410]/12 bg-white p-4"
+            style={{ boxShadow: "var(--shadow-card)" }}
+          >
             {categoryBreakdown.map((cat) => (
-              <div key={cat.name} className="flex flex-col gap-1">
+              <div key={cat.name} className="flex flex-col gap-1.5">
                 <div className="flex justify-between text-sm">
                   <span className="flex items-center gap-1.5">
                     <span
-                      className="inline-block h-2.5 w-2.5 rounded-full"
+                      className="inline-block h-3 w-3 rounded-full border border-[#1c1410]/10"
                       style={{ backgroundColor: cat.color }}
                     />
-                    <span className="text-zinc-700">{cat.name}</span>
+                    <span className="font-bold text-[#1c1410]">{cat.name}</span>
                   </span>
-                  <span className="text-zinc-500">
+                  <span className="font-bold text-[#1c1410]/60">
                     ¥{cat.amount.toLocaleString()} ({cat.pct}%)
                   </span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
+                <div className="h-2.5 w-full overflow-hidden rounded-full border border-[#e8c8b0] bg-[#fffdf5]">
                   <div
-                    className="h-2 rounded-full transition-all"
+                    className="h-full rounded-full transition-all"
                     style={{ width: `${cat.pct}%`, backgroundColor: cat.color }}
                   />
                 </div>
@@ -143,7 +152,7 @@ async function ReportSection({ period }: { period: Period }) {
 
       {/* 日付別明細 */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-zinc-700">
+        <h2 className="mb-3 text-sm font-extrabold text-[#1c1410]">
           明細
         </h2>
         <div className="flex flex-col gap-4">
@@ -155,10 +164,10 @@ async function ReportSection({ period }: { period: Period }) {
             return (
               <section key={date}>
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-600">
+                  <span className="text-sm font-extrabold text-[#1c1410]">
                     {date}
                   </span>
-                  <div className="flex gap-3 text-sm">
+                  <div className="flex gap-3 text-sm font-bold">
                     {income > 0 && (
                       <span style={{ color: "var(--color-income)" }}>
                         +¥{income.toLocaleString()}
@@ -171,7 +180,10 @@ async function ReportSection({ period }: { period: Period }) {
                     )}
                   </div>
                 </div>
-                <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-100 bg-white">
+                <ul
+                  className="divide-y divide-[#e8c8b0] rounded-2xl border border-[#1c1410]/12 bg-white overflow-hidden"
+                  style={{ boxShadow: "var(--shadow-card)" }}
+                >
                   {items.map((item) => {
                     const category = getCategoryById(item.balanceType, item.categoryId);
                     const deleteAction = deleteBudgetAction.bind(null, item.id);
@@ -184,22 +196,22 @@ async function ReportSection({ period }: { period: Period }) {
                         <div className="flex items-center gap-2">
                           {category && (
                             <span
-                              className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                              className="h-3 w-3 flex-shrink-0 rounded-full border border-[#1c1410]/10"
                               style={{ backgroundColor: category.color }}
                             />
                           )}
                           <div className="flex flex-col">
-                            <span className="text-sm text-zinc-700">
+                            <span className="text-sm font-bold text-[#1c1410]">
                               {category?.name ?? "未分類"}
                             </span>
                             {item.content && (
-                              <span className="text-xs text-zinc-400">{item.content}</span>
+                              <span className="text-xs font-medium text-[#1c1410]/40">{item.content}</span>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <span
-                            className="text-sm font-semibold"
+                            className="text-sm font-extrabold tabular-nums"
                             style={{ color: isIncome ? "var(--color-income)" : "var(--color-expense)" }}
                           >
                             {isIncome ? "+" : "-"}¥{item.amount.toLocaleString()}
@@ -208,9 +220,9 @@ async function ReportSection({ period }: { period: Period }) {
                             <button
                               type="submit"
                               aria-label="削除"
-                              className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+                              className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e8c8b0] bg-white text-[#1c1410]/40 transition-colors hover:border-[#f87171] hover:bg-[#fee2e2] hover:text-[#f87171]"
                             >
-                              <X size={14} />
+                              <X size={12} />
                             </button>
                           </form>
                         </div>
@@ -242,11 +254,11 @@ export default async function ReportPage({
   const userId = cookieStore.get("user_id")?.value ?? "Guest";
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
       <Header userName={userId} />
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-zinc-800">
+          <h1 className="text-2xl font-extrabold text-[#1c1410]">
             レポート
           </h1>
           <PeriodSelector />
@@ -257,7 +269,7 @@ export default async function ReportPage({
               {[...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 animate-pulse rounded-xl bg-zinc-100"
+                  className="h-24 animate-pulse rounded-2xl border border-[#e8c8b0] bg-white"
                 />
               ))}
             </div>

@@ -24,17 +24,19 @@ export function PeriodSelector() {
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-1.5">
       {PERIODS.map((period) => (
         <button
           key={period}
           type="button"
           onClick={() => select(period)}
-          className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+          className={[
+            "rounded-full px-3 py-1 text-xs font-bold transition-colors border-2",
             current === period
-              ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900"
-              : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          }`}
+              ? "bg-[#f18840] text-white border-[#1c1410]"
+              : "border-[#e8c8b0] bg-white text-[#1c1410]/60 hover:border-[#1c1410] hover:text-[#1c1410]",
+          ].join(" ")}
+          style={current === period ? { boxShadow: "2px 2px 0px 0px #1c1410" } : undefined}
         >
           {PERIOD_LABELS[period]}
         </button>

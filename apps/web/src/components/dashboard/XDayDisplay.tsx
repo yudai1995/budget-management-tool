@@ -19,7 +19,6 @@ const STORAGE_KEY_INCOME = "hkl_monthly_income";
  * これにより hydration 時はサーバーと一致し、マウント後に localStorage 値へ遷移する。
  */
 function subscribeStorage(callback: () => void): () => void {
-    // storage イベント（他タブ書き込み）にも対応
     window.addEventListener("storage", callback);
     return () => window.removeEventListener("storage", callback);
 }
@@ -57,7 +56,7 @@ function formatLifespan(daysRemaining: number | null): { main: string; sub: stri
     const days = daysRemaining % 30;
 
     if (years >= 10) {
-        return { main: `${years}年`, sub: `余裕のある家計を維持しています` };
+        return { main: `${years}年`, sub: "余裕のある家計を維持しています" };
     }
     if (years >= 1) {
         return {
@@ -79,12 +78,11 @@ function getLifespanStatus(daysRemaining: number | null): "infinite" | "long" | 
     return "short";
 }
 
-/** ステータスに対応するオレンジグラデーション色 */
 const STATUS_COLORS = {
-    infinite: "var(--color-income)",       // teal（∞ = 最良）
-    long:     "var(--color-income)",       // teal（10年超）
-    medium:   "var(--color-brand-primary)", // オレンジ（2〜10年）
-    short:    "var(--color-brand-secondary)", // 濃いオレンジ（2年未満）
+    infinite: "var(--color-income)",
+    long:     "var(--color-income)",
+    medium:   "var(--color-brand-primary)",
+    short:    "var(--color-brand-secondary)",
 } as const;
 
 /** 信頼度インジケーターのバー幅（%） */
@@ -97,13 +95,13 @@ function TrustBar({ value }: { value: number }) {
         : "var(--color-brand-secondary)";
     return (
         <div className="flex items-center gap-2">
-            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100">
+            <div className="h-2 flex-1 overflow-hidden rounded-full border border-[#e8c8b0] bg-[#fffdf5]">
                 <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: color }}
                 />
             </div>
-            <span className="text-xs text-zinc-500 tabular-nums">{pct}%</span>
+            <span className="text-xs font-bold text-[#1c1410]/40 tabular-nums">{pct}%</span>
         </div>
     );
 }
@@ -115,29 +113,22 @@ export function XDayDisplay({
     avgDailyExpense,
     recordedDays,
 }: Props) {
-    // useSyncExternalStore: サーバー = null、クライアントマウント後 = localStorage 値
-    // → hydration 時は必ずサーバーと一致する
     const totalAssets = useSyncExternalStore(subscribeStorage, readAssetsSnapshot, () => SERVER_ASSETS);
     const monthlyIncome = useSyncExternalStore(subscribeStorage, readIncomeSnapshot, () => SERVER_INCOME);
 
-    // リアルタイム更新値（setInterval で更新。静止時は null のまま → 後述の導出値を使う）
     const [rtAssets, setRtAssets] = useState<number | null>(null);
     const [rtDays, setRtDays] = useState<number | null>(null);
     const [snapshotAt] = useMemo(() => [new Date()], []);
 
-    // 再設定モーダルの表示フラグ（localStorageは消さず、モーダルを重ねて表示）
     const [showSetup, setShowSetup] = useState(false);
 
-    /** localStorage に書き込み、storage イベントを dispatch して useSyncExternalStore を更新 */
     const handleSetup = useCallback((assets: number, income: number) => {
         localStorage.setItem(STORAGE_KEY_ASSETS, String(assets));
         localStorage.setItem(STORAGE_KEY_INCOME, String(income));
-        // storage イベントは同一タブでは発火しないため手動 dispatch
         window.dispatchEvent(new Event("storage"));
         setShowSetup(false);
     }, []);
 
-    // Xデーをクライアント側で算出
     const xdayResult = totalAssets !== null
         ? calculateXDay({
               totalAssets,
@@ -153,11 +144,9 @@ export function XDayDisplay({
     const minutesPerYen = xdayResult?.minutesPerYen ?? 0;
     const trustWeight = xdayResult?.trustWeight ?? 0;
 
-    // 静止状態（収入>支出、または資産未設定）では静的導出値を使う
     const realtimeAssets = netDailyExpense > 0 ? rtAssets : totalAssets;
     const daysRemaining = netDailyExpense > 0 ? rtDays : (xdayResult?.daysRemaining ?? null);
 
-    // 1秒ごとにリアルタイム資産を更新（侵食がある場合のみ）
     useEffect(() => {
         if (totalAssets === null || netDailyExpense <= 0) return;
 
@@ -173,12 +162,10 @@ export function XDayDisplay({
         return () => clearInterval(id);
     }, [totalAssets, netDailyExpense, snapshotAt]);
 
-    // 初回（未設定）の場合はセットアップモーダルを表示
     if (totalAssets === null) {
         return <SetupModal onSave={handleSetup} />;
     }
 
-    // 再設定モーダル（既存値を初期セット、×ボタンで閉じられる）
     if (showSetup) {
         return (
             <SetupModal
@@ -199,44 +186,47 @@ export function XDayDisplay({
         : null;
 
     return (
-        <section className="rounded-xl border border-zinc-100 bg-white p-5 shadow-sm">
-            {/* タイトル（他ウィジットと統一） */}
-            <h2 className="mb-4 text-center text-sm font-semibold text-zinc-700">家計の寿命</h2>
+        <section
+            className="rounded-2xl border-2 border-[#1c1410] bg-white p-5"
+            style={{ boxShadow: "var(--shadow-pop)" }}
+        >
+            <h2 className="mb-4 text-center text-sm font-extrabold text-[#1c1410] tracking-wide uppercase">
+                家計の寿命
+            </h2>
 
             {/* メイン：残り期間 */}
-            <div className="mb-3 rounded-lg border border-zinc-100 p-3 text-center">
+            <div className="mb-3 rounded-xl border border-[#e8c8b0] bg-[#fffdf5] p-4 text-center">
                 <p
-                    className="text-2xl font-bold tabular-nums leading-tight transition-colors duration-1000"
+                    className="text-3xl font-extrabold tabular-nums leading-tight transition-colors duration-1000"
                     style={{ color: statusColor }}
                 >
                     あと {lifespan.main}
                 </p>
-                <p className="mt-1 text-xs text-zinc-500">{lifespan.sub}</p>
+                <p className="mt-1 text-xs font-medium text-[#1c1410]/50">{lifespan.sub}</p>
             </div>
 
             {/* 資産情報グリッド */}
             <div className="mb-3 grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-zinc-100 p-3">
-                    <p className="text-xs text-zinc-500">残存資産</p>
-                    <p className="mt-1 text-base font-semibold tabular-nums text-zinc-800">
+                <div className="rounded-xl border border-[#e8c8b0] bg-[#fffdf5] p-3">
+                    <p className="text-xs font-bold text-[#1c1410]/50">残存資産</p>
+                    <p className="mt-1 text-sm font-extrabold tabular-nums text-[#1c1410]">
                         {realtimeAssets !== null
-                            ? `¥ ${Math.floor(realtimeAssets).toLocaleString("ja-JP")}`
+                            ? `¥${Math.floor(realtimeAssets).toLocaleString("ja-JP")}`
                             : "---"}
                     </p>
                 </div>
-                <div className="rounded-lg border border-zinc-100 p-3">
-                    <p className="text-xs text-zinc-500">1日あたりの支出</p>
-                    <p className="mt-1 text-base font-semibold tabular-nums text-zinc-800">
+                <div className="rounded-xl border border-[#e8c8b0] bg-[#fffdf5] p-3">
+                    <p className="text-xs font-bold text-[#1c1410]/50">1日あたり</p>
+                    <p className="mt-1 text-sm font-extrabold tabular-nums text-[#1c1410]">
                         ¥{Math.round(netDailyExpense).toLocaleString()}
-                        <span className="ml-1 text-xs font-normal text-zinc-400">/ 日</span>
+                        <span className="ml-1 text-xs font-normal text-[#1c1410]/40">/ 日</span>
                     </p>
                     {minutesPerYen > 0 && (
-                        <p className="mt-0.5 text-xs text-zinc-400">
+                        <p className="mt-0.5 text-xs text-[#1c1410]/40">
                             1,000円 ={" "}
                             {minutesPerYen >= 1
                                 ? `${(minutesPerYen * 1000 / 60).toFixed(1)}時間`
                                 : `${Math.round(minutesPerYen * 1000)}秒`}
-                            分
                         </p>
                     )}
                 </div>
@@ -244,21 +234,21 @@ export function XDayDisplay({
 
             {/* 今日・昨日 */}
             <div className="mb-3 grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-zinc-100 p-3">
-                    <p className="text-xs text-zinc-500">今日</p>
+                <div className="rounded-xl bg-[#fff6ee] p-3">
+                    <p className="text-xs font-bold text-[#f18840]/70">今日</p>
                     <p
-                        className="mt-1 text-base font-semibold tabular-nums"
+                        className="mt-1 text-sm font-extrabold tabular-nums"
                         style={{ color: todayExpense === 0 ? "var(--color-income)" : "var(--color-expense)" }}
                     >
                         {todayExpense === 0 ? "¥0" : `¥${todayExpense.toLocaleString()}`}
                     </p>
                     {impactLabel && (
-                        <p className="mt-0.5 text-xs text-zinc-400">影響 -{impactLabel}</p>
+                        <p className="mt-0.5 text-xs text-[#1c1410]/40">影響 -{impactLabel}</p>
                     )}
                 </div>
-                <div className="rounded-lg border border-zinc-100 p-3">
-                    <p className="text-xs text-zinc-500">昨日</p>
-                    <p className="mt-1 text-base font-semibold tabular-nums text-zinc-800">
+                <div className="rounded-xl border border-[#e8c8b0] bg-[#fffdf5] p-3">
+                    <p className="text-xs font-bold text-[#1c1410]/50">昨日</p>
+                    <p className="mt-1 text-sm font-extrabold tabular-nums text-[#1c1410]">
                         ¥{yesterdayExpense.toLocaleString()}
                     </p>
                 </div>
@@ -266,7 +256,7 @@ export function XDayDisplay({
 
             {/* 信頼度バー */}
             <div className="mb-3">
-                <div className="mb-1.5 flex items-center justify-between text-xs text-zinc-500">
+                <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-[#1c1410]/40">
                     <span>予測の精度</span>
                     <span>{recordedDays}日分の実績</span>
                 </div>
@@ -275,26 +265,12 @@ export function XDayDisplay({
 
             {/* 積み上げメッセージ */}
             {zeroStreakDays >= 2 && (
-                <p
-                    className="mb-3 rounded-lg border p-3 text-xs font-medium"
-                    style={{
-                        color: "var(--color-income)",
-                        borderColor: "var(--color-income-light)",
-                        backgroundColor: "var(--color-income-light)",
-                    }}
-                >
+                <p className="mb-3 rounded-xl bg-[#ecfaf8] p-3 text-xs font-bold text-[#35b5a2]">
                     {zeroStreakDays}日連続で支出ゼロ — 着実に余裕が積み上がっています
                 </p>
             )}
             {todayExpense === 0 && zeroStreakDays < 2 && (
-                <p
-                    className="mb-3 rounded-lg border p-3 text-xs font-medium"
-                    style={{
-                        color: "var(--color-income)",
-                        borderColor: "var(--color-income-light)",
-                        backgroundColor: "var(--color-income-light)",
-                    }}
-                >
+                <p className="mb-3 rounded-xl bg-[#ecfaf8] p-3 text-xs font-bold text-[#35b5a2]">
                     今日は支出ゼロ — 余裕が1日分増えました
                 </p>
             )}
@@ -304,7 +280,7 @@ export function XDayDisplay({
                 <button
                     type="button"
                     onClick={() => setShowSetup(true)}
-                    className="text-xs text-zinc-400 underline underline-offset-2 hover:text-zinc-600"
+                    className="text-xs font-bold text-[#1c1410]/40 underline underline-offset-2 hover:text-[#f18840] transition-colors"
                 >
                     資産データを更新
                 </button>

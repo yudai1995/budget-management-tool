@@ -41,22 +41,22 @@ describe('PeriodSelector', () => {
         it('period パラメータが未指定のとき「直近7日」がアクティブスタイルになる', () => {
             render(<PeriodSelector />);
             const activeBtn = screen.getByRole('button', { name: '直近7日' });
-            // アクティブスタイルのクラス（bg-zinc-900）が適用されている
-            expect(activeBtn.className).toContain('bg-zinc-900');
+            // アクティブスタイルのクラス（bg-[#f18840]）が適用されている
+            expect(activeBtn.className).toContain('bg-[#f18840]');
         });
 
         it('period=current-month のとき「今月」がアクティブスタイルになる', () => {
             mockSearchParams.set('period', 'current-month');
             render(<PeriodSelector />);
             const activeBtn = screen.getByRole('button', { name: '今月' });
-            expect(activeBtn.className).toContain('bg-zinc-900');
+            expect(activeBtn.className).toContain('bg-[#f18840]');
         });
 
         it('period=last-month のとき「先月」がアクティブスタイルになる', () => {
             mockSearchParams.set('period', 'last-month');
             render(<PeriodSelector />);
             const activeBtn = screen.getByRole('button', { name: '先月' });
-            expect(activeBtn.className).toContain('bg-zinc-900');
+            expect(activeBtn.className).toContain('bg-[#f18840]');
         });
     });
 

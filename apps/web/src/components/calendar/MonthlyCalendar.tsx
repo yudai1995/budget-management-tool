@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ExpenseResponse } from "@/lib/api/types";
 import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   expenses: ExpenseResponse[];
@@ -26,7 +27,6 @@ function buildCalendarDays(year: number, month: number, expenses: ExpenseRespons
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
-  // 前月の日付でカレンダーの先頭を埋める
   const startPad = firstDay.getDay();
   const days: DayData[] = [];
 
@@ -42,7 +42,6 @@ function buildCalendarDays(year: number, month: number, expenses: ExpenseRespons
     });
   }
 
-  // 当月の日付
   for (let day = 1; day <= lastDay.getDate(); day++) {
     const d = new Date(year, month, day);
     const dateStr = d.toISOString().split("T")[0];
@@ -64,7 +63,6 @@ function buildCalendarDays(year: number, month: number, expenses: ExpenseRespons
     });
   }
 
-  // 次月の日付でカレンダーの末尾を埋める（6行になるよう）
   const remaining = 42 - days.length;
   for (let i = 1; i <= remaining; i++) {
     const d = new Date(year, month + 1, i);
@@ -109,43 +107,45 @@ export function MonthlyCalendar({ expenses }: Props) {
 
   const handleDayClick = (day: DayData) => {
     if (!day.isCurrentMonth) return;
-    // クリックした日付をクエリパラメータで渡して入力ページへ
     router.push(`/expenses/new?date=${day.dateStr}`);
   };
 
   return (
-    <section className="flex h-full flex-col rounded-xl border border-zinc-100 bg-white shadow-sm">
+    <section
+      className="flex h-full flex-col rounded-2xl border-2 border-[#1c1410] bg-white overflow-hidden"
+      style={{ boxShadow: "var(--shadow-pop)" }}
+    >
       {/* カレンダーヘッダー */}
-      <div className="flex items-center justify-between rounded-t-xl bg-[var(--color-brand-primary)] px-4 py-3 text-white">
+      <div className="flex items-center justify-between border-b-2 border-[#1c1410] bg-[#f18840] px-4 py-3 text-white">
         <button
           type="button"
           onClick={prevMonth}
-          className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20"
+          className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/40 bg-white/10 hover:bg-white/20 transition-colors"
           aria-label="前月"
         >
-          ‹
+          <ChevronLeft size={14} />
         </button>
-        <h2 className="text-sm font-semibold">
-          {year}年{month + 1}月1日 – {new Date(year, month + 1, 0).getDate()}日
+        <h2 className="text-sm font-extrabold">
+          {year}年{month + 1}月
         </h2>
         <button
           type="button"
           onClick={nextMonth}
-          className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20"
+          className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white/40 bg-white/10 hover:bg-white/20 transition-colors"
           aria-label="翌月"
         >
-          ›
+          <ChevronRight size={14} />
         </button>
       </div>
 
       {/* 曜日ヘッダー */}
-      <div className="grid grid-cols-7 border-b border-zinc-100">
+      <div className="grid grid-cols-7 border-b border-[#e8c8b0] bg-[#fffdf5]">
         {WEEK_DAYS.map((day, i) => (
           <div
             key={day}
             className={[
-              "py-2 text-center text-xs font-medium",
-              i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : "text-zinc-500",
+              "py-2 text-center text-xs font-extrabold",
+              i === 0 ? "text-[#f87171]" : i === 6 ? "text-[#35b5a2]" : "text-[#1c1410]/50",
             ].join(" ")}
           >
             {day}
@@ -162,29 +162,32 @@ export function MonthlyCalendar({ expenses }: Props) {
             onClick={() => handleDayClick(day)}
             disabled={!day.isCurrentMonth}
             className={[
-              "relative flex flex-col items-start border-b border-r border-zinc-100 p-1 text-left text-xs transition-colors",
+              "relative flex flex-col items-start border-b border-r border-[#e8c8b0] p-1 text-left text-xs transition-colors",
               day.isCurrentMonth
-                ? "hover:bg-[var(--color-surface-subtle)] cursor-pointer"
+                ? "hover:bg-[#fff6ee] cursor-pointer"
                 : "cursor-default",
-              day.isToday ? "bg-amber-50" : "",
+              day.isToday ? "bg-[#fff5ec]" : "",
             ].join(" ")}
           >
             {/* 日付数字 */}
             <span
               className={[
-                "mb-0.5 text-xs",
-                !day.isCurrentMonth ? "text-zinc-300" : day.isToday ? "font-bold text-[var(--color-brand-primary)]" : "text-zinc-600",
+                "mb-0.5 text-xs font-bold",
+                !day.isCurrentMonth
+                  ? "text-[#1c1410]/20"
+                  : day.isToday
+                  ? "rounded-full bg-[#f18840] px-1 text-white"
+                  : "text-[#1c1410]",
               ].join(" ")}
             >
-              {day.date.getDate()}日
+              {day.date.getDate()}
             </span>
 
             {/* 支出 */}
             {day.outgo > 0 && (
               <div className="flex items-center gap-0.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-expense)] text-[8px]">
-                </span>
-                <span className="text-[10px] text-zinc-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#f18840]" />
+                <span className="text-[9px] font-bold text-[#1c1410]/60">
                   {day.outgo >= 1000
                     ? `${Math.floor(day.outgo / 1000)}k`
                     : day.outgo}
@@ -195,9 +198,8 @@ export function MonthlyCalendar({ expenses }: Props) {
             {/* 収入 */}
             {day.income > 0 && (
               <div className="flex items-center gap-0.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-income)] text-[8px]">
-                </span>
-                <span className="text-[10px] text-zinc-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#35b5a2]" />
+                <span className="text-[9px] font-bold text-[#1c1410]/60">
                   {day.income >= 1000
                     ? `${Math.floor(day.income / 1000)}k`
                     : day.income}
