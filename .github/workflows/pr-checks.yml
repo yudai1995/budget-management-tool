@@ -1,0 +1,249 @@
+# ============================================================
+# pr-checks.yml — PR 時の自動チェック（マージブロックのガードレール）
+#
+# フロー（全ジョブ並列実行）:
+#   1. lint-typecheck    — lint + 型チェック
+#   2. unit-test         — ユニットテスト
+#   3. integration-test  — 統合テスト（MySQL サービスコンテナ使用）
+#   4. security-scan     — Trivy FS スキャン（Docker ビルド不要）
+#   5. migration-check   — Prisma スキーマ検証 + 破壊的変更の検出
+#   6. infra-check       — Terraform 構文・フォーマットチェック
+#
+# ブランチ保護設定（GitHub Settings > Branches > main）:
+#   Require status checks to pass before merging に以下を登録すること:
+#   - Lint & Type Check
+#   - Unit Test
+#   - Integration Test
+#   - Security Scan (FS)
+#   - Migration Check
+#   - Infrastructure Check
+# ============================================================
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # ─── lint + 型チェック ─────────────────────────────────────────────────────
+  lint-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Generate Prisma client
+        run: pnpm --filter @budget/api exec prisma generate
+
+      - name: Lint & type-check
+        run: pnpm turbo run lint type-check
+
+  # ─── ユニットテスト ────────────────────────────────────────────────────────
+  unit-test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Generate Prisma client
+        run: pnpm --filter @budget/api exec prisma generate
+
+      - name: Run unit tests
+        run: pnpm test:unit
+
+  # ─── 統合テスト（実 DB） ───────────────────────────────────────────────────
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_USER: Admin
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: budgetdb_test
+        ports:
+          - 3307:3306  # .env.test の DB_PORT=3307 に合わせてマッピング
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -prootpassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: "mysql://Admin:password@127.0.0.1:3307/budgetdb_test"
+        run: pnpm --filter @budget/api exec prisma generate
+
+      - name: Push schema to test DB
+        env:
+          DATABASE_URL: "mysql://Admin:password@127.0.0.1:3307/budgetdb_test"
+        run: pnpm --filter @budget/api exec prisma db push --skip-generate
+
+      - name: Run integration tests
+        env:
+          # DATABASE_URL を明示指定（dotenv の .env.test より優先される）
+          DATABASE_URL: "mysql://Admin:password@127.0.0.1:3307/budgetdb_test"
+        run: pnpm test:integration
+
+  # ─── セキュリティスキャン（FS） ────────────────────────────────────────────
+  # Docker ビルド・ECR 不要。pnpm-lock.yaml を直接スキャンするため高速。
+  security-scan:
+    name: Security Scan (FS)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # SARIF 結果を GitHub Security タブへアップロード
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+
+      - name: Upload scan results to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+  # ─── マイグレーションチェック ──────────────────────────────────────────────
+  migration-check:
+    name: Migration Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # git diff で base ブランチとの比較に必要
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Validate Prisma schema
+        run: pnpm --filter @budget/api exec prisma validate
+
+      - name: Check for destructive migrations
+        run: |
+          MIGRATION_DIR="apps/api/prisma/migrations"
+
+          # ベースブランチとの差分でマイグレーションファイルの変更を検出
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          CHANGED=$(git diff --name-only --diff-filter=AM \
+            "origin/${{ github.base_ref }}...HEAD" \
+            -- "${MIGRATION_DIR}" 2>/dev/null | grep "\.sql$" || true)
+
+          if [ -z "${CHANGED}" ]; then
+            echo "変更されたマイグレーションなし。スキップ。"
+            exit 0
+          fi
+
+          echo "変更されたマイグレーション:"
+          echo "${CHANGED}"
+          echo ""
+
+          FOUND=0
+          while IFS= read -r FILE; do
+            if [ -f "${FILE}" ] && grep -iEq \
+              "DROP\s+(TABLE|COLUMN)|ALTER\s+TABLE\s+\S+\s+DROP\s+(COLUMN|INDEX)" \
+              "${FILE}"; then
+              echo "破壊的変更検出: ${FILE}"
+              grep -inE \
+                "DROP\s+(TABLE|COLUMN)|ALTER\s+TABLE\s+\S+\s+DROP\s+(COLUMN|INDEX)" \
+                "${FILE}"
+              FOUND=1
+            fi
+          done <<< "${CHANGED}"
+
+          if [ "${FOUND}" = "1" ]; then
+            echo ""
+            echo "破壊的なマイグレーションが検出されました。"
+            echo "意図的な変更であれば DBA またはチームの承認を得てからマージしてください。"
+            exit 1
+          fi
+
+          echo "チェック完了: 破壊的変更なし。"
+
+  # ─── インフラ構成チェック ──────────────────────────────────────────────────
+  infra-check:
+    name: Infrastructure Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.7"
+
+      - name: Terraform format check
+        working-directory: infra/dev
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init (backend=false)
+        working-directory: infra/dev
+        # プロバイダーのダウンロードのみ実行。S3 backend への接続は不要。
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: infra/dev
+        run: terraform validate
