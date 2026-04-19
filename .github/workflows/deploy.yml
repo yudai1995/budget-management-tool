@@ -264,7 +264,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy web service (sidecar: web + api)
+      - name: Deploy web service sidecar
         # web または api のいずれかが変更された場合にサイドカータスク定義を更新
         if: needs.build-and-push.outputs.web-image != '' || needs.build-and-push.outputs.api-image != ''
         env:
@@ -301,7 +301,7 @@ jobs:
 
           echo "web-task-def=${NEW_TASK_DEF_ARN}" >> "$GITHUB_ENV"
 
-      - name: Update api task definition (DB migration 専用、サービスは 0 のまま)
+      - name: Update api task definition for DB migration
         # api タスク定義を最新イメージで更新（migrate コマンド実行のベースとして使用）
         if: needs.build-and-push.outputs.api-image != ''
         env:
