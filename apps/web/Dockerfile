@@ -21,8 +21,8 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/common/package.json ./packages/common/
 COPY packages/api-client/package.json ./packages/api-client/
 
-# 本番依存のみインストール（devDependencies はビルド用に全部必要なので --frozen-lockfile）
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts: Docker コンテナに git がないため lefthook install (prepare スクリプト) をスキップ
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ─── builder: Next.js ビルド ──────────────────────────────────────────────────
 FROM base AS builder

@@ -19,7 +19,8 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/common/package.json ./packages/common/
 
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts: Docker コンテナに git がないため lefthook install (prepare スクリプト) をスキップ
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ─── builder: TypeScript コンパイル + Prisma クライアント生成 ─────────────────
 FROM base AS builder
