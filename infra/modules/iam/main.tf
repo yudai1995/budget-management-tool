@@ -20,7 +20,9 @@ locals {
   account_id       = data.aws_caller_identity.current.account_id
   github_oidc_url  = "https://token.actions.githubusercontent.com"
   ecr_resource_arn = "arn:aws:ecr:${var.aws_region}:${local.account_id}:repository/${var.name_prefix}-*"
-  ssm_resource_arn = "arn:aws:ssm:${var.aws_region}:${local.account_id}:parameter/${var.name_prefix}/*"
+  # ssm_prefix は "/budget/dev" 形式（先頭スラッシュあり）のため parameter と直接結合する
+  # 例: parameter/budget/dev/* → arn:aws:ssm:...:parameter/budget/dev/*
+  ssm_resource_arn = "arn:aws:ssm:${var.aws_region}:${local.account_id}:parameter${var.ssm_prefix}/*"
 }
 
 # ─── GitHub Actions OIDC ID プロバイダー ────────────────────────────────────
