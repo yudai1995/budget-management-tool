@@ -165,6 +165,20 @@ data "aws_iam_policy_document" "github_actions_policy" {
     ]
     resources = [local.ssm_resource_arn]
   }
+
+  # CloudWatch Logs: マイグレーション実行ログの読取（GitHub Actions でのデバッグ用）
+  # ECS タスクのログを GitHub Actions 上に表示することで、失敗原因の調査を完結させる
+  statement {
+    sid    = "CloudWatchLogsRead"
+    effect = "Allow"
+    actions = [
+      "logs:GetLogEvents",
+    ]
+    # ログストリーム ARN: arn:aws:logs:region:account:log-group:name:log-stream:stream-name
+    resources = [
+      "arn:aws:logs:${var.aws_region}:${local.account_id}:log-group:/ecs/${var.name_prefix}/*:log-stream:*",
+    ]
+  }
 }
 
 # ─── EcsTaskExecutionRole ────────────────────────────────────────────────────
