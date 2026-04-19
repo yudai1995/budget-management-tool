@@ -14,7 +14,7 @@
 
 resource "aws_security_group" "web" {
   name        = "${var.name_prefix}-sg-web"
-  description = "CloudFront and Internet to ECS Web (80, 443)"
+  description = "CloudFront and Internet to ECS Web (80, 443, 3000)"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -29,6 +29,16 @@ resource "aws_security_group" "web" {
     description = "HTTPS from anywhere"
     from_port   = 443
     to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    # CloudFront のカスタムオリジンは http_port = 3000 でこのポートに接続する。
+    # CloudFront はグローバルに分散したエッジから接続するため 0.0.0.0/0 が必要。
+    description = "Next.js from CloudFront (http_port = 3000)"
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
