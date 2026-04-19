@@ -219,7 +219,7 @@ jobs:
             --task-definition "${TASK_DEF}" \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[${SUBNETS}],securityGroups=[${SG_API}],assignPublicIp=ENABLED}" \
-            --overrides '{"containerOverrides":[{"name":"api","command":["node","build/index.js","--migrate"]}]}' \
+            --overrides '{"containerOverrides":[{"name":"api","command":["node","build/apps/api/src/index.js","--migrate"]}]}' \
             --query 'tasks[0].taskArn' \
             --output text)
 
@@ -264,23 +264,28 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy web service
-        if: needs.build-and-push.outputs.web-image != ''
+      - name: Deploy web service (sidecar: web + api)
+        # web または api のいずれかが変更された場合にサイドカータスク定義を更新
+        if: needs.build-and-push.outputs.web-image != '' || needs.build-and-push.outputs.api-image != ''
         env:
           CLUSTER: ${{ secrets.ECS_CLUSTER }}
           SERVICE: ${{ secrets.ECS_SERVICE_WEB }}
           TASK_FAMILY: ${{ secrets.ECS_TASK_FAMILY_WEB }}
-          NEW_IMAGE: ${{ needs.build-and-push.outputs.web-image }}
+          NEW_WEB_IMAGE: ${{ needs.build-and-push.outputs.web-image }}
+          NEW_API_IMAGE: ${{ needs.build-and-push.outputs.api-image }}
         run: |
-          # 現在のタスク定義を取得して image を差し替え
+          # 現在のサイドカータスク定義を取得
           TASK_DEF=$(aws ecs describe-task-definition \
             --task-definition "${TASK_FAMILY}" \
             --query 'taskDefinition' \
             --output json)
 
+          # 変更があったコンテナのみ image を差し替え（空文字の場合は現在の image を維持）
           NEW_TASK_DEF=$(echo "${TASK_DEF}" | \
-            jq --arg IMAGE "${NEW_IMAGE}" \
-            '.containerDefinitions[0].image = $IMAGE |
+            jq --arg WEB_IMAGE "${NEW_WEB_IMAGE}" \
+               --arg API_IMAGE "${NEW_API_IMAGE}" \
+            '(if $WEB_IMAGE != "" then .containerDefinitions[0].image = $WEB_IMAGE else . end) |
+             (if $API_IMAGE != "" then .containerDefinitions[1].image = $API_IMAGE else . end) |
              del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)')
 
           NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
@@ -296,11 +301,10 @@ jobs:
 
           echo "web-task-def=${NEW_TASK_DEF_ARN}" >> "$GITHUB_ENV"
 
-      - name: Deploy api service
+      - name: Update api task definition (DB migration 専用、サービスは 0 のまま)
+        # api タスク定義を最新イメージで更新（migrate コマンド実行のベースとして使用）
         if: needs.build-and-push.outputs.api-image != ''
         env:
-          CLUSTER: ${{ secrets.ECS_CLUSTER }}
-          SERVICE: ${{ secrets.ECS_SERVICE_API }}
           TASK_FAMILY: ${{ secrets.ECS_TASK_FAMILY_API }}
           NEW_IMAGE: ${{ needs.build-and-push.outputs.api-image }}
         run: |
@@ -314,19 +318,13 @@ jobs:
             '.containerDefinitions[0].image = $IMAGE |
              del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)')
 
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+          aws ecs register-task-definition \
             --cli-input-json "${NEW_TASK_DEF}" \
             --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
-
-          aws ecs update-service \
-            --cluster "${CLUSTER}" \
-            --service "${SERVICE}" \
-            --task-definition "${NEW_TASK_DEF_ARN}" \
-            --force-new-deployment
+            --output text
 
       - name: Wait for web service stability
-        if: needs.build-and-push.outputs.web-image != ''
+        if: needs.build-and-push.outputs.web-image != '' || needs.build-and-push.outputs.api-image != ''
         env:
           CLUSTER: ${{ secrets.ECS_CLUSTER }}
           SERVICE: ${{ secrets.ECS_SERVICE_WEB }}
