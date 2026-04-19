@@ -14,7 +14,7 @@
 
 resource "aws_security_group" "web" {
   name        = "${var.name_prefix}-sg-web"
-  description = "CloudFront and Internet to ECS Web (80, 443, 3000)"
+  description = "CloudFront and Internet to ECS Web (80, 443)"
   vpc_id      = var.vpc_id
 
   ingress {
