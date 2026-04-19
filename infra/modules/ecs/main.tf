@@ -245,8 +245,12 @@ resource "aws_ecs_service" "web" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets          = var.subnet_ids
-    security_groups  = [var.web_sg_id]
+    subnets = var.subnet_ids
+    security_groups = [
+      var.web_sg_id, # CloudFront → Next.js (port 3000) の受け入れ
+      var.api_sg_id, # サイドカー api → RDS (port 3306) のアクセス許可
+      # sg-rds は sg-api からの接続のみ許可するため、web サービスにも sg-api が必要
+    ]
     # NAT GW なしで ECR / SSM へアクセスするためパブリック IP を付与
     assign_public_ip = true
   }
