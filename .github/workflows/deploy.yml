@@ -160,16 +160,16 @@ jobs:
 
           echo "Using task definition: ${TASK_DEF}"
 
-          # prisma migrate deploy を直接実行
-          # index.ts は --migrate フラグを処理しないため、prisma CLI を直接呼び出す
-          # WORKDIR=/repo/apps/api なので schema は ./prisma/schema.prisma で自動検出される
+          # prisma migrate deploy を index.js の --migrate フラグ経由で実行
+          # .bin/ symlink は pnpm + Docker multi-stage build で壊れる場合があるため
+          # index.ts 内で require.resolve() を使って prisma CLI のパスを解決している
           # DATABASE_URL はタスク定義の secrets セクションから SSM 経由で注入される
           TASK_ARN=$(aws ecs run-task \
             --cluster "${CLUSTER}" \
             --task-definition "${TASK_DEF}" \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[${SUBNETS}],securityGroups=[${SG_API}],assignPublicIp=ENABLED}" \
-            --overrides '{"containerOverrides":[{"name":"api","command":["/bin/sh","-c","/repo/node_modules/.bin/prisma migrate deploy"]}]}' \
+            --overrides '{"containerOverrides":[{"name":"api","command":["node","build/apps/api/src/index.js","--migrate"]}]}' \
             --query 'tasks[0].taskArn' \
             --output text)
 
