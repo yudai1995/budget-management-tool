@@ -16,8 +16,10 @@ FROM base AS deps
 WORKDIR /repo
 
 # pnpm workspace 解決に必要なファイルを先にコピーしてキャッシュを活用
+# apps/api を含めるのは web が apps/api/src を直接型インポートするため
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./apps/api/
 COPY packages/common/package.json ./packages/common/
 COPY packages/api-client/package.json ./packages/api-client/
 
@@ -30,12 +32,16 @@ WORKDIR /repo
 
 COPY --from=deps /repo/node_modules ./node_modules
 COPY --from=deps /repo/apps/web/node_modules ./apps/web/node_modules
+# apps/api/node_modules は web が apps/api/src を直接型インポートするため必要
+COPY --from=deps /repo/apps/api/node_modules ./apps/api/node_modules
 COPY --from=deps /repo/packages/common/node_modules ./packages/common/node_modules
 COPY --from=deps /repo/packages/api-client/node_modules ./packages/api-client/node_modules
 
 # ソースをコピー
 COPY packages/common ./packages/common
 COPY packages/api-client ./packages/api-client
+# TypeScript の型解決に必要（web → apps/api/src への直接 import type）
+COPY apps/api/src ./apps/api/src
 COPY apps/web ./apps/web
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
