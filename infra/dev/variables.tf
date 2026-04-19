@@ -43,8 +43,22 @@ variable "ssm_prefix" {
   default     = "/budget/dev"
 }
 
-variable "initial_web_origin_ip" {
-  description = "CloudFront オリジンの初期 IP（terraform apply 後に scripts/update-cloudfront-origin.sh で自動更新）"
+variable "initial_web_origin_domain" {
+  description = "CloudFront オリジンの初期ドメイン（terraform apply 後に scripts/update-cloudfront-origin.sh で自動更新）"
   type        = string
-  default     = "127.0.0.1" # placeholder: 初回デプロイ後に自動更新される
+  default     = "placeholder.example.com" # placeholder: 初回デプロイ後に自動更新される
+}
+
+# ─── RDS 設定 ─────────────────────────────────────────────────────────────────
+
+variable "db_name" {
+  description = "RDS データベース名"
+  type        = string
+  default     = "budget_dev"
+}
+
+variable "db_username" {
+  description = "RDS マスターユーザー名（パスワードは random_password で自動生成）"
+  type        = string
+  default     = "admin"
 }

@@ -20,3 +20,15 @@ variable "public_subnets" {
     c = { cidr = "10.0.2.0/24", az = "ap-northeast-1c" }
   }
 }
+
+variable "private_subnets" {
+  description = "プライベートサブネット定義（RDS 専用: インターネット非到達）"
+  type = map(object({
+    cidr = string
+    az   = string
+  }))
+  default = {
+    a = { cidr = "10.0.10.0/24", az = "ap-northeast-1a" }
+    c = { cidr = "10.0.11.0/24", az = "ap-northeast-1c" }
+  }
+}

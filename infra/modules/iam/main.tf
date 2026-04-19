@@ -35,7 +35,7 @@ resource "aws_iam_openid_connect_provider" "github" {
 
 resource "aws_iam_role" "github_actions" {
   name        = "${var.name_prefix}-github-actions-role"
-  description = "GitHub Actions から OIDC 経由で AssumeRole。ECR Push / ECS Deploy / SSM Read のみ許可。"
+  description = "GitHub Actions OIDC role. Allows ECR Push, ECS Deploy, and SSM Read only."
 
   assume_role_policy = data.aws_iam_policy_document.github_assume_role.json
 }
@@ -144,7 +144,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
 
 resource "aws_iam_role" "ecs_task_execution" {
   name        = "${var.name_prefix}-ecs-task-execution-role"
-  description = "ECS タスク実行ロール。コンテナ起動時に ECR Pull と CloudWatch Logs 書込みを許可。"
+  description = "ECS task execution role. Allows ECR Pull and CloudWatch Logs write on container startup."
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

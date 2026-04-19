@@ -5,6 +5,7 @@
 # フェーズ 2: ECS クラスター / タスク定義 / サービス
 # フェーズ 3: CloudFront ディストリビューション（Origin Shield 付き）
 # フェーズ 4: 監視（CloudWatch Alarm + SNS + Budget 予測アラート）
+# フェーズ 5: RDS MySQL（SSM 自動同期）
 #
 # 適用順:
 #   1. cd ../bootstrap && terraform apply  (初回のみ)
@@ -73,7 +74,7 @@ module "cloudfront" {
 
   # ECS タスク起動後に scripts/update-cloudfront-origin.sh で自動更新
   # 初回 apply 時は placeholder（terraform apply 後に手動で初回デプロイを実行）
-  web_origin_domain = var.initial_web_origin_ip
+  web_origin_domain = var.initial_web_origin_domain
 
   # Layer 2: Origin Shield — CloudFront がこのシークレットをカスタムヘッダーで送出
   # SSM に事前登録: aws ssm put-parameter --name /budget/dev/cf_origin_secret --type SecureString --value <ランダム文字列>
@@ -90,4 +91,23 @@ module "monitoring" {
   ecs_cluster_name     = module.ecs.cluster_name
   ecs_api_service_name = module.ecs.api_service_name
   budget_limit_usd     = var.budget_limit_usd
+
+  # ECS module が CloudWatch Log Group を作成するまで待機
+  depends_on = [module.ecs]
+}
+
+# ─── フェーズ 8: RDS MySQL ────────────────────────────────────────────────────
+
+module "rds" {
+  source      = "../modules/rds"
+  name_prefix = local.name_prefix
+  aws_region  = var.aws_region
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnet_ids
+  api_sg_id  = module.sg.api_sg_id
+  ssm_prefix = var.ssm_prefix
+
+  db_name     = var.db_name
+  db_username = var.db_username
 }

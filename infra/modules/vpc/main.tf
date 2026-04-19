@@ -3,7 +3,8 @@
 #
 # 構成:
 #   - VPC (10.0.0.0/16)
-#   - パブリックサブネット x2 (AZ: a, c) — RDS Multi-AZ 要件を満たす
+#   - パブリックサブネット x2 (AZ: a, c) — ECS タスク配置
+#   - プライベートサブネット x2 (AZ: a, c) — RDS 専用（インターネット非到達）
 #   - Internet Gateway
 #   - パブリックルートテーブル（0.0.0.0/0 → IGW）
 #
@@ -11,7 +12,7 @@
 #   NAT Gateway ($35/月) を不採用。
 #   ECS タスクはパブリックサブネットに配置し、
 #   ECR/SSM などの AWS サービスには直接インターネット経由でアクセス。
-#   RDS へのアクセスは SG で sg-api からのみに制限。
+#   RDS はプライベートサブネットに配置し、SG で sg-api からの 3306 のみを許可。
 # ============================================================
 
 resource "aws_vpc" "main" {
@@ -47,6 +48,22 @@ resource "aws_subnet" "public" {
   tags = {
     Name = "${var.name_prefix}-pub-${each.key}"
     Tier = "public"
+  }
+}
+
+# ─── プライベートサブネット（RDS 専用: インターネット非到達）───────────────────
+
+resource "aws_subnet" "private" {
+  for_each = var.private_subnets
+
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = each.value.cidr
+  availability_zone       = each.value.az
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name = "${var.name_prefix}-priv-${each.key}"
+    Tier = "private"
   }
 }
 
