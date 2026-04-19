@@ -40,7 +40,14 @@ resource "aws_cloudwatch_log_group" "api" {
   retention_in_days = 7
 }
 
-# ─── タスク定義: web ─────────────────────────────────────────────────────────
+# ─── タスク定義: web (サイドカー構成: web + api を同一タスクで起動) ──────────
+#
+# web と api を同一 Fargate タスクに同居させ、localhost で通信する。
+# - web (Next.js)  : port 3000 — CloudFront がオリジンとして参照
+# - api (Hono)     : port 3001 — web から http://localhost:3001 で呼び出す
+#
+# deploy.yml の deploy-ecs ジョブが CI/CD でイメージを差し替えるため、
+# lifecycle.ignore_changes = [task_definition] で Terraform 側の上書きを防ぐ。
 
 resource "aws_ecs_task_definition" "web" {
   family                   = "${var.name_prefix}-web"
@@ -51,6 +58,7 @@ resource "aws_ecs_task_definition" "web" {
   execution_role_arn       = var.task_execution_role_arn
 
   container_definitions = jsonencode([
+    # ─ index 0: web (Next.js) ─────────────────────────────────────────────
     {
       name      = "web"
       image     = var.web_image
@@ -64,15 +72,13 @@ resource "aws_ecs_task_definition" "web" {
       ]
 
       environment = [
-        # API_URL は VPC 内部の api タスク IP を指定（デプロイ後に更新）
-        # 初期値は placeholder。ECS Service Connect または手動更新で解決
         {
           name  = "NODE_ENV"
           value = "production"
         }
       ]
 
-      # SSM から環境変数を注入（ハードコード禁止）
+      # NEXT_PUBLIC_API_URL は同一タスク内 localhost を指す
       secrets = [
         {
           name      = "NEXT_PUBLIC_API_URL"
@@ -91,6 +97,63 @@ resource "aws_ecs_task_definition" "web" {
 
       healthCheck = {
         command     = ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+        interval    = 30
+        timeout     = 5
+        retries     = 3
+        startPeriod = 60
+      }
+    },
+
+    # ─ index 1: api (Hono) ────────────────────────────────────────────────
+    {
+      name      = "api"
+      image     = var.api_image
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 3001
+          protocol      = "tcp"
+        }
+      ]
+
+      environment = [
+        {
+          name  = "NODE_ENV"
+          value = "production"
+        },
+        {
+          name  = "PORT"
+          value = "3001"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "DATABASE_URL"
+          valueFrom = "${var.ssm_prefix}/database_url"
+        },
+        {
+          name      = "JWT_SECRET"
+          valueFrom = "${var.ssm_prefix}/jwt_secret"
+        },
+        {
+          name      = "CF_ORIGIN_SECRET"
+          valueFrom = "${var.ssm_prefix}/cf_origin_secret"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.api.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+
+      healthCheck = {
+        command     = ["CMD-SHELL", "wget -qO- http://localhost:3001/api/health || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
