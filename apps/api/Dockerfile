@@ -44,19 +44,26 @@ RUN pnpm --filter @budget/api exec prisma generate
 RUN pnpm --filter @budget/api build
 
 # ─── runner: 最小ランタイム ───────────────────────────────────────────────────
+# pnpm ワークスペースは仮想ストア（.pnpm/）へのシンボリックリンクを使用するため、
+# monorepo のディレクトリ構造をそのまま維持する必要がある。
+# WORKDIR を /repo にして builder と同じパス構成を再現することで symlink が正しく解決される。
 FROM node:20-alpine AS runner
-WORKDIR /app
+WORKDIR /repo
 
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 honoapi
 
-# ビルド成果物のみコピー（ソースは含めない）
-COPY --from=builder /repo/apps/api/build ./build
-COPY --from=builder /repo/apps/api/node_modules ./node_modules
-COPY --from=builder /repo/apps/api/prisma ./prisma
-# Prisma クライアントは node_modules に含まれるが、スキーマファイルが必要
+# pnpm 仮想ストア（.pnpm/）を含むルート node_modules — symlink 解決に必須
+COPY --from=builder /repo/node_modules ./node_modules
+# per-package node_modules（各パッケージのシンボリックリンクエントリ）
+COPY --from=builder /repo/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder /repo/packages/common/node_modules ./packages/common/node_modules
+
+# ビルド成果物
+COPY --from=builder /repo/apps/api/build ./apps/api/build
+COPY --from=builder /repo/apps/api/prisma ./apps/api/prisma
 COPY --from=builder /repo/packages/common/dist ./packages/common/dist
 
 USER honoapi
@@ -64,4 +71,6 @@ USER honoapi
 EXPOSE 3001
 ENV PORT=3001
 
+# WORKDIR が /repo/apps/api のため、build/apps/api/src/index.js が実際のエントリポイント
+WORKDIR /repo/apps/api
 CMD ["node", "build/apps/api/src/index.js"]
