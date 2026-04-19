@@ -33,19 +33,33 @@ set -euo pipefail
 
 echo "ECS サービス '${SERVICE}' の実行中タスクを取得中..."
 
-TASK_ARN=$(aws ecs list-tasks \
-  --cluster "${CLUSTER}" \
-  --service-name "${SERVICE}" \
-  --desired-status RUNNING \
-  --query 'taskArns[0]' \
-  --output text)
+# デプロイ直後はタスクが起動中の場合があるためリトライする
+TASK_ARN=""
+MAX_ATTEMPTS=20
+for i in $(seq 1 ${MAX_ATTEMPTS}); do
+  TASK_ARN=$(aws ecs list-tasks \
+    --cluster "${CLUSTER}" \
+    --service-name "${SERVICE}" \
+    --desired-status RUNNING \
+    --query 'taskArns[0]' \
+    --output text 2>/dev/null || echo "")
+
+  if [ -n "${TASK_ARN}" ] && [ "${TASK_ARN}" != "None" ]; then
+    echo "タスク ARN: ${TASK_ARN}"
+    break
+  fi
+
+  if [ "${i}" -lt "${MAX_ATTEMPTS}" ]; then
+    echo "実行中タスクなし。15秒後にリトライ... (${i}/${MAX_ATTEMPTS})"
+    sleep 15
+  fi
+done
 
 if [ -z "${TASK_ARN}" ] || [ "${TASK_ARN}" = "None" ]; then
-  echo "エラー: 実行中のタスクが見つかりません" >&2
+  echo "エラー: ${MAX_ATTEMPTS}回リトライしましたが実行中のタスクが見つかりません" >&2
+  echo "ECS サービスの desired_count と最近のイベントを確認してください" >&2
   exit 1
 fi
-
-echo "タスク ARN: ${TASK_ARN}"
 
 # タスクの ENI ID を取得
 ENI_ID=$(aws ecs describe-tasks \
