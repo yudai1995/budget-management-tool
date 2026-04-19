@@ -139,6 +139,8 @@ jobs:
     if: needs.build-and-push.outputs.web-built == 'true' || needs.build-and-push.outputs.api-built == 'true'
     permissions:
       security-events: write # SARIF 結果を GitHub Security タブへアップロードするために必要
+      id-token: write        # OIDC トークン取得（ECR ログインに必要）
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -152,6 +154,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Scan web image
+        id: scan-web
         if: needs.build-and-push.outputs.web-built == 'true'
         uses: aquasecurity/trivy-action@master
         with:
@@ -164,13 +167,15 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload web scan results to GitHub Security
-        if: always() && needs.build-and-push.outputs.web-built == 'true'
+        # スキャンが実行された場合のみアップロード（SARIF ファイルが存在しない場合はスキップ）
+        if: always() && steps.scan-web.conclusion != 'skipped'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-web.sarif
           category: trivy-web
 
       - name: Scan api image
+        id: scan-api
         if: needs.build-and-push.outputs.api-built == 'true'
         uses: aquasecurity/trivy-action@master
         with:
@@ -182,7 +187,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload api scan results to GitHub Security
-        if: always() && needs.build-and-push.outputs.api-built == 'true'
+        if: always() && steps.scan-api.conclusion != 'skipped'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-api.sarif
