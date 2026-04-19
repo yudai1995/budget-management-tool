@@ -97,7 +97,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
     resources = [local.ecr_resource_arn]
   }
 
-  # ECS: タスク定義更新・サービス更新
+  # ECS: タスク定義更新・サービス更新・マイグレーションタスク実行
   statement {
     sid    = "ECSDeployDescribe"
     effect = "Allow"
@@ -108,6 +108,9 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "ecs:DescribeTaskDefinition",
       "ecs:ListTaskDefinitions",
       "ecs:ListClusters",
+      "ecs:RunTask",      # DB マイグレーション用 ECS Run Task
+      "ecs:DescribeTasks", # マイグレーションタスクの完了確認・CloudFront 更新時の IP 取得
+      "ecs:ListTasks",    # CloudFront 更新時のタスク一覧取得
     ]
     resources = ["*"]
   }
@@ -125,6 +128,28 @@ data "aws_iam_policy_document" "github_actions_policy" {
       variable = "iam:PassedToService"
       values   = ["ecs-tasks.amazonaws.com"]
     }
+  }
+
+  # EC2: ECS タスクの ENI から Public IP を取得（CloudFront オリジン更新に必要）
+  statement {
+    sid    = "EC2DescribeENI"
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeNetworkInterfaces",
+    ]
+    resources = ["*"]
+  }
+
+  # CloudFront: オリジン更新・キャッシュ無効化
+  statement {
+    sid    = "CloudFrontUpdate"
+    effect = "Allow"
+    actions = [
+      "cloudfront:GetDistributionConfig",
+      "cloudfront:UpdateDistribution",
+      "cloudfront:CreateInvalidation",
+    ]
+    resources = ["*"]
   }
 
   # SSM Parameter Store: アプリ設定の読取（シークレット含む）
