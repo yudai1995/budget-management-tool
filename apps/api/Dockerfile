@@ -26,8 +26,8 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 FROM base AS builder
 WORKDIR /repo
 
-# pnpm は root node_modules/.pnpm/ 仮想ストアに全パッケージを格納するため root のコピーのみで十分
 COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/packages/common/node_modules ./packages/common/node_modules
 
 COPY packages/common ./packages/common
 COPY apps/api ./apps/api
