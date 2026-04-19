@@ -9,8 +9,13 @@ output "vpc_cidr" {
 }
 
 output "public_subnet_ids" {
-  description = "パブリックサブネット ID リスト（RDS SubnetGroup / ECS 配置に使用）"
+  description = "パブリックサブネット ID リスト（ECS 配置に使用）"
   value       = [for s in aws_subnet.public : s.id]
+}
+
+output "private_subnet_ids" {
+  description = "プライベートサブネット ID リスト（RDS SubnetGroup に使用）"
+  value       = [for s in aws_subnet.private : s.id]
 }
 
 output "public_subnet_map" {

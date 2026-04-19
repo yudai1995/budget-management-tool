@@ -14,7 +14,7 @@
 
 resource "aws_security_group" "web" {
   name        = "${var.name_prefix}-sg-web"
-  description = "CloudFront / Internet → ECS Web (80, 443)"
+  description = "CloudFront and Internet to ECS Web (80, 443)"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -50,7 +50,7 @@ resource "aws_security_group" "web" {
 
 resource "aws_security_group" "api" {
   name        = "${var.name_prefix}-sg-api"
-  description = "ECS Web → ECS API (3000)"
+  description = "ECS Web to ECS API (3000)"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -78,7 +78,7 @@ resource "aws_security_group" "api" {
 
 resource "aws_security_group" "rds" {
   name        = "${var.name_prefix}-sg-rds"
-  description = "ECS API → RDS MySQL (3306) のみ許可。外部からの直接アクセス禁止。"
+  description = "ECS API to RDS MySQL (3306) only. Direct access from outside is denied."
   vpc_id      = var.vpc_id
 
   ingress {
@@ -92,7 +92,7 @@ resource "aws_security_group" "rds" {
   # egress はデフォルトで全拒否（RDS から外部への通信は不要）
   # 明示的に egress を定義しないことで AWS のデフォルト動作（全許可）を避ける
   egress {
-    description = "Allow all outbound (RDS VPC 内通信用)"
+    description = "Allow all outbound within VPC"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"

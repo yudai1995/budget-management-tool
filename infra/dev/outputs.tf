@@ -84,3 +84,15 @@ output "cloudfront_domain_name" {
   description = "CloudFront ドメイン名（アクセス URL）"
   value       = "https://${module.cloudfront.distribution_domain_name}"
 }
+
+# ─── RDS ─────────────────────────────────────────────────────────────────────
+
+output "rds_endpoint" {
+  description = "RDS MySQL エンドポイント（ホスト名）"
+  value       = module.rds.db_endpoint
+}
+
+output "rds_ssm_database_url_path" {
+  description = "DATABASE_URL が格納された SSM パラメータパス（アプリ側で valueFrom に指定）"
+  value       = module.rds.ssm_database_url_path
+}
