@@ -276,10 +276,14 @@ jobs:
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
 
+          # --desired-count 1: コスト節約のため desired_count=0 に停止していた場合でも
+          # デプロイ時は必ず 1 タスク起動する。lifecycle.ignore_changes で
+          # terraform が desired_count を管理しないため、ここで明示的に指定する。
           aws ecs update-service \
             --cluster "${CLUSTER}" \
             --service "${SERVICE}" \
             --task-definition "${NEW_TASK_DEF_ARN}" \
+            --desired-count 1 \
             --force-new-deployment
 
       - name: Update api task definition for DB migration
