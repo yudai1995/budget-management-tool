@@ -42,7 +42,8 @@
   },
   "pnpm": {
     "overrides": {
-      "axios": "1.14.0"
+      "axios": "1.14.0",
+      "cross-spawn": ">=7.0.5"
     },
     "onlyBuiltDependencies": [
       "lefthook",
