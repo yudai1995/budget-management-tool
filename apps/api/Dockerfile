@@ -64,4 +64,4 @@ USER honoapi
 EXPOSE 3001
 ENV PORT=3001
 
-CMD ["node", "build/index.js"]
+CMD ["node", "build/apps/api/src/index.js"]
