@@ -160,16 +160,17 @@ jobs:
 
           echo "Using task definition: ${TASK_DEF}"
 
-          # prisma migrate deploy を index.js の --migrate フラグ経由で実行
-          # .bin/ symlink は pnpm + Docker multi-stage build で壊れる場合があるため
-          # index.ts 内で require.resolve() を使って prisma CLI のパスを解決している
+          # prisma migrate deploy を専用スクリプト経由で実行する
+          # scripts/run-migrate.js は require.resolve() で prisma CLI パスを解決するため
+          # .bin/ symlink の壊れ問題を回避できる。詳細ログを出力するため
+          # CloudWatch Logs で実際のエラー内容を確認できる。
           # DATABASE_URL はタスク定義の secrets セクションから SSM 経由で注入される
           TASK_ARN=$(aws ecs run-task \
             --cluster "${CLUSTER}" \
             --task-definition "${TASK_DEF}" \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[${SUBNETS}],securityGroups=[${SG_API}],assignPublicIp=ENABLED}" \
-            --overrides '{"containerOverrides":[{"name":"api","command":["node","build/apps/api/src/index.js","--migrate"]}]}' \
+            --overrides '{"containerOverrides":[{"name":"api","command":["node","scripts/run-migrate.js"]}]}' \
             --query 'tasks[0].taskArn' \
             --output text)
 
@@ -180,7 +181,7 @@ jobs:
             --cluster "${CLUSTER}" \
             --tasks "${TASK_ARN}"
 
-          # 終了コードと停止理由を取得（失敗時のデバッグ用）
+          # 終了コードと停止理由を取得
           TASK_INFO=$(aws ecs describe-tasks \
             --cluster "${CLUSTER}" \
             --tasks "${TASK_ARN}" \
@@ -193,6 +194,24 @@ jobs:
           echo "Stopped reason   : ${STOP_REASON}"
           echo "Container reason : ${CONTAINER_REASON}"
           echo "Exit code        : ${EXIT_CODE}"
+
+          # CloudWatch Logs からマイグレーション実行ログを取得して表示する
+          # exit code に関わらず常に表示することで、失敗時の原因調査を GitHub Actions 上で完結させる
+          TASK_ID=$(echo "${TASK_ARN}" | sed 's|.*/||')
+          NAME_PREFIX="${TASK_FAMILY%-api}"
+          LOG_GROUP="/ecs/${NAME_PREFIX}/api"
+          LOG_STREAM="ecs/api/${TASK_ID}"
+          echo ""
+          echo "=== CloudWatch Logs: ${LOG_GROUP}/${LOG_STREAM} ==="
+          # ログが CloudWatch に書き込まれるまで数秒待機
+          sleep 5
+          aws logs get-log-events \
+            --log-group-name "${LOG_GROUP}" \
+            --log-stream-name "${LOG_STREAM}" \
+            --query 'events[].message' \
+            --output text 2>/dev/null || echo "(CloudWatch ログの取得に失敗しました。IAM ポリシーまたはログストリーム名を確認してください)"
+          echo "============================================================"
+          echo ""
 
           if [ "${EXIT_CODE}" != "0" ]; then
             echo "Migration failed with exit code ${EXIT_CODE}"

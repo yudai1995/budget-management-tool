@@ -64,6 +64,7 @@ COPY --from=builder /repo/packages/common/node_modules ./packages/common/node_mo
 # ビルド成果物
 COPY --from=builder /repo/apps/api/build ./apps/api/build
 COPY --from=builder /repo/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /repo/apps/api/scripts ./apps/api/scripts
 COPY --from=builder /repo/packages/common/dist ./packages/common/dist
 
 USER honoapi
