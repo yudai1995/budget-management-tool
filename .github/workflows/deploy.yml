@@ -158,13 +158,18 @@ jobs:
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
 
-          # マイグレーション専用タスクを実行（コマンド上書き）
+          echo "Using task definition: ${TASK_DEF}"
+
+          # prisma migrate deploy を直接実行
+          # index.ts は --migrate フラグを処理しないため、prisma CLI を直接呼び出す
+          # WORKDIR=/repo/apps/api なので schema は ./prisma/schema.prisma で自動検出される
+          # DATABASE_URL はタスク定義の secrets セクションから SSM 経由で注入される
           TASK_ARN=$(aws ecs run-task \
             --cluster "${CLUSTER}" \
             --task-definition "${TASK_DEF}" \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[${SUBNETS}],securityGroups=[${SG_API}],assignPublicIp=ENABLED}" \
-            --overrides '{"containerOverrides":[{"name":"api","command":["node","build/apps/api/src/index.js","--migrate"]}]}' \
+            --overrides '{"containerOverrides":[{"name":"api","command":["/bin/sh","-c","/repo/node_modules/.bin/prisma migrate deploy"]}]}' \
             --query 'tasks[0].taskArn' \
             --output text)
 
@@ -175,12 +180,19 @@ jobs:
             --cluster "${CLUSTER}" \
             --tasks "${TASK_ARN}"
 
-          # 終了コードを確認
-          EXIT_CODE=$(aws ecs describe-tasks \
+          # 終了コードと停止理由を取得（失敗時のデバッグ用）
+          TASK_INFO=$(aws ecs describe-tasks \
             --cluster "${CLUSTER}" \
             --tasks "${TASK_ARN}" \
-            --query 'tasks[0].containers[0].exitCode' \
-            --output text)
+            --output json)
+
+          STOP_REASON=$(echo "${TASK_INFO}" | jq -r '.tasks[0].stoppedReason // "N/A"')
+          CONTAINER_REASON=$(echo "${TASK_INFO}" | jq -r '.tasks[0].containers[0].reason // "N/A"')
+          EXIT_CODE=$(echo "${TASK_INFO}" | jq -r '.tasks[0].containers[0].exitCode // "null"')
+
+          echo "Stopped reason   : ${STOP_REASON}"
+          echo "Container reason : ${CONTAINER_REASON}"
+          echo "Exit code        : ${EXIT_CODE}"
 
           if [ "${EXIT_CODE}" != "0" ]; then
             echo "Migration failed with exit code ${EXIT_CODE}"
