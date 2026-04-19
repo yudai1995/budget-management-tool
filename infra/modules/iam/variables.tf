@@ -18,6 +18,11 @@ variable "github_repo" {
   type        = string
 }
 
+variable "ssm_prefix" {
+  description = "SSM Parameter Store のパスプレフィックス（例: /budget/dev）。IAM ポリシーのリソース ARN 生成に使用"
+  type        = string
+}
+
 variable "rds_resource_id" {
   description = "RDS インスタンスの Resource ID（例: db-XXXXXXXXXX）。IAM DB Auth の rds-db:connect リソース指定に使用。空文字の場合は権限を付与しない"
   type        = string
