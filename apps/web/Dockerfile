@@ -29,6 +29,7 @@ FROM base AS builder
 WORKDIR /repo
 
 COPY --from=deps /repo/node_modules ./node_modules
+COPY --from=deps /repo/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /repo/packages/common/node_modules ./packages/common/node_modules
 COPY --from=deps /repo/packages/api-client/node_modules ./packages/api-client/node_modules
 
