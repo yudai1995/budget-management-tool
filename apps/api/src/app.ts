@@ -50,6 +50,11 @@ export function createApp(deps: AppDeps) {
     const cfOriginSecret = process.env.CF_ORIGIN_SECRET;
     if (cfOriginSecret) {
         app.use('*', async (c, next) => {
+            // ECS ヘルスチェック（wget からの内部アクセス）は X-CF-Origin-Secret を持たないためスキップ
+            if (c.req.path === '/api/health') {
+                await next();
+                return;
+            }
             const receivedSecret = c.req.header('X-CF-Origin-Secret');
             if (receivedSecret !== cfOriginSecret) {
                 return c.json({ result: 'error', message: 'Forbidden' }, 403);
