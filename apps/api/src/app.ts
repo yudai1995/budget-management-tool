@@ -65,6 +65,9 @@ export function createApp(deps: AppDeps) {
         bearerFormat: 'JWT',
     });
 
+    // ECS ヘルスチェック用エンドポイント（認証不要）
+    app.get('/api/health', (c) => c.json({ status: 'ok' }));
+
     app.route('/api', createAuthRoutes(deps, tokenService));
     app.route('/api', createExpenseRoutes(deps, tokenService));
     app.route('/api', createBudgetRoutes(deps, tokenService));
