@@ -31,7 +31,7 @@ describe('ExpenseCreateForm', () => {
 
         render(<ExpenseCreateForm userId="user-1" />)
 
-        expect(screen.getByLabelText('金額')).toBeInTheDocument()
+        expect(screen.getByLabelText('金額（円）')).toBeInTheDocument()
         expect(screen.getByLabelText('日付')).toBeInTheDocument()
         expect(screen.getByLabelText('カテゴリ')).toBeInTheDocument()
         expect(screen.getByRole('button', { name: '追加する' })).toBeInTheDocument()

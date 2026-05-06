@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { createExpenseAction } from "@/lib/actions/expense";
 import type { ExpenseActionState } from "@/lib/actions/expense";
 import { getCategoriesByType } from "@/lib/constants/categories";
@@ -23,91 +24,92 @@ function FieldError({ messages }: { messages?: string[] }) {
 
 export function ExpenseCreateForm({ userId, defaultDate }: Props) {
   const [balanceType, setBalanceType] = useState<0 | 1>(0);
+  const [noteOpen, setNoteOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
     createExpenseAction,
     initialState,
   );
   const categories = getCategoriesByType(balanceType);
 
+  // 種別に応じたアクセントカラー
+  const isExpense = balanceType === 0;
+  const accentColor = isExpense ? "var(--color-expense, #e05c5c)" : "var(--color-income, #4caf82)";
+  const accentBg = isExpense ? "var(--color-expense-light, #fdf0f0)" : "var(--color-income-light, #f0fdf6)";
+
   return (
     <section
       id="form"
-      className="rounded-2xl border-2 border-[#1c1410] bg-white p-5"
-      style={{ boxShadow: "var(--shadow-pop)" }}
+      className="rounded-2xl border border-[#1c1410]/12 bg-white overflow-hidden"
+      style={{ boxShadow: "var(--shadow-card)" }}
     >
-      <h2 className="mb-4 text-center text-sm font-extrabold text-[#1c1410] tracking-wide uppercase">
-        収支の入力
-      </h2>
-
-      {/* 収支タブ */}
-      <div className="mb-4 flex rounded-xl border-2 border-[#1c1410] overflow-hidden" style={{ boxShadow: "var(--shadow-pop-sm)" }}>
+      {/* 種別タブ */}
+      <div className="flex">
         <button
           type="button"
           onClick={() => setBalanceType(0)}
-          className={[
-            "flex-1 py-2 text-sm font-bold transition-colors",
+          className="flex-1 py-3 text-sm font-bold transition-colors"
+          style={
             balanceType === 0
-              ? "bg-[#f18840] text-white"
-              : "bg-white text-[#1c1410]/50 hover:bg-[#fff6ee]",
-          ].join(" ")}
+              ? { background: "var(--color-expense, #e05c5c)", color: "#fff" }
+              : { color: "rgba(28,20,16,0.4)" }
+          }
         >
           支出
         </button>
         <button
           type="button"
           onClick={() => setBalanceType(1)}
-          className={[
-            "flex-1 py-2 text-sm font-bold transition-colors",
+          className="flex-1 py-3 text-sm font-bold transition-colors"
+          style={
             balanceType === 1
-              ? "bg-[#35b5a2] text-white"
-              : "bg-white text-[#1c1410]/50 hover:bg-[#ecfaf8]",
-          ].join(" ")}
+              ? { background: "var(--color-income, #4caf82)", color: "#fff" }
+              : { color: "rgba(28,20,16,0.4)" }
+          }
         >
           収入
         </button>
       </div>
 
-      <form action={formAction} className="flex flex-col gap-3">
+      <form action={formAction} className="flex flex-col gap-0 px-4 pb-4 pt-3">
         <input type="hidden" name="userId" value={userId} />
         <input type="hidden" name="balanceType" value={balanceType} />
 
-        {/* 金額 */}
-        <div className="flex flex-col gap-1">
-          <label htmlFor="amount" className="text-xs font-bold text-[#1c1410]/50">金額</label>
-          <input
-            id="amount"
-            name="amount"
-            type="number"
-            min={1}
-            required
-            placeholder="金額をご入力ください"
-            className="input-pop"
-          />
+        {/* 金額（大型表示） */}
+        <div
+          className="mb-3 rounded-xl px-3 py-2"
+          style={{ background: accentBg, borderBottom: `3px solid ${accentColor}` }}
+        >
+          <label htmlFor="amount" className="block text-xs font-bold" style={{ color: accentColor }}>
+            金額（円）
+          </label>
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-2xl font-extrabold" style={{ color: accentColor }}>¥</span>
+            <input
+              id="amount"
+              name="amount"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              required
+              placeholder="0"
+              className="flex-1 bg-transparent text-4xl font-extrabold tabular-nums outline-none placeholder:text-[#1c1410]/20"
+              style={{ color: accentColor }}
+            />
+          </div>
           <FieldError messages={state.fieldErrors?.amount} />
         </div>
 
-        {/* 日付 */}
-        <div className="flex flex-col gap-1">
-          <label htmlFor="date" className="text-xs font-bold text-[#1c1410]/50">日付</label>
-          <input
-            id="date"
-            name="date"
-            type="date"
-            required
-            defaultValue={defaultDate ?? new Date().toISOString().split("T")[0]}
-            className="input-pop"
-          />
-          <FieldError messages={state.fieldErrors?.date} />
-        </div>
-
         {/* カテゴリ */}
-        <div className="flex flex-col gap-1">
-          <label htmlFor="categoryId" className="text-xs font-bold text-[#1c1410]/50">カテゴリ</label>
+        <div className="mb-3">
+          <label htmlFor="categoryId" className="block text-xs font-bold text-[#1c1410]/50 mb-1.5">
+            カテゴリ
+          </label>
           <select
             id="categoryId"
             name="categoryId"
             defaultValue={0}
-            className="input-pop"
+            className="w-full rounded-xl border border-[#1c1410]/12 bg-[#fdf8f5] px-3 py-2 text-sm font-semibold text-[#1c1410] outline-none focus:ring-2"
+            style={{ "--tw-ring-color": accentColor } as React.CSSProperties}
           >
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -115,25 +117,55 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
           </select>
         </div>
 
-        {/* 内容 */}
-        <div className="flex flex-col gap-1">
-          <label htmlFor="content" className="text-xs font-bold text-[#1c1410]/50">内容</label>
+        {/* 日付 */}
+        <div className="mb-3">
+          <label htmlFor="date" className="block text-xs font-bold text-[#1c1410]/50 mb-1.5">
+            日付
+          </label>
           <input
-            id="content"
-            name="content"
-            type="text"
-            placeholder="内容をご入力ください（任意）"
-            className="input-pop"
+            id="date"
+            name="date"
+            type="date"
+            required
+            defaultValue={defaultDate ?? new Date().toISOString().split("T")[0]}
+            className="w-full rounded-xl border border-[#1c1410]/12 bg-[#fdf8f5] px-3 py-2 text-sm font-semibold text-[#1c1410] outline-none"
           />
+          <FieldError messages={state.fieldErrors?.date} />
+        </div>
+
+        {/* 備考（アコーディオン） */}
+        <div className="mb-3 rounded-xl border border-[#1c1410]/12 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setNoteOpen(!noteOpen)}
+            className="flex w-full items-center justify-between px-3 py-2.5 text-xs font-bold text-[#1c1410]/50 hover:bg-[#fdf8f5] transition-colors"
+          >
+            備考（任意）
+            <ChevronDown
+              size={14}
+              className="transition-transform"
+              style={{ transform: noteOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          </button>
+          {noteOpen && (
+            <div className="border-t border-[#1c1410]/10 px-3 pb-2.5 pt-2">
+              <input
+                name="content"
+                type="text"
+                placeholder="例: スーパーで食材"
+                className="w-full bg-transparent text-sm text-[#1c1410] outline-none placeholder:text-[#1c1410]/30"
+              />
+            </div>
+          )}
         </div>
 
         {state.error && (
-          <p className="rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
+          <p className="mb-2 rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
             {state.error}
           </p>
         )}
         {state.success && (
-          <p className="rounded-xl border border-[#35b5a2]/40 bg-[#ecfaf8] px-3 py-2 text-sm font-bold text-[#35b5a2]">
+          <p className="mb-2 rounded-xl border border-[#4caf82]/40 bg-[#f0fdf6] px-3 py-2 text-sm font-bold text-[#4caf82]">
             登録しました
           </p>
         )}
@@ -141,7 +173,8 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
         <button
           type="submit"
           disabled={isPending}
-          className="btn-candy w-full mt-2 disabled:opacity-50"
+          className="w-full rounded-xl py-3 text-sm font-extrabold text-white transition-all active:scale-95 disabled:opacity-40"
+          style={{ background: accentColor }}
         >
           {isPending ? "登録中..." : "追加する"}
         </button>
