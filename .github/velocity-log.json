@@ -11,5 +11,20 @@
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。"
   },
-  "sprints": []
+  "sprints": [
+    {
+      "date": "2026-05-06",
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 145,
+          "title": "chore: ベロシティ計測・スプリントキャパシティ予測・ボトルネック分析を自動化する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 146
+        }
+      ]
+    }
+  ]
 }
