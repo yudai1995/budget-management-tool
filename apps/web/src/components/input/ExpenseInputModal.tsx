@@ -37,10 +37,13 @@ export function ExpenseInputModal({ userId, minutesPerYen, onClose }: Props) {
     const [step, setStep] = useState<Step>("amount");
     const [amount, setAmount] = useState("");
     const [category, setCategory] = useState<Category | null>(null);
+    // 0: 支出, 1: 収入
+    const [balanceType, setBalanceType] = useState<0 | 1>(0);
     const [isPending, startTransition] = useTransition();
 
     const numAmount = Number(amount);
-    const impact = numAmount > 0 && minutesPerYen > 0
+    // 家計への影響は支出時のみ表示する
+    const impact = balanceType === 0 && numAmount > 0 && minutesPerYen > 0
         ? calcExpenseImpact(numAmount, minutesPerYen)
         : null;
 
@@ -58,7 +61,7 @@ export function ExpenseInputModal({ userId, minutesPerYen, onClose }: Props) {
         const fd = new FormData();
         fd.append("userId", userId);
         fd.append("amount", String(numAmount));
-        fd.append("balanceType", "0");
+        fd.append("balanceType", String(balanceType));
         fd.append("categoryId", String(category.id));
         fd.append("date", today());
 
@@ -77,6 +80,33 @@ export function ExpenseInputModal({ userId, minutesPerYen, onClose }: Props) {
                 {step === "amount" && (
                     <>
                         <p className="mb-1 text-xs font-medium text-zinc-400">STEP 1 / 3  —  金額</p>
+
+                        {/* 支出 / 収入 タブ */}
+                        <div className="mb-3 flex rounded-[var(--radius-md)] border border-orange-100 bg-white p-0.5">
+                            <button
+                                type="button"
+                                onClick={() => setBalanceType(0)}
+                                className={`flex-1 rounded-[calc(var(--radius-md)-2px)] py-1.5 text-sm font-bold transition-colors ${
+                                    balanceType === 0
+                                        ? "bg-[var(--color-brand-primary)] text-white"
+                                        : "text-zinc-400 hover:text-zinc-600"
+                                }`}
+                            >
+                                支出
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setBalanceType(1)}
+                                className={`flex-1 rounded-[calc(var(--radius-md)-2px)] py-1.5 text-sm font-bold transition-colors ${
+                                    balanceType === 1
+                                        ? "bg-[var(--color-brand-primary)] text-white"
+                                        : "text-zinc-400 hover:text-zinc-600"
+                                }`}
+                            >
+                                収入
+                            </button>
+                        </div>
+
                         <div className="mb-4 border-b border-orange-100 py-3">
                             <span className="text-4xl font-bold tabular-nums text-zinc-800">
                                 ¥ {amount === "" ? "0" : Number(amount).toLocaleString()}
@@ -161,7 +191,7 @@ export function ExpenseInputModal({ userId, minutesPerYen, onClose }: Props) {
 
                         <div className="mb-5 rounded-[var(--radius-md)] border border-orange-100 bg-white p-4">
                             <div className="mb-2 flex justify-between text-sm text-zinc-400">
-                                <span>{category.label}</span>
+                                <span>{category.label} / {balanceType === 0 ? "支出" : "収入"}</span>
                                 <span>{today()}</span>
                             </div>
                             <p className="text-3xl font-bold tabular-nums text-zinc-800">
