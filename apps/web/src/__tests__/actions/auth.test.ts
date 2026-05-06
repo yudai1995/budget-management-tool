@@ -44,7 +44,7 @@ describe('guestLoginAction', () => {
     it('body なしで /api/guest-login を呼ぶ（credentials は API 側で管理）', async () => {
         vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
-        await guestLoginAction()
+        await guestLoginAction(new FormData())
 
         expect(serverFetch).toHaveBeenCalledWith('/api/guest-login', { method: 'POST' })
     })
@@ -52,15 +52,26 @@ describe('guestLoginAction', () => {
     it('ログイン成功後に / へリダイレクトする', async () => {
         vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
 
-        await guestLoginAction()
+        await guestLoginAction(new FormData())
 
         expect(redirect).toHaveBeenCalledWith('/')
+    })
+
+    it('returnTo が / 始まりのとき、そのパスへリダイレクトする', async () => {
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
+
+        const formData = new FormData()
+        formData.set('returnTo', '/report')
+
+        await guestLoginAction(formData)
+
+        expect(redirect).toHaveBeenCalledWith('/report')
     })
 
     it('API エラー時は ApiError をスローする', async () => {
         vi.mocked(serverFetch).mockRejectedValue(new ApiError(500, 'Something broken'))
 
-        await expect(guestLoginAction()).rejects.toBeInstanceOf(ApiError)
+        await expect(guestLoginAction(new FormData())).rejects.toBeInstanceOf(ApiError)
     })
 })
 
@@ -112,6 +123,45 @@ describe('loginAction', () => {
         const formData = new FormData()
         formData.set('userId', 'user1')
         formData.set('password', 'pass')
+
+        await loginAction(initialState, formData)
+
+        expect(redirect).toHaveBeenCalledWith('/')
+    })
+
+    it('returnTo が / 始まりのとき、そのパスへリダイレクトする', async () => {
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
+
+        const formData = new FormData()
+        formData.set('userId', 'user1')
+        formData.set('password', 'pass')
+        formData.set('returnTo', '/expenses')
+
+        await loginAction(initialState, formData)
+
+        expect(redirect).toHaveBeenCalledWith('/expenses')
+    })
+
+    it('returnTo が外部URL（/ 始まりでない）のとき、/ へフォールバックする', async () => {
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
+
+        const formData = new FormData()
+        formData.set('userId', 'user1')
+        formData.set('password', 'pass')
+        formData.set('returnTo', 'https://evil.example.com/phishing')
+
+        await loginAction(initialState, formData)
+
+        expect(redirect).toHaveBeenCalledWith('/')
+    })
+
+    it('returnTo が空のとき、/ へリダイレクトする', async () => {
+        vi.mocked(serverFetch).mockResolvedValue(TOKEN_RESPONSE)
+
+        const formData = new FormData()
+        formData.set('userId', 'user1')
+        formData.set('password', 'pass')
+        formData.set('returnTo', '')
 
         await loginAction(initialState, formData)
 

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { SecurityBadges } from "@/components/common/SecurityBadges";
+import { SessionExpiredToast } from "./SessionExpiredToast";
 
 const initialState: LoginState = { error: null };
 
@@ -38,7 +39,11 @@ function NotificationBanner() {
   return null;
 }
 
-export function LoginForm() {
+type Props = {
+  returnTo?: string;
+};
+
+export function LoginForm({ returnTo }: Props) {
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
   return (
@@ -81,7 +86,12 @@ export function LoginForm() {
           <NotificationBanner />
         </Suspense>
 
+        {returnTo && <SessionExpiredToast />}
+
         <form action={formAction} className="flex flex-col gap-4">
+          {returnTo && (
+            <input type="hidden" name="returnTo" value={returnTo} />
+          )}
           <div className="flex flex-col gap-1">
             <label htmlFor="userId" className="text-sm font-semibold text-[#1c1410]">
               ユーザー名
@@ -139,6 +149,9 @@ export function LoginForm() {
 
         <div className="mt-4 border-t border-[#e8c8b0] pt-4 space-y-3">
           <form action={guestLoginAction}>
+            {returnTo && (
+              <input type="hidden" name="returnTo" value={returnTo} />
+            )}
             <button type="submit" className="btn-ghost w-full">
               ゲストユーザーでログイン
             </button>
