@@ -14,7 +14,7 @@
   "sprints": [
     {
       "date": "2026-05-06",
-      "total_points": 5,
+      "total_points": 7,
       "pbis": [
         {
           "issue": 145,
@@ -31,6 +31,14 @@
           "points": 2,
           "cycle_time_hours": null,
           "pr": 147
+        },
+        {
+          "issue": 138,
+          "title": "fix: 支出入力フォームでカテゴリが「食費」に固定される",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 148
         }
       ]
     }
