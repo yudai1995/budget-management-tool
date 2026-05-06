@@ -143,9 +143,12 @@
 
 ## ディレクトリ構造
 
-- `apps/frontend/`: React/Next.js 等を用いたフロントエンド
-- `apps/backend/`: Node.js/Express を用いたバックエンド
-- `packages/common/`: FE/BE共用の型定義やユーティリティ
+- `apps/web/`: Next.js フロントエンド（App Router）。詳細は `apps/web/AGENTS.md` を参照
+- `apps/api/`: Hono バックエンド API（DDD / Onion Architecture）
+- `apps/sandbox/`: UI/UX プロトタイプ検証環境。詳細は `apps/sandbox/AGENTS.md` を参照
+- `packages/common/`: FE/BE 共用の型定義・Zod スキーマ・ユーティリティ
+- `packages/api-client/`: OpenAPI から自動生成した型安全 API クライアント
+- `packages/api-spec/`: OpenAPI スペック（`openapi.yaml`）
 
 ## 命名規則（ユビキタス言語）
 
@@ -188,8 +191,8 @@
 ## Git操作のベストプラクティス
 
 - **コミットの粒度**: Atomic Commit（1変更＝1コミット）を徹底。
-- **コミットメッセージ**: `type: description` 形式。正確かつ事実に基づき、網羅的に記載する。
-    - `type`: `feature`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+- **コミットメッセージ**: `.github/commit-message-instructions.md` に従うこと（SSOT）。
+- **PRの生成**: `.github/pull-request-instructions.md` に従うこと（SSOT）。
 - **ブランチ運用**: `{type}/{description}` 形式。
 
 ## 開発・修正時の禁止事項
