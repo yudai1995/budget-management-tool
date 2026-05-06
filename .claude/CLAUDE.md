@@ -89,7 +89,7 @@
    - `pnpm test:unit` を実行し全件パスを確認する
 7. **コミット**: `git commit` を実行する（Conventional Commits 形式、本文日本語）
 8. **プッシュ**: `git push -u origin {ブランチ名}` を実行する
-9. **PR 作成**: `gh pr create` で PR を作成する。本文に `Closes #Issue番号` を含める
+9. **PR 作成**: `gh pr create` で PR を作成する。本文の生成ルールは `.github/pull-request-instructions.md` に従うこと（チェックリストの評価・記入必須）。本文に `Closes #Issue番号` を含める
 10. **報告**: ユーザーに完了報告（Issue 番号・PR URL・実装概要）を出力し、次の PBI に進む
 
 **制約**:
