@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import * as React from 'react'
 import { ExpenseCreateForm } from '../../components/expense/ExpenseCreateForm'
 
@@ -97,5 +97,39 @@ describe('ExpenseCreateForm', () => {
 
         const button = screen.getByRole('button', { name: '登録中...' })
         expect(button).toBeDisabled()
+    })
+
+    it('初期表示: カテゴリが「未分類」（id=0）になっている', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null, success: false },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<ExpenseCreateForm userId="user-1" />)
+
+        const select = screen.getByLabelText('カテゴリ') as HTMLSelectElement
+        expect(select.value).toBe('0')
+    })
+
+    it('支出→収入に切り替えたとき: カテゴリが「未分類」（id=0）にリセットされる', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null, success: false },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<ExpenseCreateForm userId="user-1" />)
+
+        // カテゴリを食費（id=1）に変更
+        const select = screen.getByLabelText('カテゴリ') as HTMLSelectElement
+        fireEvent.change(select, { target: { value: '1' } })
+        expect(select.value).toBe('1')
+
+        // 収入タブに切り替え
+        fireEvent.click(screen.getByRole('button', { name: '収入' }))
+
+        // カテゴリが id=0（未分類）にリセットされる
+        expect(select.value).toBe('0')
     })
 })

@@ -24,6 +24,7 @@ function FieldError({ messages }: { messages?: string[] }) {
 
 export function ExpenseCreateForm({ userId, defaultDate }: Props) {
   const [balanceType, setBalanceType] = useState<0 | 1>(0);
+  const [categoryId, setCategoryId] = useState<number>(0);
   const [noteOpen, setNoteOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
     createExpenseAction,
@@ -46,7 +47,7 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
       <div className="flex">
         <button
           type="button"
-          onClick={() => setBalanceType(0)}
+          onClick={() => { setBalanceType(0); setCategoryId(0); }}
           className="flex-1 py-3 text-sm font-bold transition-colors"
           style={
             balanceType === 0
@@ -58,7 +59,7 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
         </button>
         <button
           type="button"
-          onClick={() => setBalanceType(1)}
+          onClick={() => { setBalanceType(1); setCategoryId(0); }}
           className="flex-1 py-3 text-sm font-bold transition-colors"
           style={
             balanceType === 1
@@ -107,7 +108,8 @@ export function ExpenseCreateForm({ userId, defaultDate }: Props) {
           <select
             id="categoryId"
             name="categoryId"
-            defaultValue={0}
+            value={categoryId}
+            onChange={(e) => setCategoryId(Number(e.target.value))}
             className="w-full rounded-xl border border-[#1c1410]/12 bg-[#fdf8f5] px-3 py-2 text-sm font-semibold text-[#1c1410] outline-none focus:ring-2"
             style={{ "--tw-ring-color": accentColor } as React.CSSProperties}
           >
