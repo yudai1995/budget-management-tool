@@ -39,7 +39,7 @@ describe('Header', () => {
     it('正常表示: ロゴ・ナビ・記録するボタンが描画される', () => {
         render(<Header />)
 
-        expect(screen.getByText('家計簿')).toBeInTheDocument()
+        expect(screen.getByText('家計かんり')).toBeInTheDocument()
         expect(screen.getByText('ホーム')).toBeInTheDocument()
         expect(screen.getByText('カレンダー')).toBeInTheDocument()
         expect(screen.getByText('レポート')).toBeInTheDocument()
@@ -50,13 +50,13 @@ describe('Header', () => {
     it('userName が渡されたとき、ユーザー名を表示する', () => {
         render(<Header userName="田中" />)
 
-        expect(screen.getByText('田中さん')).toBeInTheDocument()
+        expect(screen.getByText('田中')).toBeInTheDocument()
     })
 
     it('userName が未指定のとき、ユーザー名を表示しない', () => {
         render(<Header />)
 
-        expect(screen.queryByText('さん')).not.toBeInTheDocument()
+        expect(screen.queryByText('田中')).not.toBeInTheDocument()
     })
 
     it('ログアウトボタンが描画される', () => {

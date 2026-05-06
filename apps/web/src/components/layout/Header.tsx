@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/actions/auth";
-import { Home, Calendar, BarChart2, PenLine, LogOut, Menu, X } from "lucide-react";
+import { Home, Calendar, BarChart2, PenLine, LogOut, Menu, X, Wallet } from "lucide-react";
 import { useState } from "react";
 
 type NavItem = {
@@ -36,12 +36,15 @@ export function Header({ userName }: Props) {
         {/* ロゴ */}
         <Link href="/" className="flex items-center gap-2">
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-[#1c1410] bg-[#f18840] text-sm font-extrabold text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#f18840] text-white"
             style={{ boxShadow: "var(--shadow-pop-sm)" }}
           >
-            B
+            <Wallet size={16} strokeWidth={2.5} />
           </span>
-          <span className="text-base font-bold text-[#1c1410]">家計簿</span>
+          <div className="flex flex-col leading-none">
+            <span className="text-sm font-extrabold text-[#1c1410]">家計かんり</span>
+            <span className="hidden text-[10px] text-[#1c1410]/40 md:block">家計を、もっとシンプルに。</span>
+          </div>
         </Link>
 
         {/* デスクトップ: ナビゲーション */}
@@ -77,8 +80,8 @@ export function Header({ userName }: Props) {
             記録する
           </Link>
           {userName && (
-            <span className="text-sm font-medium text-[#1c1410]/50">
-              {userName}さん
+            <span className="rounded-full border border-[#1c1410]/10 bg-[#fff6ee] px-3 py-1 text-xs font-semibold text-[#1c1410]/70">
+              {userName}
             </span>
           )}
           <form action={logoutAction}>
@@ -139,8 +142,8 @@ export function Header({ userName }: Props) {
 
           <div className="mt-2 flex items-center justify-between border-t border-[#1c1410]/8 pt-3">
             {userName && (
-              <span className="text-sm font-medium text-[#1c1410]/50">
-                {userName}さん
+              <span className="rounded-full border border-[#1c1410]/10 bg-[#fff6ee] px-3 py-1 text-xs font-semibold text-[#1c1410]/70">
+                {userName}
               </span>
             )}
             <form action={logoutAction}>
