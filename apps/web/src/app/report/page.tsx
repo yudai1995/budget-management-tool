@@ -6,7 +6,7 @@ import { getBudgets } from "@/lib/api/budget";
 import { deleteBudgetAction } from "@/lib/actions/budget";
 import { getCategoryById, OUTGO_CATEGORIES } from "@/lib/constants/categories";
 import { PeriodSelector } from "@/components/report/PeriodSelector";
-import { Header } from "@/components/layout/Header";
+import { AppShell } from "@/components/layout/AppShell";
 import type { BudgetResponse } from "@/lib/api/budget";
 
 export const metadata: Metadata = {
@@ -254,8 +254,7 @@ export default async function ReportPage({
   const userId = cookieStore.get("user_id")?.value ?? "Guest";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
-      <Header userName={userId} />
+    <AppShell userName={userId}>
       <main className="mx-auto w-full max-w-xl flex-1 px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-extrabold text-[#1c1410]">
@@ -278,6 +277,6 @@ export default async function ReportPage({
           <ReportSection period={period} />
         </Suspense>
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { getExpenses } from "@/lib/api/expense";
 import { ExpenseList } from "@/components/expense/ExpenseList";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
-import { Header } from "@/components/layout/Header";
+import { AppShell } from "@/components/layout/AppShell";
 import { ApiError } from "@/lib/api/client";
 import { redirect } from "next/navigation";
 
@@ -71,8 +71,7 @@ export default async function ExpensesPage() {
   const userId = cookieStore.get("user_id")?.value ?? "Guest";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
-      <Header userName={userId} />
+    <AppShell userName={userId}>
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
         <h1 className="mb-6 text-2xl font-extrabold text-[#1c1410]">支出一覧</h1>
 
@@ -90,7 +89,7 @@ export default async function ExpensesPage() {
         <ExpenseListSection />
       </Suspense>
       </div>
-    </div>
+    </AppShell>
   );
 
 }
