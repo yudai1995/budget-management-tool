@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { getExpenses } from "@/lib/api/expense";
 import { ApiError } from "@/lib/api/client";
 import { Header } from "@/components/layout/Header";
-import { TodayReport } from "@/components/report/TodayReport";
-import { RecentGraph } from "@/components/report/RecentGraph";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
 import { XDayDisplay } from "@/components/dashboard/XDayDisplay";
+import { MonthlyOverviewCard } from "@/components/dashboard/MonthlyOverviewCard";
+import { RecentExpenseList } from "@/components/dashboard/RecentExpenseList";
 
 export const metadata: Metadata = {
   title: "ホーム | 家計管理",
@@ -72,23 +72,38 @@ async function DashboardContent() {
   return (
     <>
       <Header userName={userId} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 bg-[#fffdf5]">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_3fr]">
-          {/* 左カラム：Xデーパネル + 今日のレポート + 入力フォーム */}
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 bg-[#fffdf5]">
+        {/*
+          Mobile (default): stacked single column
+            1. 今月の収支サマリー（現状把握）
+            2. クイック入力（スクロールなしで操作可能）
+            3. 家計の寿命（中心指標）
+            4. 最近の記録5件
+
+          Desktop (lg): 2-column
+            Left: 今月の収支 + 家計の寿命
+            Right: クイック入力 + 最近の記録
+        */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+          {/* 左カラム（desktop）/ 先頭2カード（mobile） */}
           <div className="flex flex-col gap-4">
-            <XDayDisplay
-              todayExpense={todayExpense}
-              yesterdayExpense={yesterdayExpense}
-              zeroStreakDays={zeroStreakDays}
-              avgDailyExpense={avgDailyExpense}
-              recordedDays={recordedDays}
-            />
-            <TodayReport expenses={expenses} />
-            <ExpenseCreateForm userId={userId} />
+            <MonthlyOverviewCard expenses={expenses} />
+            <div className="lg:block">
+              <XDayDisplay
+                todayExpense={todayExpense}
+                yesterdayExpense={yesterdayExpense}
+                zeroStreakDays={zeroStreakDays}
+                avgDailyExpense={avgDailyExpense}
+                recordedDays={recordedDays}
+              />
+            </div>
           </div>
 
-          {/* 右カラム：直近のレポートグラフ */}
-          <RecentGraph expenses={expenses} />
+          {/* 右カラム（desktop）/ 後続2カード（mobile） */}
+          <div className="flex flex-col gap-4">
+            <ExpenseCreateForm userId={userId} />
+            <RecentExpenseList expenses={expenses} />
+          </div>
         </div>
       </main>
     </>
