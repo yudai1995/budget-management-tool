@@ -71,19 +71,28 @@
 
 #### `スプリントプランニングをして`
 
-1. `.github/sprint-protocol.md` のセクション 2「スプリントの定義」と セクション 7「スプリントプランニング」を読み込む
-2. `gh issue list --state open --label "sprint-backlog" --json number,title,body,labels` でスプリント候補 PBI を取得する
-3. 各 PBI の複雑度・依存関係を調べ、1作業日（1スプリント）で完了可能かを評価する
+1. `.github/sprint-protocol.md` のセクション 2・7 を読み込む
+2. **全オープン Issue** を取得して候補を選定する（ラベルの有無は問わない）
+   ```
+   gh issue list --state open --json number,title,body,labels,assignees --limit 50
+   ```
+3. 以下の基準で優先度を評価し、1作業日（1スプリント）で完了可能な PBI を最大3件選ぶ：
+   - `priority: P0/P1` を最優先
+   - `size: XS/S` を優先（1日で完了しやすい）
+   - 依存関係（他 Issue が前提になっていないか）を確認
    - 完了不可と判断した PBI は分割案を提示する
-4. 優先度順にスプリント対象 PBI リストを提示し、ユーザーの承認を求める
-5. 承認後、対象 PBI に `in-progress` ラベルを付与する（GitHub Actions がタイムスタンプを自動記録する）
+4. 選定した PBI と選定理由をユーザーに提示し、承認を求める
+5. **承認後**、対象 PBI に `sprint-backlog` ラベルを付与する
+6. 続けて実装を開始する場合は `in-progress` ラベルも付与する（GitHub Actions がタイムスタンプを自動記録）
 
 #### `スプリントを進めて`（メインループ）
 
 以下のループを、作業可能な PBI がなくなるまで繰り返す：
 
-1. **PBI 選択**: `gh issue list --state open --label "in-progress"` で実行対象 Issue を特定する
-   - `in-progress` ラベルがない場合は `sprint-backlog` ラベルの最優先 Issue を選択し、ユーザーに確認する
+1. **PBI 選択**: 以下の順で実行対象 Issue を特定する
+   - `in-progress` ラベルがある Issue → そのまま着手
+   - なければ `sprint-backlog` ラベルの最優先 Issue → `in-progress` に変更して着手
+   - どちらもなければ全 Issue から自動選定（`スプリントプランニングをして` のロジックで1件選んでラベルを付与）し、ユーザーに報告してから着手
 2. **ブランチ作成**: 必須プロセスの `/branch` 手順を実行する（`git fetch origin main` → `merge --ff-only` → `git checkout -b feature/issue-{番号}-{説明}`）
 3. **翻訳**: `/translate` — Issue の内容を「ユーザーの意図 → 技術課題 → 修正対象ファイル」へ翻訳し、理解を言語化する
 4. **影響調査**: `/search` — 関連ファイル・型定義・依存関係を調査する
