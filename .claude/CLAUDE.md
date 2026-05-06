@@ -64,14 +64,19 @@
 
 本プロトコルは、ユーザーが以下のコマンドを入力したときに Claude Code が自律的にスプリントを進行するための定義である。
 
+**開発体制の詳細（不定期スプリント・意思決定フロー・SSOT マップ）は `.github/sprint-protocol.md` を参照すること。**
+振り返りテンプレートは `.github/retrospective-template.md` を参照すること。
+
 ### 起動コマンドと実行内容
 
 #### `スプリントプランニングをして`
 
-1. `gh issue list --state open --label "sprint-backlog" --json number,title,body,labels` でスプリント候補 PBI を取得する
-2. 各 PBI の複雑度・依存関係を調べ、1スプリントで完了可能かを評価する
-3. 優先度順にスプリント対象 PBI リストを提示し、ユーザーの承認を求める
-4. 承認後、対象 PBI に `in-progress` ラベルを付与し、GitHub Project の Status を「In Progress」に更新する
+1. `.github/sprint-protocol.md` のセクション 2「スプリントの定義」と セクション 7「スプリントプランニング」を読み込む
+2. `gh issue list --state open --label "sprint-backlog" --json number,title,body,labels` でスプリント候補 PBI を取得する
+3. 各 PBI の複雑度・依存関係を調べ、1作業日（1スプリント）で完了可能かを評価する
+   - 完了不可と判断した PBI は分割案を提示する
+4. 優先度順にスプリント対象 PBI リストを提示し、ユーザーの承認を求める
+5. 承認後、対象 PBI に `in-progress` ラベルを付与する（GitHub Actions がタイムスタンプを自動記録する）
 
 #### `スプリントを進めて`（メインループ）
 
@@ -89,7 +94,9 @@
    - `pnpm test:unit` を実行し全件パスを確認する
 7. **コミット**: `git commit` を実行する（Conventional Commits 形式、本文日本語）
 8. **プッシュ**: `git push -u origin {ブランチ名}` を実行する
-9. **PR 作成**: `gh pr create` で PR を作成する。本文の生成ルールは `.github/pull-request-instructions.md` に従うこと（チェックリストの評価・記入必須）。本文に `Closes #Issue番号` を含める
+9. **PR 作成**: `gh pr create` で PR を作成する。以下を必ず守ること：
+   - `.github/pull-request-instructions.md` の生成ルールに従う（チェックリスト評価・記入必須）
+   - 本文に `Closes #Issue番号` を含める（サイクルタイム自動計測に必要）
 10. **報告**: ユーザーに完了報告（Issue 番号・PR URL・実装概要）を出力し、次の PBI に進む
 
 **制約**:
@@ -99,16 +106,24 @@
 
 #### `スプリントの状況を確認して`
 
-1. GitHub Project の Status 別 Issue 数を集計して表示する
-2. `in-progress` / `in-review` の Issue 一覧とその PR リンクを表示する
-3. 完了済み（`Done`）の Issue 数とベロシティを計算して表示する
+1. `in-progress` / `in-review` の Issue 一覧とその PR リンクを表示する
+2. 直近3スプリントのサイクルタイム実績（Issue コメントから取得）を集計してベロシティを算出する
+3. `.github/sprint-protocol.md` セクション 4 の「工数見積もりとの乖離分析」フォーマットで出力する
 
 #### `スプリントレビューをして`
 
-1. 今スプリントで `Done` になった Issue 一覧を取得する
-2. 各 Issue の実装概要（PR タイトル・マージコミット）を整理する
-3. 「完了したこと」「できなかったこと」「次スプリントへの持ち越し」を整理して出力する
-4. 残存 `sprint-backlog` Issue のバックログ整理を提案する
+1. 直近マージ済み PR に紐づく Issue のサイクルタイムレポートコメントを収集する
+2. `.github/retrospective-template.md` のテンプレートに実績データを埋める
+3. 完成したレトロスペクティブを対象 Issue にコメントとして投稿する
+4. 「完了したこと」「次スプリントへの持ち越し」を整理して出力する
+5. 残存 `sprint-backlog` Issue のバックログ整理を提案する
+
+#### `要件変更が発生した`（アドホック）
+
+1. `.github/sprint-protocol.md` セクション 3「MoSCoW スコープトリアージ」を読み込む
+2. Must / Should / Could / Won't を整理してユーザーに提示する
+3. Won't になった PBI の Issue ラベルを `sprint-backlog` → `backlog` に変更する
+4. スコープアウトした Issue に理由コメントを投稿する
 
 ### GitHub ラベル規約（スプリント管理用）
 
@@ -116,7 +131,7 @@
 |---------|------|
 | `backlog` | 未着手・優先度未定の PBI |
 | `sprint-backlog` | 今スプリントで着手予定の PBI |
-| `in-progress` | 現在実装中の PBI |
+| `in-progress` | 現在実装中の PBI（GitHub Actions がタイムスタンプを自動記録） |
 | `in-review` | PR 作成済み・レビュー待ち |
 
 ### 自律実行時のコミット・プッシュ許可範囲
@@ -126,6 +141,7 @@
 - `git commit`（Conventional Commits 形式を厳守）
 - `git push`（作業ブランチへのプッシュのみ。`main` への直接プッシュは引き続き禁止）
 - `gh pr create`（PR の作成のみ。マージ・クローズは禁止）
+- `gh issue comment`（サイクルタイムレポート・レトロスペクティブ投稿のみ）
 
 ## プロジェクト概要
 
