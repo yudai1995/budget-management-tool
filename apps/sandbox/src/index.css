@@ -3,16 +3,16 @@
 /* ── 家計管理ツール デザイントークン ────────────────────────── */
 :root {
   /* ブランドカラー */
-  --color-brand-primary: #f08030;
-  --color-brand-secondary: #c8956c;
-  --color-surface-default: #fef5ee;
+  --color-brand-primary: #f18840;
+  --color-brand-secondary: #e07030;
+  --color-surface-default: #ffffff;
   --color-surface-subtle: #fffdf5;
 
-  /* 収支カラー */
-  --color-expense: #e05c5c;
-  --color-expense-light: #fdf0f0;
-  --color-income: #4caf82;
-  --color-income-light: #f0fdf6;
+  /* 収支カラー（figma-tokens.json SSOT に準拠） */
+  --color-expense: #f18840;
+  --color-expense-light: #fff6ee;
+  --color-income: #35b5a2;
+  --color-income-light: #ecfaf8;
 
   /* テキスト */
   --color-text-base: #1c1410;

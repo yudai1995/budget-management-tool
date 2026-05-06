@@ -24,12 +24,13 @@ export function QuickEntryPrototype() {
   }
 
   const isExpense = balanceType === 'expense'
-  const accentColor = isExpense ? 'var(--color-expense)' : 'var(--color-income)'
+  // セマンティックカラー: 金額表示・タブ識別のみ使用。CTA には使用しない
+  const semanticColor = isExpense ? 'var(--color-expense)' : 'var(--color-income)'
 
   return (
     <div className="flex flex-col items-center" style={{ background: 'var(--color-surface-default)', minHeight: '100svh' }}>
       <div className="w-full max-w-sm px-4 pt-4 pb-2">
-        <Link to="/" className="flex items-center gap-1.5 text-xs text-[#1c1410]/50 hover:text-[#f08030] transition-colors">
+        <Link to="/" className="flex items-center gap-1.5 text-xs text-[#1c1410]/50 hover:text-[var(--color-brand-primary)] transition-colors">
           <ArrowLeft size={14} />
           Gallery に戻る
         </Link>
@@ -50,7 +51,7 @@ export function QuickEntryPrototype() {
               {/* Step 1: 種別タブ */}
               <div>
                 <p className="mb-2 text-xs font-bold text-[#1c1410]/50">1. 種別</p>
-                <div className="flex rounded-2xl bg-white p-1" style={{ boxShadow: 'var(--shadow-card)' }}>
+                <div className="flex rounded-2xl border border-[#1c1410]/12 bg-white p-1">
                   {(['expense', 'income'] as BalanceType[]).map((type) => (
                     <button
                       key={type}
@@ -73,11 +74,11 @@ export function QuickEntryPrototype() {
               <div>
                 <p className="mb-2 text-xs font-bold text-[#1c1410]/50">2. 金額</p>
                 <div
-                  className="rounded-2xl bg-white px-4 py-3"
-                  style={{ boxShadow: 'var(--shadow-card)', borderBottom: `3px solid ${accentColor}` }}
+                  className="rounded-2xl border border-[#1c1410]/12 bg-white px-4 py-3"
+                  style={{ borderBottom: `3px solid ${semanticColor}` }}
                 >
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-extrabold" style={{ color: accentColor }}>¥</span>
+                    <span className="text-2xl font-extrabold" style={{ color: semanticColor }}>¥</span>
                     <input
                       type="number"
                       inputMode="numeric"
@@ -86,20 +87,20 @@ export function QuickEntryPrototype() {
                       onChange={(e) => setAmount(e.target.value)}
                       min={1}
                       className="flex-1 bg-transparent text-4xl font-extrabold tabular-nums outline-none placeholder:text-[#1c1410]/20"
-                      style={{ color: accentColor }}
+                      style={{ color: semanticColor }}
                     />
                   </div>
                 </div>
               </div>
 
               {/* 日付（今日がデフォルト） */}
-              <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <div className="flex items-center justify-between rounded-2xl border border-[#1c1410]/12 bg-white px-4 py-3">
                 <span className="text-xs font-bold text-[#1c1410]/50">日付</span>
                 <span className="text-sm font-semibold text-[#1c1410]">{today}</span>
               </div>
 
               {/* 備考（折りたたみ） */}
-              <div className="rounded-2xl bg-white overflow-hidden" style={{ boxShadow: 'var(--shadow-card)' }}>
+              <div className="rounded-2xl border border-[#1c1410]/12 bg-white overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setNoteOpen(!noteOpen)}
@@ -123,12 +124,12 @@ export function QuickEntryPrototype() {
                 )}
               </div>
 
-              {/* Step 3: 送信ボタン */}
+              {/* Step 3: 送信ボタン（CTA は常に brand primary） */}
               <button
                 type="submit"
                 disabled={!amount || Number(amount) <= 0}
                 className="w-full rounded-2xl py-4 text-base font-extrabold text-white transition-all active:scale-95 disabled:opacity-40"
-                style={{ background: accentColor }}
+                style={{ background: 'var(--color-brand-primary)' }}
               >
                 記録する
               </button>
