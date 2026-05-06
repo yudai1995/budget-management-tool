@@ -99,21 +99,53 @@
    - 選定した PBI に `sprint-backlog` + `in-progress` ラベルを付与する
 3. **実装ループ**: `スプリントを進めて` のメインループを実行する（全 PBI 完了まで繰り返す）
    - ブランチ作成 → 実装 → テスト → コミット → プッシュ → PR 作成
-4. **自動マージ**: PR 作成後に以下を実行する
+4. **自動マージ**: 全 PBI の PR 作成後にそれぞれ実行する
    ```
    gh pr merge --squash --auto
    ```
    - `--auto` により CI が全件グリーンになってから自動マージされる
    - CI が失敗した場合はマージをスキップし、ユーザーに報告して中断する
-5. **レビュー・レトロスペクティブ**: `スプリントレビューをして` のロジックを実行する
-   - velocity-log.json からデータを集計してレトロスペクティブを生成
-   - 完了 Issue にコメントとして投稿する
+5. **マージ待機**: 全 PR がマージされるまで待機する
+   - `gh pr view {PR番号} --json state --jq .state` が `MERGED` になるまで最大 15 分・30 秒間隔でポーリングする
+   - タイムアウトした場合はユーザーに報告して中断する
+6. **スプリントクロージング（全作業を自律実行）**:
+   - **ラベル整理**: 完了した各 Issue から `in-review`・`sprint-backlog` を除去する
+     ```bash
+     gh issue edit {Issue番号} --remove-label "in-review,sprint-backlog"
+     ```
+   - **Issue クローズ**: GitHub の `Closes #N` 自動クローズが機能しない場合のフォールバックとして、未クローズの Issue を明示的にクローズする
+     ```bash
+     gh issue close {Issue番号} --comment "PR マージによりクローズ"
+     ```
+   - **velocity-log.json 同期確認**: `update-velocity.yml` の反映を待ち（最大 3 分）、最新の状態を確認する
+   - **レトロスペクティブ生成**: `スプリントレビューをして` のロジックを実行する
+     - velocity-log.json の直近スプリントデータを集計
+     - サイクルタイム・ボトルネック・ベロシティトレンドを分析
+     - `.github/retrospective-template.md` に沿って生成し、**完了 Issue すべてにコメント投稿**する
+   - **スプリントボード更新**: スプリントボードの PBI ステータスを Done に更新する（GitHub Projects API 利用）
+7. **スプリントサマリー報告**: 以下の形式でユーザーに出力する
+   ```
+   ## スプリント完了サマリー
+
+   完了 PBI（{合計}pt）:
+     #番号 タイトル（{size} / {pt}pt / サイクルタイム: {X}h）
+     ...
+
+   ベロシティ実績: {X}pt（初期見積 6pt 比: +X / -X pt）
+   次スプリント推奨キャパシティ: Xpt
+
+   クロージング完了:
+     ✔ Issue #N クローズ済み
+     ✔ ラベル整理済み
+     ✔ レトロスペクティブ投稿済み
+     ✔ velocity-log.json 更新済み
+   ```
 
 **完全自律モードの制約**:
 - CI が失敗した場合はマージせず、原因と修正案をユーザーに報告する
 - 1つの PBI で 3回以上ブロックされた場合は自律実行を中断してユーザーに報告する
 - 実装中に仕様の不明点が生じた場合は作業を中断してユーザーに確認する
-- スプリント完了後に必ずサマリー（完了 PBI 一覧・合計ポイント・サイクルタイム）を出力する
+- クロージングまで完全に完了させてからサマリーを出力する（途中状態で終了しない）
 
 #### `スプリントリファインメントをして`
 
@@ -156,10 +188,23 @@
 
 以下のループを、作業可能な PBI がなくなるまで繰り返す：
 
-1. **PBI 選択**: 以下の順で実行対象 Issue を特定する
+1. **PBI 選択 & 開始タイムスタンプ記録**: 以下の順で実行対象 Issue を特定する
    - `in-progress` ラベルがある Issue → そのまま着手
    - なければ `sprint-backlog` の最優先 Issue → `in-progress` に変更して着手
    - どちらもなければ全 Issue からベロシティ基準で自動選定（1件）し、ユーザーに報告してから着手
+   - **`in-progress` ラベル付与後、即座に**以下のコマンドで開始タイムスタンプを Issue に直接投稿する。
+     GH Actions（`measure-cycle-time.yml`）は非同期のため、PR マージと競合してサイクルタイムが `null` になるのを防ぐ：
+     ```bash
+     NOW_JST=$(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')
+     gh issue comment {Issue番号} --body "## スプリント開始
+
+     | 項目 | 値 |
+     |------|---|
+     | 開始日時 | ${NOW_JST} JST |
+     | スプリント識別子 | ${NOW_JST:0:10} / Issue #{Issue番号} |
+
+     > サイクルタイム計測を開始しました。PR マージ時に自動集計されます。"
+     ```
 2. **ブランチ作成**: 必須プロセスの `/branch` 手順を実行する（`git fetch origin main` → `merge --ff-only` → `git checkout -b feature/issue-{番号}-{説明}`）
 3. **翻訳**: `/translate` — Issue の内容を「ユーザーの意図 → 技術課題 → 修正対象ファイル」へ翻訳し、理解を言語化する
 4. **影響調査**: `/search` — 関連ファイル・型定義・依存関係を調査する
@@ -170,9 +215,13 @@
    - `pnpm test:unit` を実行し全件パスを確認する
 7. **コミット**: `git commit` を実行する（Conventional Commits 形式、本文日本語）
 8. **プッシュ**: `git push -u origin {ブランチ名}` を実行する
-9. **PR 作成**: `gh pr create` で PR を作成する。以下を必ず守ること：
+9. **PR 作成 & ラベル更新**: `gh pr create` で PR を作成する。以下を必ず守ること：
    - `.github/pull-request-instructions.md` の生成ルールに従う（チェックリスト評価・記入必須）
    - 本文に `Closes #Issue番号` を含める（サイクルタイム・ベロシティの自動計測に必要）
+   - PR 作成後、`in-progress` を外して `in-review` を付与する：
+     ```bash
+     gh issue edit {Issue番号} --remove-label "in-progress" --add-label "in-review"
+     ```
 10. **報告**: ユーザーに完了報告（Issue 番号・PR URL・実装概要）を出力し、次の PBI に進む
 
 **制約**:
@@ -226,8 +275,8 @@
 |---------|------|
 | `backlog` | 未着手・優先度未定の PBI |
 | `sprint-backlog` | 今スプリントで着手予定の PBI |
-| `in-progress` | 現在実装中の PBI（GitHub Actions がタイムスタンプを自動記録） |
-| `in-review` | PR 作成済み・レビュー待ち |
+| `in-progress` | 現在実装中の PBI（ラベル付与直後に Claude がタイムスタンプを Issue コメントとして直接投稿する） |
+| `in-review` | PR 作成済み・レビュー待ち（PR 作成時に Claude が `in-progress` から切り替える） |
 
 ### 自律実行時のコミット・プッシュ許可範囲
 
@@ -237,9 +286,10 @@
 - `git push`（作業ブランチへのプッシュのみ。`main` への直接プッシュは引き続き禁止）
 - `gh pr create`（PR の作成のみ）
 - `gh pr merge --squash --auto`（`フルスプリントを回して` 実行時のみ。CI グリーン後に自動マージ）
-- `gh issue comment`（サイクルタイムレポート・レトロスペクティブ投稿のみ）
-- `gh issue edit`（ラベル付与・バックログ整査時の更新のみ）
-- `gh issue comment`（サイクルタイムレポート・レトロスペクティブ投稿のみ）
+- `gh pr view`（PR ステータスのポーリング）
+- `gh issue comment`（開始タイムスタンプ・サイクルタイムレポート・レトロスペクティブ投稿のみ）
+- `gh issue edit`（ラベル付与・除去・バックログ整査時の更新のみ）
+- `gh issue close`（スプリントクロージング時のみ）
 
 ## プロジェクト概要
 
