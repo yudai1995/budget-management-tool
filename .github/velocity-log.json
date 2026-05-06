@@ -14,7 +14,7 @@
   "sprints": [
     {
       "date": "2026-05-06",
-      "total_points": 3,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 145,
@@ -23,6 +23,14 @@
           "points": 3,
           "cycle_time_hours": null,
           "pr": 146
+        },
+        {
+          "issue": 137,
+          "title": "fix: スマホ入力モーダルで収入を選択しても支出として登録される",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 147
         }
       ]
     }
