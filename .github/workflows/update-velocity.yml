@@ -1,0 +1,140 @@
+name: ベロシティログ更新
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  update-velocity:
+    name: ベロシティログを更新
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ベロシティログを更新
+        uses: actions/github-script@v7
+        id: update
+        with:
+          script: |
+            const fs = require('fs');
+            const pr = context.payload.pull_request;
+            const prBody = pr.body || '';
+
+            // PR 本文から Closes #番号 を抽出
+            const issueMatch = prBody.match(/Closes\s+#(\d+)/i);
+            if (!issueMatch) {
+              console.log('Closes #番号 が PR 本文に見つかりませんでした。スキップします。');
+              core.setOutput('updated', 'false');
+              return;
+            }
+            const issueNumber = parseInt(issueMatch[1], 10);
+
+            // Issue の詳細を取得
+            let issue;
+            try {
+              const { data } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+              });
+              issue = data;
+            } catch (e) {
+              console.log(`Issue #${issueNumber} の取得に失敗しました: ${e.message}`);
+              core.setOutput('updated', 'false');
+              return;
+            }
+
+            // size ラベルからポイントを算出
+            const POINT_SCALE = { XS: 1, S: 2, M: 3, L: 5, XL: 8 };
+            const sizeLabel = issue.labels.find(l => l.name.startsWith('size: '));
+            const sizeKey = sizeLabel ? sizeLabel.name.replace('size: ', '') : null;
+            const points = sizeKey ? (POINT_SCALE[sizeKey] ?? null) : null;
+
+            if (points === null) {
+              console.log(`Issue #${issueNumber} に size ラベルがありません。ポイントを null として記録します。`);
+            }
+
+            // サイクルタイムを Issue コメントから取得
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+
+            const startComment = comments.data.find(c =>
+              c.body.includes('スプリント開始') && c.body.includes('開始日時')
+            );
+
+            let cycleTimeHours = null;
+            if (startComment) {
+              const dateMatch = startComment.body.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) JST/);
+              if (dateMatch) {
+                const startedAt = new Date(dateMatch[1].replace(' ', 'T') + ':00+09:00');
+                const mergedAt = new Date(pr.merged_at);
+                const diffMs = mergedAt - startedAt;
+                cycleTimeHours = Math.round((diffMs / (1000 * 60 * 60)) * 10) / 10;
+              }
+            }
+
+            // マージ日を JST で取得（スプリント日付として使用）
+            const mergedAt = new Date(pr.merged_at);
+            const mergedDateJst = new Date(mergedAt.getTime() + 9 * 60 * 60 * 1000)
+              .toISOString().slice(0, 10);
+
+            // velocity-log.json を読み込んで更新
+            const logPath = '.github/velocity-log.json';
+            const log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+
+            // 同じ日付のスプリントエントリを探す（なければ新規作成）
+            let sprint = log.sprints.find(s => s.date === mergedDateJst);
+            if (!sprint) {
+              sprint = {
+                date: mergedDateJst,
+                total_points: 0,
+                pbis: [],
+              };
+              log.sprints.push(sprint);
+            }
+
+            // PBI を追記（重複チェック）
+            const alreadyRecorded = sprint.pbis.some(p => p.issue === issueNumber);
+            if (!alreadyRecorded) {
+              sprint.pbis.push({
+                issue: issueNumber,
+                title: issue.title,
+                size: sizeKey ?? 'unknown',
+                points: points,
+                cycle_time_hours: cycleTimeHours,
+                pr: pr.number,
+              });
+              sprint.total_points += points ?? 0;
+            }
+
+            // ファイルに書き戻し
+            fs.writeFileSync(logPath, JSON.stringify(log, null, 2) + '\n');
+
+            console.log(`Issue #${issueNumber}: ${points}pt を ${mergedDateJst} のスプリントに記録しました`);
+            core.setOutput('updated', 'true');
+            core.setOutput('sprint_date', mergedDateJst);
+            core.setOutput('issue_number', String(issueNumber));
+            core.setOutput('points', String(points));
+
+      - name: velocity-log.json をコミット
+        if: steps.update.outputs.updated == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/velocity-log.json
+          git diff --cached --quiet || git commit -m "chore(velocity): Issue #${{ steps.update.outputs.issue_number }} の完了を記録する（${{ steps.update.outputs.points }}pt / ${{ steps.update.outputs.sprint_date }}）"
+          git push

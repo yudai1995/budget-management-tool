@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "description": "スプリントベロシティの累積記録。GitHub Actions（update-velocity.yml）により PR マージ時に自動更新される。",
+    "point_scale": {
+      "XS": 1,
+      "S": 2,
+      "M": 3,
+      "L": 5,
+      "XL": 8
+    },
+    "initial_velocity_estimate": 6,
+    "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。"
+  },
+  "sprints": []
+}
