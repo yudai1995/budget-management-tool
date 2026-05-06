@@ -1,0 +1,137 @@
+name: サイクルタイム計測
+
+on:
+  # in-progress ラベルが付与されたとき（スプリント開始）
+  issues:
+    types: [labeled]
+
+  # PR がマージされたとき（スプリント完了）
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: スプリント開始タイムスタンプを Issue に記録
+  # ─────────────────────────────────────────────
+  record-sprint-start:
+    name: スプリント開始を記録
+    if: github.event_name == 'issues' && github.event.label.name == 'in-progress'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 開始タイムスタンプをコメント投稿
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date();
+            const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+            const timestamp = jst.toISOString().replace('T', ' ').replace('Z', ' JST').slice(0, 22);
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                '## スプリント開始',
+                '',
+                `| 項目 | 値 |`,
+                `|------|---|`,
+                `| 開始日時 | ${timestamp} |`,
+                `| スプリント識別子 | ${timestamp.slice(0, 10)} / Issue #${context.issue.number} |`,
+                '',
+                '> サイクルタイム計測を開始しました。PR マージ時に自動集計されます。',
+              ].join('\n'),
+            });
+
+  # ─────────────────────────────────────────────
+  # Job 2: PR マージ時にサイクルタイムを計算して Issue に投稿
+  # ─────────────────────────────────────────────
+  record-sprint-complete:
+    name: サイクルタイムを集計
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 関連 Issue を特定してサイクルタイムを投稿
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const prBody = pr.body || '';
+            const prTitle = pr.title;
+            const mergedAt = new Date(pr.merged_at);
+            const changedFiles = pr.changed_files ?? '不明';
+            const additions = pr.additions ?? 0;
+            const deletions = pr.deletions ?? 0;
+
+            // PR 本文から Closes #番号 を抽出
+            const issueMatch = prBody.match(/Closes\s+#(\d+)/i);
+            if (!issueMatch) {
+              console.log('Closes #番号 が PR 本文に見つかりませんでした。スキップします。');
+              return;
+            }
+            const issueNumber = parseInt(issueMatch[1], 10);
+
+            // Issue のコメントから開始タイムスタンプを取得
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+
+            const startComment = comments.data.find(c =>
+              c.body.includes('スプリント開始') && c.body.includes('開始日時')
+            );
+
+            let cycleTimeText = '計測データなし（in-progress ラベル付与前にマージされた可能性があります）';
+            let startedAt = null;
+
+            if (startComment) {
+              // "開始日時 | YYYY-MM-DD HH:MM JST" の形式からパース
+              const dateMatch = startComment.body.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) JST/);
+              if (dateMatch) {
+                // JST → UTC に変換して Date オブジェクト化
+                startedAt = new Date(dateMatch[1].replace(' ', 'T') + ':00+09:00');
+                const diffMs = mergedAt - startedAt;
+                const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffM = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                cycleTimeText = `${diffH}時間 ${diffM}分`;
+              }
+            }
+
+            // マージ日時を JST に変換
+            const mergedAtJst = new Date(mergedAt.getTime() + 9 * 60 * 60 * 1000)
+              .toISOString().replace('T', ' ').replace('Z', ' JST').slice(0, 22);
+
+            const body = [
+              '## スプリント完了 — サイクルタイムレポート',
+              '',
+              `| 項目 | 値 |`,
+              `|------|---|`,
+              `| 完了 PR | [#${pr.number} ${prTitle}](${pr.html_url}) |`,
+              `| 完了日時 | ${mergedAtJst} |`,
+              `| サイクルタイム | ${cycleTimeText} |`,
+              `| 変更ファイル数 | ${changedFiles} |`,
+              `| 追加 / 削除行 | +${additions} / -${deletions} |`,
+              '',
+              '---',
+              '',
+              '### 次のステップ',
+              '',
+              '- `スプリントレビューをして` を実行してレトロスペクティブを記録する',
+              '- 次の PBI を `sprint-backlog` から選択してスプリントを継続する',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body,
+            });
+
+            console.log(`Issue #${issueNumber} にサイクルタイムレポートを投稿しました`);
