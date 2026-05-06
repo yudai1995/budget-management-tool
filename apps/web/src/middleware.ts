@@ -74,8 +74,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // トークンなし / 無効 → ログイン画面へ
-  return NextResponse.redirect(new URL("/login", request.url));
+  // トークンなし / 無効 → ログイン画面へ（returnTo でセッション切れを伝える）
+  const returnTo = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+  return NextResponse.redirect(new URL(`/login?returnTo=${returnTo}`, request.url));
 }
 
 export const config = {

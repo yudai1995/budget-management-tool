@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "ログイン | 家計管理",
 };
 
-export default function LoginPage() {
-  return <LoginForm />;
+type Props = {
+  searchParams: Promise<{ returnTo?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: Props) {
+  const { returnTo } = await searchParams;
+  return <LoginForm returnTo={returnTo} />;
 }

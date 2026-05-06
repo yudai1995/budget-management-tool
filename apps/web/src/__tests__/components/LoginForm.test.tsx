@@ -90,4 +90,43 @@ describe('LoginForm', () => {
         const button = screen.getByRole('button', { name: 'ログイン中...' })
         expect(button).toBeDisabled()
     })
+
+    it('returnTo が渡されたとき、hidden input に returnTo 値がセットされる', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        const { container } = render(<LoginForm returnTo="/expenses" />)
+
+        const hiddenInput = container.querySelector('input[name="returnTo"]')
+        expect(hiddenInput).not.toBeNull()
+        expect(hiddenInput).toHaveValue('/expenses')
+    })
+
+    it('returnTo が渡されたとき、セッション切れトーストが表示される', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm returnTo="/expenses" />)
+
+        expect(screen.getByRole('alert')).toBeInTheDocument()
+        expect(screen.getByText(/セッションが切れました/)).toBeInTheDocument()
+    })
+
+    it('returnTo が未指定のとき、セッション切れトーストが表示されない', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
 })

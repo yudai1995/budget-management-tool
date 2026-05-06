@@ -97,16 +97,21 @@ export async function loginAction(
     return { error: "サーバーに接続できませんでした" };
   }
 
-  redirect("/");
+  // returnTo が / 始まりの場合のみ使用（オープンリダイレクト対策）
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(returnTo.startsWith("/") ? returnTo : "/");
 }
 
 /** ゲストログイン Server Action */
-export async function guestLoginAction(): Promise<void> {
+export async function guestLoginAction(formData: FormData): Promise<void> {
   const res = await serverFetch<LoginResponse & TokenPair>("/api/guest-login", {
     method: "POST",
   });
   await setTokenCookies({ ...res, userId: res.userId });
-  redirect("/");
+
+  // returnTo が / 始まりの場合のみ使用（オープンリダイレクト対策）
+  const returnTo = String(formData.get("returnTo") ?? "");
+  redirect(returnTo.startsWith("/") ? returnTo : "/");
 }
 
 /** ログアウト Server Action */
