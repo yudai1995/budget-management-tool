@@ -89,7 +89,7 @@
    - `pnpm test:unit` を実行し全件パスを確認する
 7. **コミット**: `git commit` を実行する（Conventional Commits 形式、本文日本語）
 8. **プッシュ**: `git push -u origin {ブランチ名}` を実行する
-9. **PR 作成**: `gh pr create` で PR を作成する。本文に `Closes #Issue番号` を含める
+9. **PR 作成**: `gh pr create` で PR を作成する。本文の生成ルールは `.github/pull-request-instructions.md` に従うこと（チェックリストの評価・記入必須）。本文に `Closes #Issue番号` を含める
 10. **報告**: ユーザーに完了報告（Issue 番号・PR URL・実装概要）を出力し、次の PBI に進む
 
 **制約**:
@@ -143,9 +143,12 @@
 
 ## ディレクトリ構造
 
-- `apps/frontend/`: React/Next.js 等を用いたフロントエンド
-- `apps/backend/`: Node.js/Express を用いたバックエンド
-- `packages/common/`: FE/BE共用の型定義やユーティリティ
+- `apps/web/`: Next.js フロントエンド（App Router）。詳細は `apps/web/AGENTS.md` を参照
+- `apps/api/`: Hono バックエンド API（DDD / Onion Architecture）
+- `apps/sandbox/`: UI/UX プロトタイプ検証環境。詳細は `apps/sandbox/AGENTS.md` を参照
+- `packages/common/`: FE/BE 共用の型定義・Zod スキーマ・ユーティリティ
+- `packages/api-client/`: OpenAPI から自動生成した型安全 API クライアント
+- `packages/api-spec/`: OpenAPI スペック（`openapi.yaml`）
 
 ## 命名規則（ユビキタス言語）
 
@@ -188,8 +191,8 @@
 ## Git操作のベストプラクティス
 
 - **コミットの粒度**: Atomic Commit（1変更＝1コミット）を徹底。
-- **コミットメッセージ**: `type: description` 形式。正確かつ事実に基づき、網羅的に記載する。
-    - `type`: `feature`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+- **コミットメッセージ**: `.github/commit-message-instructions.md` に従うこと（SSOT）。
+- **PRの生成**: `.github/pull-request-instructions.md` に従うこと（SSOT）。
 - **ブランチ運用**: `{type}/{description}` 形式。
 
 ## 開発・修正時の禁止事項
