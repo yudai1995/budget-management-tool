@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getExpenses } from "@/lib/api/expense";
 import { ApiError } from "@/lib/api/client";
-import { Header } from "@/components/layout/Header";
+import { AppShell } from "@/components/layout/AppShell";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
 import { XDayDisplay } from "@/components/dashboard/XDayDisplay";
 import { MonthlyOverviewCard } from "@/components/dashboard/MonthlyOverviewCard";
@@ -51,7 +51,7 @@ function computeXDayInputs(expenses: { balanceType: number; amount: number; date
   return { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays };
 }
 
-async function DashboardContent() {
+async function DashboardContent({ userId }: { userId: string }) {
   let expenses;
   try {
     const data = await getExpenses();
@@ -63,56 +63,53 @@ async function DashboardContent() {
     throw err;
   }
 
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("user_id")?.value ?? "Guest";
-
   const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays } =
     computeXDayInputs(expenses);
 
   return (
-    <>
-      <Header userName={userId} />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 bg-[#fffdf5]">
-        {/*
-          Mobile (default): stacked single column
-            1. 今月の収支サマリー（現状把握）
-            2. クイック入力（スクロールなしで操作可能）
-            3. 家計の寿命（中心指標）
-            4. 最近の記録5件
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 bg-[#fffdf5]">
+      {/*
+        Mobile (default): stacked single column
+          1. 今月の収支サマリー（現状把握）
+          2. クイック入力（スクロールなしで操作可能）
+          3. 家計の寿命（中心指標）
+          4. 最近の記録5件
 
-          Desktop (lg): 2-column
-            Left: 今月の収支 + 家計の寿命
-            Right: クイック入力 + 最近の記録
-        */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
-          {/* 左カラム（desktop）/ 先頭2カード（mobile） */}
-          <div className="flex flex-col gap-4">
-            <MonthlyOverviewCard expenses={expenses} />
-            <div className="lg:block">
-              <XDayDisplay
-                todayExpense={todayExpense}
-                yesterdayExpense={yesterdayExpense}
-                zeroStreakDays={zeroStreakDays}
-                avgDailyExpense={avgDailyExpense}
-                recordedDays={recordedDays}
-              />
-            </div>
-          </div>
-
-          {/* 右カラム（desktop）/ 後続2カード（mobile） */}
-          <div className="flex flex-col gap-4">
-            <ExpenseCreateForm userId={userId} />
-            <RecentExpenseList expenses={expenses} />
+        Desktop (lg): 2-column
+          Left: 今月の収支 + 家計の寿命
+          Right: クイック入力 + 最近の記録
+      */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+        {/* 左カラム（desktop）/ 先頭2カード（mobile） */}
+        <div className="flex flex-col gap-4">
+          <MonthlyOverviewCard expenses={expenses} />
+          <div className="lg:block">
+            <XDayDisplay
+              todayExpense={todayExpense}
+              yesterdayExpense={yesterdayExpense}
+              zeroStreakDays={zeroStreakDays}
+              avgDailyExpense={avgDailyExpense}
+              recordedDays={recordedDays}
+            />
           </div>
         </div>
-      </main>
-    </>
+
+        {/* 右カラム（desktop）/ 後続2カード（mobile） */}
+        <div className="flex flex-col gap-4">
+          <ExpenseCreateForm userId={userId} />
+          <RecentExpenseList expenses={expenses} />
+        </div>
+      </div>
+    </main>
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("user_id")?.value ?? "Guest";
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
+    <AppShell userName={userId}>
       <Suspense
         fallback={
           <div className="flex flex-1 items-center justify-center text-sm font-medium text-[#1c1410]/40">
@@ -120,8 +117,8 @@ export default function HomePage() {
           </div>
         }
       >
-        <DashboardContent />
+        <DashboardContent userId={userId} />
       </Suspense>
-    </div>
+    </AppShell>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Header } from "@/components/layout/Header";
+import { AppShell } from "@/components/layout/AppShell";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
 
 export const metadata: Metadata = {
@@ -22,11 +22,10 @@ export default async function ExpenseNewPage({ searchParams }: Props) {
   const defaultDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
-      <Header userName={userId} />
+    <AppShell userName={userId}>
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8">
         <ExpenseCreateForm userId={userId} defaultDate={defaultDate} />
       </main>
-    </div>
+    </AppShell>
   );
 }
