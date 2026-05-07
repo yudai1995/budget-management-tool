@@ -49,6 +49,20 @@
           "pr": 149
         }
       ]
+    },
+    {
+      "date": "2026-05-08",
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 135,
+          "title": "design: デザインシステムをフラット方針に統一する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 150
+        }
+      ]
     }
   ]
 }
