@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 23,
+      "total_points": 25,
       "pbis": [
         {
           "issue": 135,
@@ -125,6 +125,14 @@
           "points": 2,
           "cycle_time_hours": 0.1,
           "pr": 160
+        },
+        {
+          "issue": 163,
+          "title": "fix: user_settings テーブルのマイグレーションが欠落しておりホーム画面が 404 エラーになる",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 164
         }
       ]
     }
