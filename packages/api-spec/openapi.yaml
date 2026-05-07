@@ -598,6 +598,38 @@ components:
       required:
         - resetToken
         - newPassword
+    UserSettingsResponse:
+      type: object
+      properties:
+        totalAssets:
+          type: integer
+          minimum: 0
+          description: 総資産（円）
+          example: 5000000
+        monthlyIncome:
+          type: integer
+          minimum: 0
+          description: 月次固定収入（円）
+          example: 200000
+      required:
+        - totalAssets
+        - monthlyIncome
+    UpsertUserSettingsBody:
+      type: object
+      properties:
+        totalAssets:
+          type: integer
+          minimum: 0
+          description: 総資産（円）
+          example: 5000000
+        monthlyIncome:
+          type: integer
+          minimum: 0
+          description: 月次固定収入（円）
+          example: 200000
+      required:
+        - totalAssets
+        - monthlyIncome
     XDayResponse:
       type: object
       properties:
@@ -1481,6 +1513,57 @@ paths:
             text/csv:
               schema:
                 nullable: true
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/settings:
+    get:
+      tags:
+        - Settings
+      summary: ユーザー設定取得
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ユーザー設定（未設定時はデフォルト値を返す）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettingsResponse"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Settings
+      summary: ユーザー設定保存
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertUserSettingsBody"
+      responses:
+        "200":
+          description: 保存成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettingsResponse"
+        "400":
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: 未認証
           content:

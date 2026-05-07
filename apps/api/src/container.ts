@@ -14,11 +14,14 @@ import { DeleteUserUseCase } from './application/use-cases/user/DeleteUserUseCas
 import { GetUserByIdUseCase } from './application/use-cases/user/GetUserByIdUseCase';
 import { GetUsersUseCase } from './application/use-cases/user/GetUsersUseCase';
 import { UpdateUserUseCase } from './application/use-cases/user/UpdateUserUseCase';
+import { GetUserSettingsUseCase } from './application/use-cases/settings/GetUserSettingsUseCase';
+import { UpsertUserSettingsUseCase } from './application/use-cases/settings/UpsertUserSettingsUseCase';
 import { GetExpenditureAnalysisUseCase } from './application/use-cases/xday/GetExpenditureAnalysisUseCase';
 import { GetXDayUseCase } from './application/use-cases/xday/GetXDayUseCase';
 import { PrismaBudgetRepository } from './infrastructure/persistence/PrismaBudgetRepository';
 import { PrismaExpenseRepository } from './infrastructure/persistence/PrismaExpenseRepository';
 import { PrismaPasswordResetTokenRepository } from './infrastructure/persistence/PrismaPasswordResetTokenRepository';
+import { PrismaUserSettingsRepository } from './infrastructure/persistence/PrismaUserSettingsRepository';
 import { PrismaRefreshTokenRepository } from './infrastructure/persistence/PrismaRefreshTokenRepository';
 import { PrismaSecurityAnswerRepository } from './infrastructure/persistence/PrismaSecurityAnswerRepository';
 import { PrismaUserRepository } from './infrastructure/persistence/PrismaUserRepository';
@@ -37,6 +40,7 @@ export function buildDeps(): AppDeps {
         refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
         securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
         passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
+        userSettingsRepository: new PrismaUserSettingsRepository(prisma),
     };
 }
 
@@ -73,6 +77,9 @@ export function buildServices(deps: AppDeps, tokenService: TokenService): RouteS
         createUserUseCase: new CreateUserUseCase(deps.userRepository, passwordHasher),
         updateUserUseCase: new UpdateUserUseCase(deps.userRepository),
         deleteUserUseCase: new DeleteUserUseCase(deps.userRepository),
+        // Settings
+        getUserSettingsUseCase: new GetUserSettingsUseCase(deps.userSettingsRepository),
+        upsertUserSettingsUseCase: new UpsertUserSettingsUseCase(deps.userSettingsRepository),
         // XDay
         getXDayUseCase: new GetXDayUseCase(deps.expenseRepository),
         getAnalysisUseCase: new GetExpenditureAnalysisUseCase(deps.expenseRepository),

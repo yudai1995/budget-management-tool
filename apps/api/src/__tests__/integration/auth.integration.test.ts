@@ -20,6 +20,7 @@ import { PrismaPasswordResetTokenRepository } from '../../infrastructure/persist
 import { PrismaRefreshTokenRepository } from '../../infrastructure/persistence/PrismaRefreshTokenRepository';
 import { PrismaSecurityAnswerRepository } from '../../infrastructure/persistence/PrismaSecurityAnswerRepository';
 import { PrismaUserRepository } from '../../infrastructure/persistence/PrismaUserRepository';
+import { PrismaUserSettingsRepository } from '../../infrastructure/persistence/PrismaUserSettingsRepository';
 import { testPrisma, resetDatabase, seedTestData } from '../helpers/db';
 import { TestAgent, testRequest } from '../helpers/testClient';
 
@@ -43,6 +44,7 @@ describeIf('Auth 統合テスト（実 DB）', () => {
         refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
         securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
         passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
+        userSettingsRepository: new PrismaUserSettingsRepository(prisma),
     });
 
     beforeAll(async () => {

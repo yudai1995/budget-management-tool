@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
+import { useState, useEffect, useCallback, useMemo, useActionState } from "react";
 import {
     calcRealtimeAssets,
     calcExpenseImpact,
@@ -8,30 +8,8 @@ import {
     DEFAULT_STATS_DAILY_EXPENSE,
 } from "@budget/common";
 import { SetupModal } from "./SetupModal";
-
-const STORAGE_KEY_ASSETS = "hkl_total_assets";
-const STORAGE_KEY_INCOME = "hkl_monthly_income";
-
-/**
- * localStorage を外部ストアとして扱う useSyncExternalStore ヘルパー。
- * - サーバースナップショット = null（SSR 時は常に未設定扱い）
- * - クライアントスナップショット = localStorage の現在値
- * これにより hydration 時はサーバーと一致し、マウント後に localStorage 値へ遷移する。
- */
-function subscribeStorage(callback: () => void): () => void {
-    window.addEventListener("storage", callback);
-    return () => window.removeEventListener("storage", callback);
-}
-function readAssetsSnapshot(): number | null {
-    const v = localStorage.getItem(STORAGE_KEY_ASSETS);
-    return v !== null ? Number(v) : null;
-}
-function readIncomeSnapshot(): number {
-    const v = localStorage.getItem(STORAGE_KEY_INCOME);
-    return v ? Number(v) : 0;
-}
-const SERVER_ASSETS: number | null = null;
-const SERVER_INCOME: number = 0;
+import { upsertSettingsAction } from "@/lib/actions/settings";
+import type { SettingsActionState } from "@/lib/actions/settings";
 
 interface Props {
     /** 本日の支出合計 */
@@ -44,6 +22,10 @@ interface Props {
     avgDailyExpense: number;
     /** 記録済み日数n（Server側で算出） */
     recordedDays: number;
+    /** サーバーから取得した総資産（null = 未設定） */
+    initialAssets: number | null;
+    /** サーバーから取得した月次収入 */
+    initialIncome: number;
 }
 
 /** 残存日数を「◯年◯ヶ月」形式に変換 */
@@ -106,26 +88,32 @@ function TrustBar({ value }: { value: number }) {
     );
 }
 
+const initialState: SettingsActionState = { error: null, success: false };
+
 export function XDayDisplay({
     todayExpense,
     yesterdayExpense,
     zeroStreakDays,
     avgDailyExpense,
     recordedDays,
+    initialAssets,
+    initialIncome,
 }: Props) {
-    const totalAssets = useSyncExternalStore(subscribeStorage, readAssetsSnapshot, () => SERVER_ASSETS);
-    const monthlyIncome = useSyncExternalStore(subscribeStorage, readIncomeSnapshot, () => SERVER_INCOME);
+    // サーバーから取得した初期値を state に持つ（更新後は即時反映）
+    const [totalAssets, setTotalAssets] = useState<number | null>(initialAssets);
+    const [monthlyIncome, setMonthlyIncome] = useState<number>(initialIncome);
 
     const [rtAssets, setRtAssets] = useState<number | null>(null);
     const [rtDays, setRtDays] = useState<number | null>(null);
     const [snapshotAt] = useMemo(() => [new Date()], []);
 
     const [showSetup, setShowSetup] = useState(false);
+    const [state, formAction] = useActionState(upsertSettingsAction, initialState);
 
+    // Server Action 成功時にローカル state を更新してモーダルを閉じる
     const handleSetup = useCallback((assets: number, income: number) => {
-        localStorage.setItem(STORAGE_KEY_ASSETS, String(assets));
-        localStorage.setItem(STORAGE_KEY_INCOME, String(income));
-        window.dispatchEvent(new Event("storage"));
+        setTotalAssets(assets);
+        setMonthlyIncome(income);
         setShowSetup(false);
     }, []);
 
@@ -163,13 +151,21 @@ export function XDayDisplay({
     }, [totalAssets, netDailyExpense, snapshotAt]);
 
     if (totalAssets === null) {
-        return <SetupModal onSave={handleSetup} />;
+        return (
+            <SetupModal
+                onSave={handleSetup}
+                formAction={formAction}
+                actionState={state}
+            />
+        );
     }
 
     if (showSetup) {
         return (
             <SetupModal
                 onSave={handleSetup}
+                formAction={formAction}
+                actionState={state}
                 defaultAssets={totalAssets}
                 defaultIncome={monthlyIncome}
                 onClose={() => setShowSetup(false)}

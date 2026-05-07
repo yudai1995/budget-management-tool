@@ -384,3 +384,27 @@ export const ExpenditureAnalysisResponseSchema = z
 export const ExportQuerySchema = z.object({
     format: z.enum(['json', 'csv']).default('json').openapi({ description: 'エクスポート形式', example: 'json' }),
 });
+
+// ─── ユーザー設定 (Settings) ──────────────────────────────────────
+
+export const UserSettingsResponseSchema = z
+    .object({
+        totalAssets: z.number().int().min(0).openapi({ description: '総資産（円）', example: 5000000 }),
+        monthlyIncome: z.number().int().min(0).openapi({ description: '月次固定収入（円）', example: 200000 }),
+    })
+    .openapi('UserSettingsResponse');
+
+export const UpsertUserSettingsBodySchema = z
+    .object({
+        totalAssets: z
+            .number({ invalid_type_error: '総資産は数値で入力してください' })
+            .int()
+            .min(0, '総資産は0以上の値を入力してください')
+            .openapi({ description: '総資産（円）', example: 5000000 }),
+        monthlyIncome: z
+            .number({ invalid_type_error: '月次収入は数値で入力してください' })
+            .int()
+            .min(0, '月次収入は0以上の値を入力してください')
+            .openapi({ description: '月次固定収入（円）', example: 200000 }),
+    })
+    .openapi('UpsertUserSettingsBody');
