@@ -7,7 +7,6 @@ import type { AppDeps } from '../app';
  */
 const stubDeps = {
     expenseRepository: {},
-    budgetRepository: {},
     userRepository: {},
     refreshTokenRepository: {},
 } as unknown as AppDeps;
