@@ -39,6 +39,15 @@ function computeXDayInputs(expenses: { balanceType: number; amount: number; date
     zeroStreakDays++;
   }
 
+  // 連続記録日数: 今日から遡って何らかの記録がある日が続く日数
+  const allRecordDates = new Set(expenses.map((e) => e.date));
+  let recordingStreak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
+    if (!allRecordDates.has(d)) break;
+    recordingStreak++;
+  }
+
   // 直近30日の日次平均支出B（実績ベース）
   const cutoff = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
   const recent30 = expenses.filter((e) => e.balanceType === 0 && e.date >= cutoff);
@@ -49,7 +58,7 @@ function computeXDayInputs(expenses: { balanceType: number; amount: number; date
       ? recent30.reduce((s, e) => s + e.amount, 0) / recordedDays
       : 0;
 
-  return { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays };
+  return { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays, recordingStreak };
 }
 
 async function DashboardContent({ userId }: { userId: string }) {
@@ -73,7 +82,7 @@ async function DashboardContent({ userId }: { userId: string }) {
     if (expenses === undefined) throw err;
   }
 
-  const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays } =
+  const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays, recordingStreak } =
     computeXDayInputs(expenses);
 
   return (
@@ -100,6 +109,7 @@ async function DashboardContent({ userId }: { userId: string }) {
               zeroStreakDays={zeroStreakDays}
               avgDailyExpense={avgDailyExpense}
               recordedDays={recordedDays}
+              recordingStreak={recordingStreak}
               initialAssets={settings.totalAssets}
               initialIncome={settings.monthlyIncome}
             />
