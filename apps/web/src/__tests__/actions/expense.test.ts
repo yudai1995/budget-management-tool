@@ -31,6 +31,7 @@ describe('createExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '0')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('userId', 'user1')
         formData.set('date', '2024-01-01')
 
@@ -44,6 +45,7 @@ describe('createExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '1000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('userId', 'user1')
         formData.set('date', '')
 
@@ -59,6 +61,7 @@ describe('createExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '1000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '2')
         formData.set('userId', 'user1')
         formData.set('date', '2024-01-01')
 
@@ -68,12 +71,33 @@ describe('createExpenseAction', () => {
         expect(result.error).toBeNull()
     })
 
+    it('正常系: 選択した categoryId が API リクエストに含まれる', async () => {
+        vi.mocked(serverFetch).mockResolvedValue({})
+
+        const formData = new FormData()
+        formData.set('amount', '1000')
+        formData.set('balanceType', '0')
+        formData.set('categoryId', '3')
+        formData.set('userId', 'user1')
+        formData.set('date', '2024-01-01')
+
+        await createExpenseAction(initialState, formData)
+
+        expect(serverFetch).toHaveBeenCalledWith(
+            '/api/expense',
+            expect.objectContaining({
+                body: expect.stringContaining('"categoryId":3'),
+            }),
+        )
+    })
+
     it('API が 403 を返すとき認証エラーメッセージを返す', async () => {
         vi.mocked(serverFetch).mockRejectedValue(new ApiError(403, 'Forbidden'))
 
         const formData = new FormData()
         formData.set('amount', '1000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('userId', 'user1')
         formData.set('date', '2024-01-01')
 
@@ -97,6 +121,7 @@ describe('updateExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '0')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('date', '2024-01-01')
 
         const result = await updateExpenseAction('expense-01', initialState, formData)
@@ -109,6 +134,7 @@ describe('updateExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '1000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('date', '')
 
         const result = await updateExpenseAction('expense-01', initialState, formData)
@@ -123,6 +149,7 @@ describe('updateExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '2000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '4')
         formData.set('date', '2024-02-01')
 
         const result = await updateExpenseAction('expense-01', initialState, formData)
@@ -135,12 +162,32 @@ describe('updateExpenseAction', () => {
         )
     })
 
+    it('正常系: 選択した categoryId が API リクエストに含まれる', async () => {
+        vi.mocked(serverFetch).mockResolvedValue({})
+
+        const formData = new FormData()
+        formData.set('amount', '2000')
+        formData.set('balanceType', '0')
+        formData.set('categoryId', '5')
+        formData.set('date', '2024-02-01')
+
+        await updateExpenseAction('expense-01', initialState, formData)
+
+        expect(serverFetch).toHaveBeenCalledWith(
+            '/api/expense/expense-01',
+            expect.objectContaining({
+                body: expect.stringContaining('"categoryId":5'),
+            }),
+        )
+    })
+
     it('API が 403 を返すとき認証エラーメッセージを返す', async () => {
         vi.mocked(serverFetch).mockRejectedValue(new ApiError(403, 'Forbidden'))
 
         const formData = new FormData()
         formData.set('amount', '2000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('date', '2024-02-01')
 
         const result = await updateExpenseAction('expense-01', initialState, formData)
@@ -155,6 +202,7 @@ describe('updateExpenseAction', () => {
         const formData = new FormData()
         formData.set('amount', '2000')
         formData.set('balanceType', '0')
+        formData.set('categoryId', '1')
         formData.set('date', '2024-02-01')
 
         const result = await updateExpenseAction('expense-01', initialState, formData)

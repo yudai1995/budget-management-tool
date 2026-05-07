@@ -8,6 +8,7 @@ import type { GetExpenseResponse } from "../api/types";
 export type ExpenseFieldErrors = {
   amount?: string[];
   balanceType?: string[];
+  categoryId?: string[];
   date?: string[];
   userId?: string[];
 };
@@ -26,6 +27,7 @@ export async function createExpenseAction(
   const raw = {
     amount: Number(formData.get("amount")),
     balanceType: Number(formData.get("balanceType")) as 0 | 1,
+    categoryId: Number(formData.get("categoryId") ?? 0),
     userId: String(formData.get("userId") ?? ""),
     date: String(formData.get("date") ?? ""),
     content: formData.get("content") ? String(formData.get("content")) : null,
@@ -78,6 +80,7 @@ export async function updateExpenseAction(
   const raw = {
     amount: Number(formData.get("amount")),
     balanceType: Number(formData.get("balanceType")) as 0 | 1,
+    categoryId: Number(formData.get("categoryId") ?? 0),
     date: String(formData.get("date") ?? ""),
     content: formData.get("content") ? String(formData.get("content")) : null,
   };
