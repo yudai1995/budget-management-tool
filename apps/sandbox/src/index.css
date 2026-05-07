@@ -32,9 +32,14 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* シャドウ */
-  --shadow-card: 0 1px 4px rgba(28, 20, 16, 0.06), 0 4px 16px rgba(28, 20, 16, 0.06);
-  --shadow-pop-sm: 2px 2px 0 rgba(28, 20, 16, 0.9);
+  /* ボーダー（フラット方針 — カード・入力欄はボーダーのみ） */
+  --border-default: rgba(28, 20, 16, 0.12);
+  --border-strong: rgba(28, 20, 16, 0.30);
+
+  /* シャドウ（浮遊要素のみ hard shadow を使用。--shadow-card は廃止） */
+  --shadow-pop-sm: 1px 1px 0 #1c1410;
+  --shadow-pop: 2px 2px 0 #1c1410;
+  --shadow-pop-lg: 3px 3px 0 #1c1410;
 }
 
 body {

@@ -12,7 +12,7 @@ export function BottomNavPrototype() {
     <div className="flex flex-col items-center" style={{ background: 'var(--color-surface-default)', minHeight: '100svh' }}>
       {/* 戻るリンク（デスクトップ用） */}
       <div className="w-full max-w-sm px-4 pt-4 pb-2">
-        <Link to="/" className="flex items-center gap-1.5 text-xs text-[#1c1410]/50 hover:text-[#f08030] transition-colors">
+        <Link to="/" className="flex items-center gap-1.5 text-xs text-[#1c1410]/50 hover:text-[var(--color-brand-primary)] transition-colors">
           <ArrowLeft size={14} />
           Gallery に戻る
         </Link>
@@ -51,8 +51,8 @@ export function BottomNavPrototype() {
                 <button
                   key={item.label}
                   type="button"
-                  className="rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-lg"
-                  style={{ background: item.color }}
+                  className="rounded-2xl border-2 border-[#1c1410] px-6 py-3 text-sm font-bold text-white"
+                  style={{ background: item.color, boxShadow: 'var(--shadow-pop)' }}
                   onClick={() => setFabOpen(false)}
                 >
                   {item.label}
@@ -75,8 +75,8 @@ export function BottomNavPrototype() {
             type="button"
             aria-label="記録する"
             onClick={() => setFabOpen(!fabOpen)}
-            className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95"
-            style={{ background: 'var(--color-brand-primary)', boxShadow: '0 4px 16px rgba(240,128,48,0.45)' }}
+            className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#1c1410] transition-transform active:scale-95"
+            style={{ background: 'var(--color-brand-primary)', boxShadow: 'var(--shadow-pop)' }}
           >
             {fabOpen
               ? <X size={22} className="text-white" />
@@ -120,10 +120,7 @@ function HomeContent() {
   return (
     <div className="flex flex-col gap-4">
       {/* 今月サマリーカード */}
-      <div
-        className="rounded-2xl bg-white p-4"
-        style={{ boxShadow: 'var(--shadow-card)' }}
-      >
+      <div className="rounded-2xl border border-[#1c1410]/12 bg-white p-4">
         <p className="text-xs font-bold text-[#1c1410]/50">今月の支出</p>
         <p className="mt-1 text-3xl font-extrabold tabular-nums" style={{ color: 'var(--color-expense)' }}>
           ¥42,800
@@ -135,7 +132,7 @@ function HomeContent() {
       </div>
 
       {/* 最近の記録 */}
-      <div className="rounded-2xl bg-white p-4" style={{ boxShadow: 'var(--shadow-card)' }}>
+      <div className="rounded-2xl border border-[#1c1410]/12 bg-white p-4">
         <p className="text-xs font-bold text-[#1c1410]/50 mb-3">最近の記録</p>
         {[
           { label: 'スーパー', amount: -3200, date: '今日' },
