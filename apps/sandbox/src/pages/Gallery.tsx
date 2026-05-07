@@ -54,8 +54,7 @@ export function Gallery() {
             <Link
               key={p.path}
               to={p.path}
-              className="group flex items-center gap-4 rounded-2xl bg-white p-4 transition-shadow hover:shadow-md"
-              style={{ boxShadow: 'var(--shadow-card)' }}
+              className="group flex items-center gap-4 rounded-2xl border border-[#1c1410]/12 bg-white p-4 transition-colors hover:border-[#1c1410]/30"
             >
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
@@ -74,7 +73,7 @@ export function Gallery() {
               </div>
               <ArrowRight
                 size={16}
-                className="shrink-0 text-[#1c1410]/30 transition-colors group-hover:text-[#f08030]"
+                className="shrink-0 text-[#1c1410]/30 transition-colors group-hover:text-[var(--color-brand-primary)]"
               />
             </Link>
           )
