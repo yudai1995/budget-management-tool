@@ -6,7 +6,9 @@ import { getBudgets } from "@/lib/api/budget";
 import { deleteBudgetAction } from "@/lib/actions/budget";
 import { getCategoryById, OUTGO_CATEGORIES } from "@/lib/constants/categories";
 import { PeriodSelector } from "@/components/report/PeriodSelector";
+import { MonthlyComparisonCard } from "@/components/report/MonthlyComparisonCard";
 import { AppShell } from "@/components/layout/AppShell";
+import { calcMonthlyComparison } from "@budget/common";
 import type { BudgetResponse } from "@budget/api-client";
 
 export const metadata: Metadata = {
@@ -76,11 +78,26 @@ async function ReportSection({ period }: { period: Period }) {
   const filter = getDateFilter(period);
   const budgets = allBudgets.filter((b) => filter(b.date));
 
+  // 当月表示のときのみ前月比・前年同月比を計算する
+  const now = new Date();
+  const currentMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const comparisonData = period === "current-month"
+    ? calcMonthlyComparison(
+        allBudgets.map((b) => ({ date: b.date, amount: b.amount, balanceType: b.balanceType })),
+        currentMonthPrefix,
+      )
+    : null;
+
   if (budgets.length === 0) {
     return (
-      <p className="py-12 text-center text-sm font-medium text-[#1c1410]/40">
-        この期間のデータはありません
-      </p>
+      <div className="flex flex-col gap-6">
+        <p className="py-12 text-center text-sm font-medium text-[#1c1410]/40">
+          この期間のデータはありません
+        </p>
+        {comparisonData !== null && (
+          <MonthlyComparisonCard data={comparisonData} />
+        )}
+      </div>
     );
   }
 
@@ -113,6 +130,11 @@ async function ReportSection({ period }: { period: Period }) {
           </p>
         </div>
       </div>
+
+      {/* 前月比・前年同月比（当月のみ） */}
+      {comparisonData !== null && (
+        <MonthlyComparisonCard data={comparisonData} />
+      )}
 
       {/* カテゴリ別バーチャート（支出） */}
       {categoryBreakdown.length > 0 && (
