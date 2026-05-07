@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 3,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 135,
@@ -61,6 +61,14 @@
           "points": 3,
           "cycle_time_hours": null,
           "pr": 150
+        },
+        {
+          "issue": 139,
+          "title": "chore: docs/ 配下の不要ファイルを整理し SSOT と整合させる",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 151
         }
       ]
     }
