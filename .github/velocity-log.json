@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 21,
+      "total_points": 23,
       "pbis": [
         {
           "issue": 135,
@@ -117,6 +117,14 @@
           "points": 3,
           "cycle_time_hours": 0.1,
           "pr": 159
+        },
+        {
+          "issue": 89,
+          "title": "[Feature] 連続記録日数（記録ストリーク）を表示する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0.1,
+          "pr": 160
         }
       ]
     }
