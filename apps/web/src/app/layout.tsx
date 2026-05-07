@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import { Geist_Mono } from "next/font/google";
+import { SwRegister } from "@/components/SwRegister";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -20,6 +21,19 @@ export const metadata: Metadata = {
     template: "%s | 家計管理",
   },
   description: "日々の支出・収入を記録・管理する家計管理ツール",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "家計管理",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f18840",
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
 };
 
 export default function RootLayout({
@@ -32,7 +46,10 @@ export default function RootLayout({
       lang="ja"
       className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">{children}</body>
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
+        {children}
+        <SwRegister />
+      </body>
     </html>
   );
 }
