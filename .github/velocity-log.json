@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 34,
+      "total_points": 37,
       "pbis": [
         {
           "issue": 135,
@@ -157,6 +157,14 @@
           "points": 3,
           "cycle_time_hours": 0.1,
           "pr": 167
+        },
+        {
+          "issue": 90,
+          "title": "[Feature] PWA 化してモバイルのホーム画面から起動できるようにする",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 168
         }
       ]
     }
