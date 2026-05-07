@@ -1,7 +1,7 @@
 import { createRoute, z } from '@hono/zod-openapi';
 import { createAuthMiddleware } from '../middleware/auth';
 import { createOpenAPIApp } from '../../lib/openapi-app';
-import type { Budget } from '../../domain/models/Budget';
+import type { Expense } from '../../domain/models/Expense';
 import type { RouteServices } from '../../app';
 import {
     BudgetResponseSchema,
@@ -11,7 +11,7 @@ import {
 } from '../../openapi/schemas';
 
 /** Date フィールドを ISO 文字列に変換してレスポンス用 DTO を生成する */
-function serializeBudget(b: Budget) {
+function serializeBudget(b: Expense) {
     return {
         id: b.id,
         amount: b.amount,
@@ -147,7 +147,7 @@ const deleteBudgetRoute = createRoute({
 
 // ─── Handler 実装 ────────────────────────────────────────────────
 
-export function createBudgetRoutes({ tokenService, budgetRepository }: RouteServices) {
+export function createBudgetRoutes({ tokenService, expenseRepository }: RouteServices) {
     const auth = createAuthMiddleware(tokenService);
     const app = createOpenAPIApp();
 
@@ -156,34 +156,34 @@ export function createBudgetRoutes({ tokenService, budgetRepository }: RouteServ
     app.use('/budget/*', auth);
 
     app.openapi(getBudgetsRoute, async (c) => {
-        const budgets = await budgetRepository.all();
-        return c.json({ budget: budgets.map(serializeBudget) }, 200);
+        const expenses = await expenseRepository.findAll();
+        return c.json({ budget: expenses.map(serializeBudget) }, 200);
     });
 
     app.openapi(getBudgetRoute, async (c) => {
         const { id } = c.req.valid('param');
-        const budget = await budgetRepository.one(id);
-        if (!budget) {
+        const expense = await expenseRepository.findById(id);
+        if (!expense) {
             return c.json({ result: 'error' as const, message: 'リソースが見つかりません' }, 404);
         }
-        return c.json({ budget: serializeBudget(budget) }, 200);
+        return c.json({ budget: serializeBudget(expense) }, 200);
     });
 
     app.openapi(createBudgetRoute, async (c) => {
         const { newData } = c.req.valid('json');
-        const budget = await budgetRepository.save(newData);
-        return c.json({ budget: serializeBudget(budget) }, 200);
+        const expense = await expenseRepository.save(newData as unknown as Expense);
+        return c.json({ budget: serializeBudget(expense) }, 200);
     });
 
     app.openapi(updateBudgetRoute, async (c) => {
         const { newData } = c.req.valid('json');
-        const budget = await budgetRepository.save(newData);
-        return c.json({ budget: serializeBudget(budget) }, 200);
+        const expense = await expenseRepository.save(newData as unknown as Expense);
+        return c.json({ budget: serializeBudget(expense) }, 200);
     });
 
     app.openapi(deleteBudgetRoute, async (c) => {
         const { id } = c.req.valid('param');
-        await budgetRepository.remove(id);
+        await expenseRepository.remove(id);
         return c.json({ result: 'success' as const }, 200);
     });
 

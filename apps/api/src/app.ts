@@ -21,7 +21,6 @@ import type { UpsertUserSettingsUseCase } from './application/use-cases/settings
 import type { GetExpenditureAnalysisUseCase } from './application/use-cases/xday/GetExpenditureAnalysisUseCase';
 import type { GetXDayUseCase } from './application/use-cases/xday/GetXDayUseCase';
 import { buildServices } from './container';
-import type { IBudgetRepository } from './domain/repositories/IBudgetRepository';
 import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
 import type { IPasswordResetTokenRepository } from './domain/repositories/IPasswordResetTokenRepository';
 import type { IRefreshTokenRepository } from './domain/repositories/IRefreshTokenRepository';
@@ -41,7 +40,6 @@ import { DomainException } from './shared/errors/DomainException';
 export type AppDeps = {
     userRepository: IUserRepository;
     expenseRepository: IExpenseRepository;
-    budgetRepository: IBudgetRepository;
     refreshTokenRepository: IRefreshTokenRepository;
     securityAnswerRepository: ISecurityAnswerRepository;
     passwordResetTokenRepository: IPasswordResetTokenRepository;
@@ -57,7 +55,6 @@ export type RouteServices = {
     tokenService: TokenService;
     // UseCase 未抽出のルートが直接リポジトリを参照する箇所（暫定）
     userRepository: IUserRepository;
-    budgetRepository: IBudgetRepository;
     expenseRepository: IExpenseRepository;
     // Expense
     createExpenseUseCase: CreateExpenseUseCase;

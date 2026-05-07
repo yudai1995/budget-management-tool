@@ -18,7 +18,6 @@ import { GetUserSettingsUseCase } from './application/use-cases/settings/GetUser
 import { UpsertUserSettingsUseCase } from './application/use-cases/settings/UpsertUserSettingsUseCase';
 import { GetExpenditureAnalysisUseCase } from './application/use-cases/xday/GetExpenditureAnalysisUseCase';
 import { GetXDayUseCase } from './application/use-cases/xday/GetXDayUseCase';
-import { PrismaBudgetRepository } from './infrastructure/persistence/PrismaBudgetRepository';
 import { PrismaExpenseRepository } from './infrastructure/persistence/PrismaExpenseRepository';
 import { PrismaPasswordResetTokenRepository } from './infrastructure/persistence/PrismaPasswordResetTokenRepository';
 import { PrismaUserSettingsRepository } from './infrastructure/persistence/PrismaUserSettingsRepository';
@@ -36,7 +35,6 @@ export function buildDeps(): AppDeps {
     return {
         userRepository: new PrismaUserRepository(prisma),
         expenseRepository: new PrismaExpenseRepository(prisma),
-        budgetRepository: new PrismaBudgetRepository(prisma),
         refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
         securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
         passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
@@ -54,7 +52,6 @@ export function buildServices(deps: AppDeps, tokenService: TokenService): RouteS
         tokenService,
         // リポジトリ直接参照（UseCase未抽出のルート用）
         userRepository: deps.userRepository,
-        budgetRepository: deps.budgetRepository,
         expenseRepository: deps.expenseRepository,
         // Expense
         createExpenseUseCase: new CreateExpenseUseCase(deps.expenseRepository, deps.userRepository),

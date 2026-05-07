@@ -10,7 +10,6 @@ import { API_PATHS } from '@budget/api-client';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { createApp } from '../../app';
-import { PrismaBudgetRepository } from '../../infrastructure/persistence/PrismaBudgetRepository';
 import { PrismaExpenseRepository } from '../../infrastructure/persistence/PrismaExpenseRepository';
 import { PrismaPasswordResetTokenRepository } from '../../infrastructure/persistence/PrismaPasswordResetTokenRepository';
 import { PrismaRefreshTokenRepository } from '../../infrastructure/persistence/PrismaRefreshTokenRepository';
@@ -35,7 +34,6 @@ describeIf('Settings 統合テスト（実 DB）', () => {
     const app = createApp({
         userRepository: new PrismaUserRepository(prisma),
         expenseRepository: new PrismaExpenseRepository(prisma),
-        budgetRepository: new PrismaBudgetRepository(prisma),
         refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
         securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
         passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),

@@ -17,12 +17,12 @@ import type { ErrorResponse, ExpenseResponse, GetExpensesResponse } from '@budge
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { createApp } from '../../app';
-import { PrismaBudgetRepository } from '../../infrastructure/persistence/PrismaBudgetRepository';
 import { PrismaExpenseRepository } from '../../infrastructure/persistence/PrismaExpenseRepository';
 import { PrismaPasswordResetTokenRepository } from '../../infrastructure/persistence/PrismaPasswordResetTokenRepository';
 import { PrismaRefreshTokenRepository } from '../../infrastructure/persistence/PrismaRefreshTokenRepository';
 import { PrismaSecurityAnswerRepository } from '../../infrastructure/persistence/PrismaSecurityAnswerRepository';
 import { PrismaUserRepository } from '../../infrastructure/persistence/PrismaUserRepository';
+import { PrismaUserSettingsRepository } from '../../infrastructure/persistence/PrismaUserSettingsRepository';
 import { testPrisma, resetDatabase, seedTestData } from '../helpers/db';
 import { TestAgent, testRequest } from '../helpers/testClient';
 
@@ -71,10 +71,10 @@ describeIf('OpenAPI 結合テスト: スキーマと実レスポンスの整合�
     const app = createApp({
         userRepository: new PrismaUserRepository(prisma),
         expenseRepository: new PrismaExpenseRepository(prisma),
-        budgetRepository: new PrismaBudgetRepository(prisma),
         refreshTokenRepository: new PrismaRefreshTokenRepository(prisma),
         securityAnswerRepository: new PrismaSecurityAnswerRepository(prisma),
         passwordResetTokenRepository: new PrismaPasswordResetTokenRepository(prisma),
+        userSettingsRepository: new PrismaUserSettingsRepository(prisma),
     });
 
     afterAll(async () => {

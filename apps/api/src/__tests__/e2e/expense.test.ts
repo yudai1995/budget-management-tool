@@ -4,7 +4,6 @@ import { createApp } from '../../app';
 import { Expense } from '../../domain/models/Expense';
 import type { IUserRepository } from '../../domain/repositories/IUserRepository';
 import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository';
-import type { IBudgetRepository } from '../../domain/repositories/IBudgetRepository';
 import type { IRefreshTokenRepository } from '../../domain/repositories/IRefreshTokenRepository';
 import { TestAgent, testRequest } from '../helpers/testClient';
 
@@ -50,13 +49,6 @@ const mockExpenseRepository = {
     remove: vi.fn(),
 } as unknown as IExpenseRepository;
 
-const mockBudgetRepository = {
-    all: vi.fn(),
-    one: vi.fn(),
-    save: vi.fn(),
-    remove: vi.fn(),
-} as unknown as IBudgetRepository;
-
 const mockRefreshTokenRepository = {
     save: vi.fn(),
     findByHash: vi.fn(),
@@ -71,7 +63,6 @@ function buildApp() {
     return createApp({
         userRepository: mockUserRepository,
         expenseRepository: mockExpenseRepository,
-        budgetRepository: mockBudgetRepository,
         refreshTokenRepository: mockRefreshTokenRepository,
     });
 }
