@@ -2,16 +2,17 @@ import type { UpdateExpenseInput } from '@budget/common';
 import { Expense } from '../../domain/models/Expense';
 import type { IExpenseRepository } from '../../domain/repositories/IExpenseRepository';
 import { NotFoundError } from '../../shared/errors/DomainException';
+import { type Result, ok, err } from '../../shared/types/result';
 
 export type { UpdateExpenseInput };
 
 export class UpdateExpenseUseCase {
     constructor(private readonly expenseRepository: IExpenseRepository) {}
 
-    async execute(id: string, input: UpdateExpenseInput): Promise<Expense> {
+    async execute(id: string, input: UpdateExpenseInput): Promise<Result<Expense, NotFoundError>> {
         const existing = await this.expenseRepository.findById(id);
         if (!existing) {
-            throw new NotFoundError(`支出が見つかりません: ${id}`);
+            return err(new NotFoundError(`支出が見つかりません: ${id}`));
         }
 
         // 既存エンティティの不変フィールドを保持しつつ更新フィールドを上書き
@@ -28,6 +29,7 @@ export class UpdateExpenseUseCase {
             updatedDate: new Date(),
         });
 
-        return this.expenseRepository.save(updated);
+        const saved = await this.expenseRepository.save(updated);
+        return ok(saved);
     }
 }

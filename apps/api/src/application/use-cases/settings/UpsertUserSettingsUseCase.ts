@@ -1,6 +1,7 @@
 import type { UserSettings } from '../../../domain/models/UserSettings';
 import type { IUserSettingsRepository } from '../../../domain/repositories/IUserSettingsRepository';
 import { ValidationError } from '../../../shared/errors/DomainException';
+import { type Result, ok, err } from '../../../shared/types/result';
 
 export type UpsertUserSettingsInput = {
     userId: string;
@@ -19,19 +20,20 @@ const PAYDAY_MAX = 31;
 export class UpsertUserSettingsUseCase {
     constructor(private readonly userSettingsRepository: IUserSettingsRepository) {}
 
-    async execute(input: UpsertUserSettingsInput): Promise<UserSettings> {
+    async execute(input: UpsertUserSettingsInput): Promise<Result<UserSettings, ValidationError>> {
         if (input.totalAssets < 0) {
-            throw new ValidationError('総資産は0以上の値を入力してください');
+            return err(new ValidationError('総資産は0以上の値を入力してください'));
         }
         if (input.monthlyIncome < 0) {
-            throw new ValidationError('月次収入は0以上の値を入力してください');
+            return err(new ValidationError('月次収入は0以上の値を入力してください'));
         }
         if (input.paydayDay < PAYDAY_MIN || input.paydayDay > PAYDAY_MAX) {
-            throw new ValidationError(`給料日は${PAYDAY_MIN}〜${PAYDAY_MAX}の範囲で入力してください`);
+            return err(new ValidationError(`給料日は${PAYDAY_MIN}〜${PAYDAY_MAX}の範囲で入力してください`));
         }
         if (input.fixedExpenses < 0) {
-            throw new ValidationError('固定費は0以上の値を入力してください');
+            return err(new ValidationError('固定費は0以上の値を入力してください'));
         }
-        return this.userSettingsRepository.upsert(input);
+        const settings = await this.userSettingsRepository.upsert(input);
+        return ok(settings);
     }
 }

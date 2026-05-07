@@ -83,6 +83,10 @@ const createExpenseRoute = createRoute({
             content: { 'application/json': { schema: ErrorResponseSchema } },
             description: '未認証',
         },
+        404: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'リソースが見つからない',
+        },
     },
 });
 
@@ -108,6 +112,10 @@ const updateExpenseRoute = createRoute({
         401: {
             content: { 'application/json': { schema: ErrorResponseSchema } },
             description: '未認証',
+        },
+        404: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: 'リソースが見つからない',
         },
     },
 });
@@ -162,15 +170,27 @@ export function createExpenseRoutes({
 
     app.openapi(createExpenseRoute, async (c) => {
         const { newData } = c.req.valid('json');
-        const expense = await createExpenseUseCase.execute(newData as CreateExpenseInput);
-        return c.json({ expense: toExpenseDto(expense) }, 200);
+        const result = await createExpenseUseCase.execute(newData as CreateExpenseInput);
+        if (!result.ok) {
+            return c.json(
+                { result: 'error' as const, message: result.error.message },
+                result.error.statusCode as 400 | 404
+            );
+        }
+        return c.json({ expense: toExpenseDto(result.value) }, 200);
     });
 
     app.openapi(updateExpenseRoute, async (c) => {
         const { id } = c.req.valid('param');
         const { updateData } = c.req.valid('json');
-        const expense = await updateExpenseUseCase.execute(id, updateData as UpdateExpenseInput);
-        return c.json({ expense: toExpenseDto(expense) }, 200);
+        const result = await updateExpenseUseCase.execute(id, updateData as UpdateExpenseInput);
+        if (!result.ok) {
+            return c.json(
+                { result: 'error' as const, message: result.error.message },
+                result.error.statusCode as 400 | 404
+            );
+        }
+        return c.json({ expense: toExpenseDto(result.value) }, 200);
     });
 
     app.openapi(deleteExpenseRoute, async (c) => {
