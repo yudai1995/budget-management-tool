@@ -8,16 +8,21 @@ type Props = {
 
 /**
  * 認証済みページ共通ラッパー
- * - デスクトップ: トップヘッダー
- * - モバイル: ボトムナビゲーション + コンテンツ下部パディング
+ * - PC（md以上）: 左サイドバー + コンテンツ
+ * - モバイル（md未満）: ミニヘッダー + コンテンツ + ボトムナビ
  */
 export function AppShell({ userName, children }: Props) {
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffdf5]">
+    <div className="flex min-h-screen bg-[#fffdf5]">
+      {/* PC: サイドバー / モバイル: ミニヘッダー */}
       <Header userName={userName} />
-      {/* モバイルのボトムナビ分の余白 */}
-      <div className="flex-1 pb-16 md:pb-0">{children}</div>
-      <BottomNav />
+
+      {/* コンテンツ本体 */}
+      <div className="flex flex-1 flex-col min-w-0">
+        {/* モバイルのボトムナビ分の余白 */}
+        <div className="flex-1 pb-16 md:pb-0">{children}</div>
+        <BottomNav />
+      </div>
     </div>
   );
 }

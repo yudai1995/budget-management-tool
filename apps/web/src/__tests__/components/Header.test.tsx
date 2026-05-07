@@ -39,11 +39,13 @@ describe('Header', () => {
     it('正常表示: ロゴ・ナビ・記録するボタンが描画される', () => {
         render(<Header />)
 
-        expect(screen.getByText('家計かんり')).toBeInTheDocument()
+        // PC サイドバー・モバイルヘッダー両方にロゴが存在する
+        expect(screen.getAllByText('家計かんり').length).toBeGreaterThanOrEqual(1)
         expect(screen.getByText('ホーム')).toBeInTheDocument()
         expect(screen.getByText('カレンダー')).toBeInTheDocument()
         expect(screen.getByText('レポート')).toBeInTheDocument()
-        // 「記録する」は CTA ボタンとデスクトップ・モバイル両方に存在する
+        expect(screen.getByText('設定')).toBeInTheDocument()
+        // 「記録する」は CTA ボタン・サイドバー両方に存在する
         expect(screen.getAllByText('記録する').length).toBeGreaterThanOrEqual(1)
     })
 
@@ -81,45 +83,24 @@ describe('Header', () => {
         expect(calendarLink.className).toContain('text-[#f18840]')
     })
 
-    it('モバイルメニューボタンを押すとメニューが表示される', () => {
+    it('サイドバー折りたたみボタンを押すと折りたたみ状態になる', () => {
         render(<Header />)
 
-        // 初期状態ではモバイルメニューは非表示
-        expect(screen.queryByRole('dialog', { name: 'モバイルメニュー' })).not.toBeInTheDocument()
+        const collapseButton = screen.getByRole('button', { name: 'サイドバーを折りたたむ' })
+        fireEvent.click(collapseButton)
 
-        // ハンバーガーボタンをクリック
-        const menuButton = screen.getByRole('button', { name: 'メニューを開く' })
-        fireEvent.click(menuButton)
-
-        // メニューが表示される
-        expect(screen.getByRole('dialog', { name: 'モバイルメニュー' })).toBeInTheDocument()
+        // 折りたたんだ後は展開ボタンが表示される
+        expect(screen.getByRole('button', { name: 'サイドバーを展開' })).toBeInTheDocument()
     })
 
-    it('モバイルメニュー表示中に閉じるボタンを押すと非表示になる', () => {
+    it('サイドバー展開ボタンを押すと展開状態に戻る', () => {
         render(<Header />)
 
-        const menuButton = screen.getByRole('button', { name: 'メニューを開く' })
-        fireEvent.click(menuButton)
+        const collapseButton = screen.getByRole('button', { name: 'サイドバーを折りたたむ' })
+        fireEvent.click(collapseButton)
+        const expandButton = screen.getByRole('button', { name: 'サイドバーを展開' })
+        fireEvent.click(expandButton)
 
-        const closeButton = screen.getByRole('button', { name: 'メニューを閉じる' })
-        fireEvent.click(closeButton)
-
-        expect(screen.queryByRole('dialog', { name: 'モバイルメニュー' })).not.toBeInTheDocument()
-    })
-
-    it('モバイルメニュー内のリンクをクリックするとメニューが閉じる', () => {
-        vi.mocked(usePathname).mockReturnValue('/')
-        render(<Header />)
-
-        fireEvent.click(screen.getByRole('button', { name: 'メニューを開く' }))
-        expect(screen.getByRole('dialog', { name: 'モバイルメニュー' })).toBeInTheDocument()
-
-        // モバイルメニュー内のカレンダーリンクをクリック
-        const dialog = screen.getByRole('dialog', { name: 'モバイルメニュー' })
-        const calendarLink = dialog.querySelector('a[href="/calendar"]')
-        expect(calendarLink).not.toBeNull()
-        fireEvent.click(calendarLink!)
-
-        expect(screen.queryByRole('dialog', { name: 'モバイルメニュー' })).not.toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'サイドバーを折りたたむ' })).toBeInTheDocument()
     })
 })

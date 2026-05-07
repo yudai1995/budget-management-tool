@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -25,6 +25,14 @@ const prototypes: PrototypeCard[] = [
     description: '3タップで記録完了する入力UXの試作。金額中心レイアウト。',
     icon: PenLine,
     issue: '#121',
+    status: 'ready',
+  },
+  {
+    path: '/nav-layout',
+    title: 'ナビゲーション統合レイアウト',
+    description: 'PC:左サイドバー / モバイル:ボトムナビ。NAV_ITEMSを1箇所で定義。',
+    icon: Layout,
+    issue: '#141',
     status: 'ready',
   },
 ]

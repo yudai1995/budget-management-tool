@@ -2,22 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, BarChart2, Settings, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-type NavItem = {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-};
-
-const NAV_ITEMS: NavItem[] = [
-  { label: "ホーム", href: "/", icon: Home },
-  { label: "カレンダー", href: "/calendar", icon: Calendar },
-  { label: "レポート", href: "/report", icon: BarChart2 },
-  { label: "設定", href: "/settings", icon: Settings },
-];
+import { NAV_ITEMS } from "./navItems";
+import type { NavItem } from "./navItems";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -73,7 +62,7 @@ export function BottomNav() {
       <nav
         className="fixed bottom-0 left-0 right-0 z-40 flex items-center border-t border-[#1c1410]/10 bg-white md:hidden"
         style={{ height: 64, paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-        aria-label="メインナビゲーション"
+        aria-label="モバイルナビゲーション"
       >
         {/* 左2項目 */}
         {leftItems.map((item) => (
