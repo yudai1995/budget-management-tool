@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 37,
+      "total_points": 42,
       "pbis": [
         {
           "issue": 135,
@@ -165,6 +165,14 @@
           "points": 3,
           "cycle_time_hours": 0.1,
           "pr": 168
+        },
+        {
+          "issue": 131,
+          "title": "[PBI-A] ユーザー設定とAPI拡張（給料日・固定費・1日予算算出）",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": 0.1,
+          "pr": 169
         }
       ]
     }
