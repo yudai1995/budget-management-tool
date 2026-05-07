@@ -189,6 +189,32 @@ jobs:
           DATABASE_URL: "mysql://user:pass@localhost:3306/dummy"
         run: pnpm --filter @budget/api exec prisma validate
 
+      - name: Check schema changes have corresponding migration
+        run: |
+          # schema.prisma が変更されているのにマイグレーション SQL が追加されていない場合は失敗
+          git fetch origin "${{ github.base_ref }}" --depth=1
+
+          SCHEMA_CHANGED=$(git diff --name-only \
+            "origin/${{ github.base_ref }}...HEAD" \
+            -- "apps/api/prisma/schema.prisma" | wc -l)
+
+          MIGRATION_ADDED=$(git diff --name-only --diff-filter=A \
+            "origin/${{ github.base_ref }}...HEAD" \
+            -- "apps/api/prisma/migrations" 2>/dev/null | grep "\.sql$" | wc -l)
+
+          if [ "${SCHEMA_CHANGED}" -gt 0 ] && [ "${MIGRATION_ADDED}" -eq 0 ]; then
+            echo "エラー: schema.prisma が変更されていますが、マイグレーションファイルが追加されていません。"
+            echo ""
+            echo "以下を実行してマイグレーションを作成してください:"
+            echo "  cd apps/api && npx prisma migrate dev --name <変更内容の説明>"
+            echo ""
+            echo "注意: prisma db push はテスト用途にのみ使用してください。"
+            echo "      本番 DB には migrate deploy が使われるため、migration.sql が必須です。"
+            exit 1
+          fi
+
+          echo "スキーマとマイグレーションの整合性チェック完了。"
+
       - name: Check for destructive migrations
         run: |
           MIGRATION_DIR="apps/api/prisma/migrations"
