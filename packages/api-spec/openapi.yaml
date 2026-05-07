@@ -611,9 +611,22 @@ components:
           minimum: 0
           description: 月次固定収入（円）
           example: 200000
+        paydayDay:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: "給料日（月の何日か: 1〜31）"
+          example: 25
+        fixedExpenses:
+          type: integer
+          minimum: 0
+          description: 月次固定費合計（円）
+          example: 80000
       required:
         - totalAssets
         - monthlyIncome
+        - paydayDay
+        - fixedExpenses
     UpsertUserSettingsBody:
       type: object
       properties:
@@ -627,9 +640,22 @@ components:
           minimum: 0
           description: 月次固定収入（円）
           example: 200000
+        paydayDay:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: "給料日（月の何日か: 1〜31）"
+          example: 25
+        fixedExpenses:
+          type: integer
+          minimum: 0
+          description: 月次固定費合計（円）
+          example: 80000
       required:
         - totalAssets
         - monthlyIncome
+        - paydayDay
+        - fixedExpenses
     XDayResponse:
       type: object
       properties:

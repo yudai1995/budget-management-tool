@@ -61,13 +61,18 @@ describeIf('Settings 統合テスト（実 DB）', () => {
     });
 
     describe('GET /api/settings', () => {
-        it('正常系: 未設定のとき totalAssets=0, monthlyIncome=0 を返す', async () => {
+        it('正常系: 未設定のとき totalAssets=0, monthlyIncome=0, paydayDay=25, fixedExpenses=0 を返す', async () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginClient(users[0].userId);
 
             const res = await agent.get('/api/settings');
             expect(res.status).toBe(200);
-            expect(res.body).toMatchObject({ totalAssets: 0, monthlyIncome: 0 });
+            expect(res.body).toMatchObject({
+                totalAssets: 0,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 0,
+            });
         });
 
         it('認証エラー: Bearer トークンなしで 401 を返す', async () => {
@@ -77,30 +82,100 @@ describeIf('Settings 統合テスト（実 DB）', () => {
     });
 
     describe('PUT /api/settings', () => {
-        it('正常系: 設定を保存して返す', async () => {
+        it('正常系: 全フィールドを保存して返す', async () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginClient(users[0].userId);
 
-            const res = await agent.put('/api/settings', { totalAssets: 5000000, monthlyIncome: 200000 });
+            const res = await agent.put('/api/settings', {
+                totalAssets: 5000000,
+                monthlyIncome: 200000,
+                paydayDay: 25,
+                fixedExpenses: 80000,
+            });
             expect(res.status).toBe(200);
-            expect(res.body).toMatchObject({ totalAssets: 5000000, monthlyIncome: 200000 });
+            expect(res.body).toMatchObject({
+                totalAssets: 5000000,
+                monthlyIncome: 200000,
+                paydayDay: 25,
+                fixedExpenses: 80000,
+            });
+        });
+
+        it('正常系: 給料日1日・固定費0円で保存できる', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const agent = await loginClient(users[0].userId);
+
+            const res = await agent.put('/api/settings', {
+                totalAssets: 1000000,
+                monthlyIncome: 0,
+                paydayDay: 1,
+                fixedExpenses: 0,
+            });
+            expect(res.status).toBe(200);
+            expect(res.body).toMatchObject({ paydayDay: 1, fixedExpenses: 0 });
         });
 
         it('正常系: 上書き保存できる', async () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginClient(users[0].userId);
 
-            await agent.put('/api/settings', { totalAssets: 1000000, monthlyIncome: 100000 });
-            const res = await agent.put('/api/settings', { totalAssets: 2000000, monthlyIncome: 0 });
+            await agent.put('/api/settings', {
+                totalAssets: 1000000,
+                monthlyIncome: 100000,
+                paydayDay: 20,
+                fixedExpenses: 50000,
+            });
+            const res = await agent.put('/api/settings', {
+                totalAssets: 2000000,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 100000,
+            });
             expect(res.status).toBe(200);
-            expect(res.body).toMatchObject({ totalAssets: 2000000, monthlyIncome: 0 });
+            expect(res.body).toMatchObject({
+                totalAssets: 2000000,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 100000,
+            });
         });
 
         it('バリデーションエラー: totalAssets が負数のとき 400 を返す', async () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginClient(users[0].userId);
 
-            const res = await agent.put('/api/settings', { totalAssets: -1, monthlyIncome: 0 });
+            const res = await agent.put('/api/settings', {
+                totalAssets: -1,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 0,
+            });
+            expect(res.status).toBe(400);
+        });
+
+        it('バリデーションエラー: paydayDay が 32 のとき 400 を返す', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const agent = await loginClient(users[0].userId);
+
+            const res = await agent.put('/api/settings', {
+                totalAssets: 0,
+                monthlyIncome: 0,
+                paydayDay: 32,
+                fixedExpenses: 0,
+            });
+            expect(res.status).toBe(400);
+        });
+
+        it('バリデーションエラー: fixedExpenses が負数のとき 400 を返す', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const agent = await loginClient(users[0].userId);
+
+            const res = await agent.put('/api/settings', {
+                totalAssets: 0,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: -1,
+            });
             expect(res.status).toBe(400);
         });
 
@@ -108,7 +183,7 @@ describeIf('Settings 統合テスト（実 DB）', () => {
             const res = await testRequest(app, '/api/settings', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ totalAssets: 1000000, monthlyIncome: 0 }),
+                body: JSON.stringify({ totalAssets: 1000000, monthlyIncome: 0, paydayDay: 25, fixedExpenses: 0 }),
             });
             expect(res.status).toBe(401);
         });

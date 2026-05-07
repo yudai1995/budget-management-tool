@@ -14,6 +14,8 @@ export class PrismaUserSettingsRepository implements IUserSettingsRepository {
             userId: record.userId,
             totalAssets: record.totalAssets,
             monthlyIncome: record.monthlyIncome,
+            paydayDay: record.paydayDay,
+            fixedExpenses: record.fixedExpenses,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
         };
@@ -27,10 +29,14 @@ export class PrismaUserSettingsRepository implements IUserSettingsRepository {
                 userId: settings.userId,
                 totalAssets: settings.totalAssets,
                 monthlyIncome: settings.monthlyIncome,
+                paydayDay: settings.paydayDay,
+                fixedExpenses: settings.fixedExpenses,
             },
             update: {
                 totalAssets: settings.totalAssets,
                 monthlyIncome: settings.monthlyIncome,
+                paydayDay: settings.paydayDay,
+                fixedExpenses: settings.fixedExpenses,
             },
         });
         return {
@@ -38,6 +44,8 @@ export class PrismaUserSettingsRepository implements IUserSettingsRepository {
             userId: record.userId,
             totalAssets: record.totalAssets,
             monthlyIncome: record.monthlyIncome,
+            paydayDay: record.paydayDay,
+            fixedExpenses: record.fixedExpenses,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
         };

@@ -391,6 +391,8 @@ export const UserSettingsResponseSchema = z
     .object({
         totalAssets: z.number().int().min(0).openapi({ description: '総資産（円）', example: 5000000 }),
         monthlyIncome: z.number().int().min(0).openapi({ description: '月次固定収入（円）', example: 200000 }),
+        paydayDay: z.number().int().min(1).max(31).openapi({ description: '給料日（月の何日か: 1〜31）', example: 25 }),
+        fixedExpenses: z.number().int().min(0).openapi({ description: '月次固定費合計（円）', example: 80000 }),
     })
     .openapi('UserSettingsResponse');
 
@@ -406,5 +408,16 @@ export const UpsertUserSettingsBodySchema = z
             .int()
             .min(0, '月次収入は0以上の値を入力してください')
             .openapi({ description: '月次固定収入（円）', example: 200000 }),
+        paydayDay: z
+            .number({ invalid_type_error: '給料日は数値で入力してください' })
+            .int()
+            .min(1, '給料日は1以上の値を入力してください')
+            .max(31, '給料日は31以下の値を入力してください')
+            .openapi({ description: '給料日（月の何日か: 1〜31）', example: 25 }),
+        fixedExpenses: z
+            .number({ invalid_type_error: '固定費は数値で入力してください' })
+            .int()
+            .min(0, '固定費は0以上の値を入力してください')
+            .openapi({ description: '月次固定費合計（円）', example: 80000 }),
     })
     .openapi('UpsertUserSettingsBody');

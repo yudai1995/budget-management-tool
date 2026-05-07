@@ -1861,6 +1861,16 @@ export interface components {
              * @example 200000
              */
             monthlyIncome: number;
+            /**
+             * @description 給料日（月の何日か: 1〜31）
+             * @example 25
+             */
+            paydayDay: number;
+            /**
+             * @description 月次固定費合計（円）
+             * @example 80000
+             */
+            fixedExpenses: number;
         };
         UpsertUserSettingsBody: {
             /**
@@ -1873,6 +1883,16 @@ export interface components {
              * @example 200000
              */
             monthlyIncome: number;
+            /**
+             * @description 給料日（月の何日か: 1〜31）
+             * @example 25
+             */
+            paydayDay: number;
+            /**
+             * @description 月次固定費合計（円）
+             * @example 80000
+             */
+            fixedExpenses: number;
         };
         XDayResponse: {
             /** @example 2031-09-14T00:00:00.000Z */
