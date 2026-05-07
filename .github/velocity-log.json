@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 7,
+      "total_points": 8,
       "pbis": [
         {
           "issue": 135,
@@ -77,6 +77,14 @@
           "points": 2,
           "cycle_time_hours": 0.1,
           "pr": 154
+        },
+        {
+          "issue": 152,
+          "title": "fix: 収入を記録ボタンから遷移しても支出タブが選択されたままになる",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0,
+          "pr": 155
         }
       ]
     }
