@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 10,
+      "total_points": 13,
       "pbis": [
         {
           "issue": 135,
@@ -93,6 +93,14 @@
           "points": 2,
           "cycle_time_hours": 0.1,
           "pr": 156
+        },
+        {
+          "issue": 141,
+          "title": "design: ヘッダー/フッターのメニュー重複を解消する新レイアウト設計",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 157
         }
       ]
     }
