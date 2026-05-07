@@ -81,19 +81,22 @@ export function createSettingsRoutes({
     app.openapi(upsertUserSettingsRoute, async (c) => {
         const userId = c.get('userId');
         const { totalAssets, monthlyIncome, paydayDay, fixedExpenses } = c.req.valid('json');
-        const settings = await upsertUserSettingsUseCase.execute({
+        const result = await upsertUserSettingsUseCase.execute({
             userId,
             totalAssets,
             monthlyIncome,
             paydayDay,
             fixedExpenses,
         });
+        if (!result.ok) {
+            return c.json({ result: 'error' as const, message: result.error.message }, result.error.statusCode as 400);
+        }
         return c.json(
             {
-                totalAssets: settings.totalAssets,
-                monthlyIncome: settings.monthlyIncome,
-                paydayDay: settings.paydayDay,
-                fixedExpenses: settings.fixedExpenses,
+                totalAssets: result.value.totalAssets,
+                monthlyIncome: result.value.monthlyIncome,
+                paydayDay: result.value.paydayDay,
+                fixedExpenses: result.value.fixedExpenses,
             },
             200
         );

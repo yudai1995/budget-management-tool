@@ -81,19 +81,29 @@ describe('CreateExpenseUseCase', () => {
     describe('execute()', () => {
         it('正常系: 有効なデータで支出を作成する', async () => {
             const result = await useCase.execute(validInput);
-            expect(result).toEqual(mockExpense);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toEqual(mockExpense);
+            }
             expect(mockUserRepository.findById).toHaveBeenCalledWith('user-1');
             expect(mockExpenseRepository.save).toHaveBeenCalledTimes(1);
         });
 
         it('正常系: content が null でも保存できる', async () => {
             const result = await useCase.execute({ ...validInput, content: null });
-            expect(result).toEqual(mockExpense);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toEqual(mockExpense);
+            }
         });
 
-        it('異常系: 存在しないユーザーIDは Error をthrow', async () => {
+        it('異常系: 存在しないユーザーIDのとき ok=false で NotFoundError を返す', async () => {
             vi.mocked(mockUserRepository.findById).mockResolvedValue(null);
-            await expect(useCase.execute(validInput)).rejects.toThrow('ユーザーが見つかりません');
+            const result = await useCase.execute(validInput);
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.message).toContain('ユーザーが見つかりません');
+            }
         });
 
         it('異常系: リポジトリが例外をthrowした場合は伝播する', async () => {

@@ -939,6 +939,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/expense/{id}:
     get:
       tags:
@@ -1008,6 +1014,12 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: リソースが見つからない
           content:
             application/json:
               schema:

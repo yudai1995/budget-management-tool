@@ -55,14 +55,20 @@ describe('UpdateExpenseUseCase', () => {
         it('正常系: 有効なデータで支出を更新する', async () => {
             const result = await useCase.execute('expense-01', validInput);
 
-            expect(result).toEqual(updatedExpense);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toEqual(updatedExpense);
+            }
             expect(mockExpenseRepository.findById).toHaveBeenCalledWith('expense-01');
             expect(mockExpenseRepository.save).toHaveBeenCalledTimes(1);
         });
 
         it('正常系: content が null でも更新できる', async () => {
             const result = await useCase.execute('expense-01', { ...validInput, content: null });
-            expect(result).toEqual(updatedExpense);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toEqual(updatedExpense);
+            }
         });
 
         it('正常系: userId は既存エンティティから引き継がれる', async () => {
@@ -79,10 +85,14 @@ describe('UpdateExpenseUseCase', () => {
             expect(savedArg.createdDate).toEqual(mockExpense.createdDate);
         });
 
-        it('異常系: 存在しない ID を指定すると NotFoundError をthrow', async () => {
+        it('異常系: 存在しない ID を指定すると ok=false で NotFoundError を返す', async () => {
             vi.mocked(mockExpenseRepository.findById).mockResolvedValue(null);
 
-            await expect(useCase.execute('not-exist', validInput)).rejects.toBeInstanceOf(NotFoundError);
+            const result = await useCase.execute('not-exist', validInput);
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error).toBeInstanceOf(NotFoundError);
+            }
         });
 
         it('異常系: リポジトリが例外をthrowした場合は伝播する', async () => {
