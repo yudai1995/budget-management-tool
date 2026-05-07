@@ -400,7 +400,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateExpenseBody"];
+                    "application/json": components["schemas"]["UpdateExpenseBody"];
                 };
             };
             responses: {
@@ -1264,6 +1264,93 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** ユーザー設定取得 */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ユーザー設定（未設定時はデフォルト値を返す） */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserSettingsResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** ユーザー設定保存 */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpsertUserSettingsBody"];
+                };
+            };
+            responses: {
+                /** @description 保存成功 */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserSettingsResponse"];
+                    };
+                };
+                /** @description バリデーションエラー */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description 未認証 */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/xday": {
         parameters: {
             query?: never;
@@ -1487,6 +1574,31 @@ export interface components {
                  * @example user01
                  */
                 userId: string;
+                /**
+                 * @description 日付 (YYYY-MM-DD)
+                 * @example 2024-03-15
+                 */
+                date: string;
+                /**
+                 * @description 備考
+                 * @example 昼食代
+                 */
+                content?: string | null;
+            };
+        };
+        UpdateExpenseBody: {
+            /** @description 更新データ */
+            updateData: {
+                /**
+                 * @description 金額（円）
+                 * @example 1500
+                 */
+                amount: number;
+                /**
+                 * @description 収支区分: 0=支出, 1=収入
+                 * @example 0
+                 */
+                balanceType: 0 | 1;
                 /**
                  * @description 日付 (YYYY-MM-DD)
                  * @example 2024-03-15
@@ -1737,6 +1849,30 @@ export interface components {
             resetToken: string;
             /** @description 新しいパスワード（平文） */
             newPassword: string;
+        };
+        UserSettingsResponse: {
+            /**
+             * @description 総資産（円）
+             * @example 5000000
+             */
+            totalAssets: number;
+            /**
+             * @description 月次固定収入（円）
+             * @example 200000
+             */
+            monthlyIncome: number;
+        };
+        UpsertUserSettingsBody: {
+            /**
+             * @description 総資産（円）
+             * @example 5000000
+             */
+            totalAssets: number;
+            /**
+             * @description 月次固定収入（円）
+             * @example 200000
+             */
+            monthlyIncome: number;
         };
         XDayResponse: {
             /** @example 2031-09-14T00:00:00.000Z */

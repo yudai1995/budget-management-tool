@@ -7,7 +7,7 @@ import { deleteBudgetAction } from "@/lib/actions/budget";
 import { getCategoryById, OUTGO_CATEGORIES } from "@/lib/constants/categories";
 import { PeriodSelector } from "@/components/report/PeriodSelector";
 import { AppShell } from "@/components/layout/AppShell";
-import type { BudgetResponse } from "@/lib/api/budget";
+import type { BudgetResponse } from "@budget/api-client";
 
 export const metadata: Metadata = {
   title: "レポート | 家計管理",

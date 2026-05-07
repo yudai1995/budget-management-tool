@@ -11,6 +11,16 @@ export type {
     GetExpenseResponse,
     LoginResponse,
     LogoutResponse,
+    BudgetResponse,
+    BudgetListResponse,
+    BudgetDetailResponse,
+    GetBudgetsResponse,
+    GetBudgetResponse,
+    XDayResponse,
+    ExpenditureAnalysisResponse,
+    CategoryAnalysis,
+    UserSettingsResponse,
+    UpsertUserSettingsBody,
 } from "@budget/api-client";
 
 /** 収支区分: 0=支出, 1=収入 */
