@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 13,
+      "total_points": 18,
       "pbis": [
         {
           "issue": 135,
@@ -101,6 +101,14 @@
           "points": 3,
           "cycle_time_hours": null,
           "pr": 157
+        },
+        {
+          "issue": 81,
+          "title": "[Feature] 総資産・月次収入をサーバーサイドに永続化する",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": 0.2,
+          "pr": 158
         }
       ]
     }
