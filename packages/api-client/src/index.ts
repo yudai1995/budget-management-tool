@@ -50,3 +50,22 @@ export type CreateExpenseRequest = CreateExpenseBody;
 export type LoginResponse = TokenPairResponse;
 export type GetExpensesResponse = ExpenseListResponse;
 export type GetExpenseResponse = ExpenseDetailResponse;
+
+// Budget 型
+export type BudgetResponse = components['schemas']['BudgetResponse'];
+export type BudgetListResponse = components['schemas']['BudgetListResponse'];
+export type BudgetDetailResponse = components['schemas']['BudgetDetailResponse'];
+export type CreateBudgetBody = components['schemas']['CreateBudgetBody'];
+
+// 旧スキーマ名の後方互換エイリアス
+export type GetBudgetsResponse = BudgetListResponse;
+export type GetBudgetResponse = BudgetDetailResponse;
+
+// XDay 型
+export type XDayResponse = components['schemas']['XDayResponse'];
+export type ExpenditureAnalysisResponse = components['schemas']['ExpenditureAnalysisResponse'];
+export type CategoryAnalysis = components['schemas']['CategoryAnalysis'];
+
+// UserSettings 型
+export type UserSettingsResponse = components['schemas']['UserSettingsResponse'];
+export type UpsertUserSettingsBody = components['schemas']['UpsertUserSettingsBody'];

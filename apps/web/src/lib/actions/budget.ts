@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { serverFetch, ApiError } from "../api/client";
-import type { GetBudgetResponse } from "../api/budget";
+import type { BudgetDetailResponse } from "@budget/api-client";
 import type { BalanceType } from "@budget/common";
 
 export type BudgetActionState = {
@@ -41,7 +41,7 @@ export async function createBudgetAction(
   const input: CreateBudgetInput = { amount, balanceType, userId, categoryId, date, content };
 
   try {
-    await serverFetch<GetBudgetResponse>("/api/budget", {
+    await serverFetch<BudgetDetailResponse>("/api/budget", {
       method: "POST",
       body: JSON.stringify({ newData: input }),
     });
