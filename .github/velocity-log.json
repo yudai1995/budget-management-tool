@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 8,
+      "total_points": 10,
       "pbis": [
         {
           "issue": 135,
@@ -85,6 +85,14 @@
           "points": 1,
           "cycle_time_hours": 0,
           "pr": 155
+        },
+        {
+          "issue": 100,
+          "title": "[Tech Debt] レスポンス DTO をルートから分離してマッパー層を設ける",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0.1,
+          "pr": 156
         }
       ]
     }
