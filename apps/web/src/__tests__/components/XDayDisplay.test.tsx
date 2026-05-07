@@ -52,6 +52,35 @@ describe('XDayDisplay', () => {
         })
     })
 
+    describe('支出ゼロ日マイルストーンバッジ', () => {
+        it('zeroStreakDays=0 のときゼロストリークメッセージを表示しない', () => {
+            render(<XDayDisplay {...defaultProps} zeroStreakDays={0} />)
+            expect(screen.queryByText(/日連続で支出ゼロ/)).not.toBeInTheDocument()
+        })
+
+        it('zeroStreakDays=2 のとき連続ゼロメッセージを表示する', () => {
+            render(<XDayDisplay {...defaultProps} zeroStreakDays={2} />)
+            expect(screen.getByText(/2日連続で支出ゼロ/)).toBeInTheDocument()
+        })
+
+        it('zeroStreakDays=3 のとき「3日達成」バッジを表示する', () => {
+            render(<XDayDisplay {...defaultProps} zeroStreakDays={3} />)
+            expect(screen.getByText('3日達成')).toBeInTheDocument()
+        })
+
+        it('zeroStreakDays=7 のとき「7日達成」バッジと次の目標を表示する', () => {
+            render(<XDayDisplay {...defaultProps} zeroStreakDays={7} />)
+            expect(screen.getByText('7日達成')).toBeInTheDocument()
+            expect(screen.getByText(/次の目標: 30日まであと23日/)).toBeInTheDocument()
+        })
+
+        it('zeroStreakDays=100 のとき「100日達成」バッジを表示し次の目標は表示しない', () => {
+            render(<XDayDisplay {...defaultProps} zeroStreakDays={100} />)
+            expect(screen.getByText('100日達成')).toBeInTheDocument()
+            expect(screen.queryByText(/次の目標/)).not.toBeInTheDocument()
+        })
+    })
+
     describe('家計の寿命カード', () => {
         it('initialAssets が設定済みのとき「家計の寿命」ヘッダーが表示される', () => {
             render(<XDayDisplay {...defaultProps} />)
