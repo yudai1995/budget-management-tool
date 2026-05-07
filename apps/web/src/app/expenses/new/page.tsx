@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; type?: string }>;
 };
 
 export default async function ExpenseNewPage({ searchParams }: Props) {
@@ -17,14 +17,20 @@ export default async function ExpenseNewPage({ searchParams }: Props) {
   const userId = cookieStore.get("user_id")?.value;
   if (!userId) redirect("/login");
 
-  const { date } = await searchParams;
+  const { date, type } = await searchParams;
   // YYYY-MM-DD 形式以外は無視する
   const defaultDate = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : undefined;
+  // "income" のみ収入タブを初期選択、それ以外は支出（デフォルト）
+  const defaultBalanceType: 0 | 1 = type === "income" ? 1 : 0;
 
   return (
     <AppShell userName={userId}>
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8">
-        <ExpenseCreateForm userId={userId} defaultDate={defaultDate} />
+        <ExpenseCreateForm
+          userId={userId}
+          defaultDate={defaultDate}
+          defaultBalanceType={defaultBalanceType}
+        />
       </main>
     </AppShell>
   );

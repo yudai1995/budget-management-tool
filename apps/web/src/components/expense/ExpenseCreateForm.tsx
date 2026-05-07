@@ -11,6 +11,8 @@ type Props = {
   userId: string;
   /** 初期表示する日付（YYYY-MM-DD 形式。省略時は今日） */
   defaultDate?: string;
+  /** 初期選択する収支種別（0=支出, 1=収入。省略時は0） */
+  defaultBalanceType?: 0 | 1;
 };
 
 const initialState: ExpenseActionState = { error: null, success: false };
@@ -22,8 +24,8 @@ function FieldError({ messages }: { messages?: string[] }) {
   );
 }
 
-export function ExpenseCreateForm({ userId, defaultDate }: Props) {
-  const [balanceType, setBalanceType] = useState<0 | 1>(0);
+export function ExpenseCreateForm({ userId, defaultDate, defaultBalanceType = 0 }: Props) {
+  const [balanceType, setBalanceType] = useState<0 | 1>(defaultBalanceType);
   const [categoryId, setCategoryId] = useState<number>(0);
   const [noteOpen, setNoteOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(
