@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 31,
+      "total_points": 34,
       "pbis": [
         {
           "issue": 135,
@@ -149,6 +149,14 @@
           "points": 3,
           "cycle_time_hours": 0.1,
           "pr": 166
+        },
+        {
+          "issue": 87,
+          "title": "[Feature] 前月比・前年同月比レポートを追加する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 167
         }
       ]
     }
