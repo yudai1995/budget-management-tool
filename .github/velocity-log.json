@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 28,
+      "total_points": 31,
       "pbis": [
         {
           "issue": 135,
@@ -141,6 +141,14 @@
           "points": 3,
           "cycle_time_hours": null,
           "pr": 165
+        },
+        {
+          "issue": 88,
+          "title": "[Feature] 支出ゼロ日の連続カウント（ストリーク）を実装する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 166
         }
       ]
     }
