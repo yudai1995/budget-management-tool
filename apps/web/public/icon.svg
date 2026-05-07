@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" fill="none">
+  <rect width="192" height="192" rx="40" fill="#f18840"/>
+  <!-- 家のシルエット -->
+  <path d="M96 40 L152 90 L140 90 L140 152 L52 152 L52 90 L40 90 Z" fill="white" fill-opacity="0.95"/>
+  <!-- 玄関ドア -->
+  <rect x="80" y="114" width="32" height="38" rx="4" fill="#f18840"/>
+  <!-- 窓 -->
+  <rect x="60" y="100" width="22" height="18" rx="3" fill="#f18840"/>
+  <rect x="110" y="100" width="22" height="18" rx="3" fill="#f18840"/>
+  <!-- 円マーク -->
+  <circle cx="96" cy="96" r="14" fill="#f18840"/>
+  <text x="96" y="101" text-anchor="middle" font-size="16" font-weight="bold" fill="white" font-family="sans-serif">¥</text>
+</svg>
