@@ -8,6 +8,10 @@ export const createExpenseSchema = z.object({
   balanceType: z.union([z.literal(0), z.literal(1)], {
     errorMap: () => ({ message: '種別を選択してください' }),
   }),
+  categoryId: z
+    .number({ invalid_type_error: 'カテゴリIDは数値で入力してください' })
+    .int()
+    .min(0),
   userId: z.string().min(1, 'ユーザーIDが必要です'),
   date: z.string().min(1, '日付を入力してください'),
   content: z.string().nullable().optional(),
@@ -23,6 +27,11 @@ export const updateExpenseSchema = z.object({
   balanceType: z.union([z.literal(0), z.literal(1)], {
     errorMap: () => ({ message: '種別を選択してください' }),
   }),
+  categoryId: z
+    .number({ invalid_type_error: 'カテゴリIDは数値で入力してください' })
+    .int()
+    .min(0)
+    .optional(),
   date: z.string().min(1, '日付を入力してください'),
   content: z.string().nullable().optional(),
 })

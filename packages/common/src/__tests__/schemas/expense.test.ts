@@ -5,6 +5,7 @@ describe('createExpenseSchema', () => {
     const validInput = {
         amount: 1000,
         balanceType: 0 as const,
+        categoryId: 1,
         userId: 'user-1',
         date: '2024-01-01',
         content: 'テスト支出',
@@ -12,6 +13,11 @@ describe('createExpenseSchema', () => {
 
     it('正常系: 有効なデータで成功する', () => {
         const result = createExpenseSchema.safeParse(validInput)
+        expect(result.success).toBe(true)
+    })
+
+    it('正常系: categoryId が 0（未分類）のとき、成功する', () => {
+        const result = createExpenseSchema.safeParse({ ...validInput, categoryId: 0 })
         expect(result.success).toBe(true)
     })
 
@@ -47,6 +53,11 @@ describe('createExpenseSchema', () => {
         if (!result.success) {
             expect(result.error.issues[0].message).toBe('種別を選択してください')
         }
+    })
+
+    it('異常系: categoryId が負数のとき、エラーになる', () => {
+        const result = createExpenseSchema.safeParse({ ...validInput, categoryId: -1 })
+        expect(result.success).toBe(false)
     })
 
     it('異常系: userIdが空文字ならエラー', () => {
