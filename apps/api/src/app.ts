@@ -16,6 +16,8 @@ import type { DeleteUserUseCase } from './application/use-cases/user/DeleteUserU
 import type { GetUserByIdUseCase } from './application/use-cases/user/GetUserByIdUseCase';
 import type { GetUsersUseCase } from './application/use-cases/user/GetUsersUseCase';
 import type { UpdateUserUseCase } from './application/use-cases/user/UpdateUserUseCase';
+import type { GetUserSettingsUseCase } from './application/use-cases/settings/GetUserSettingsUseCase';
+import type { UpsertUserSettingsUseCase } from './application/use-cases/settings/UpsertUserSettingsUseCase';
 import type { GetExpenditureAnalysisUseCase } from './application/use-cases/xday/GetExpenditureAnalysisUseCase';
 import type { GetXDayUseCase } from './application/use-cases/xday/GetXDayUseCase';
 import { buildServices } from './container';
@@ -23,9 +25,11 @@ import type { IBudgetRepository } from './domain/repositories/IBudgetRepository'
 import type { IExpenseRepository } from './domain/repositories/IExpenseRepository';
 import type { IPasswordResetTokenRepository } from './domain/repositories/IPasswordResetTokenRepository';
 import type { IRefreshTokenRepository } from './domain/repositories/IRefreshTokenRepository';
+import type { IUserSettingsRepository } from './domain/repositories/IUserSettingsRepository';
 import type { ISecurityAnswerRepository } from './domain/repositories/ISecurityAnswerRepository';
 import type { IUserRepository } from './domain/repositories/IUserRepository';
 import { createAuthRoutes } from './presentation/routes/auth';
+import { createSettingsRoutes } from './presentation/routes/settings';
 import { createBudgetRoutes } from './presentation/routes/budget';
 import { createExpenseRoutes } from './presentation/routes/expense';
 import { createExportRoutes } from './presentation/routes/export';
@@ -41,6 +45,7 @@ export type AppDeps = {
     refreshTokenRepository: IRefreshTokenRepository;
     securityAnswerRepository: ISecurityAnswerRepository;
     passwordResetTokenRepository: IPasswordResetTokenRepository;
+    userSettingsRepository: IUserSettingsRepository;
 };
 
 /**
@@ -72,6 +77,9 @@ export type RouteServices = {
     createUserUseCase: CreateUserUseCase;
     updateUserUseCase: UpdateUserUseCase;
     deleteUserUseCase: DeleteUserUseCase;
+    // Settings
+    getUserSettingsUseCase: GetUserSettingsUseCase;
+    upsertUserSettingsUseCase: UpsertUserSettingsUseCase;
     // XDay
     getXDayUseCase: GetXDayUseCase;
     getAnalysisUseCase: GetExpenditureAnalysisUseCase;
@@ -114,6 +122,7 @@ export function createApp(deps: AppDeps) {
     app.route('/api', createUserRoutes(services));
     app.route('/api', createRecoveryRoutes(services));
     app.route('/api', createExportRoutes(services));
+    app.route('/api', createSettingsRoutes(services));
     app.route('/api', createXDayRoutes(services));
 
     app.onError((err, c) => {

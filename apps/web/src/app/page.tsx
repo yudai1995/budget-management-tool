@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getExpenses } from "@/lib/api/expense";
+import { getSettings } from "@/lib/api/settings";
 import { ApiError } from "@/lib/api/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
@@ -53,14 +54,23 @@ function computeXDayInputs(expenses: { balanceType: number; amount: number; date
 
 async function DashboardContent({ userId }: { userId: string }) {
   let expenses;
+  let settings = { totalAssets: null as number | null, monthlyIncome: 0 };
+
   try {
-    const data = await getExpenses();
-    expenses = data.expense ?? [];
+    const [expenseData, settingsData] = await Promise.all([getExpenses(), getSettings()]);
+    expenses = expenseData.expense ?? [];
+    settings = {
+      totalAssets: settingsData.totalAssets === 0 && settingsData.monthlyIncome === 0
+        ? null  // 未設定扱い（初回セットアップ）
+        : settingsData.totalAssets,
+      monthlyIncome: settingsData.monthlyIncome,
+    };
   } catch (err) {
     if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
       redirect("/login");
     }
-    throw err;
+    // settings の取得に失敗しても expenses は続行できる場合はそのまま
+    if (expenses === undefined) throw err;
   }
 
   const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays } =
@@ -90,6 +100,8 @@ async function DashboardContent({ userId }: { userId: string }) {
               zeroStreakDays={zeroStreakDays}
               avgDailyExpense={avgDailyExpense}
               recordedDays={recordedDays}
+              initialAssets={settings.totalAssets}
+              initialIncome={settings.monthlyIncome}
             />
           </div>
         </div>

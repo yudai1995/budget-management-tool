@@ -1,9 +1,15 @@
 "use client";
 
 import { X } from "lucide-react";
+import type { SettingsActionState } from "@/lib/actions/settings";
 
 interface Props {
+    /** 保存完了後にローカル state を更新するコールバック */
     onSave: (totalAssets: number, monthlyIncome: number) => void;
+    /** useActionState から渡す formAction */
+    formAction: (payload: FormData) => void;
+    /** useActionState から渡す state */
+    actionState: SettingsActionState;
     /** 前回保存済みの値（再設定時に初期セット） */
     defaultAssets?: number;
     defaultIncome?: number;
@@ -12,13 +18,23 @@ interface Props {
 }
 
 /** 資産・月次収入を入力するセットアップモーダル */
-export function SetupModal({ onSave, defaultAssets, defaultIncome, onClose }: Props) {
+export function SetupModal({
+    onSave,
+    formAction,
+    actionState,
+    defaultAssets,
+    defaultIncome,
+    onClose,
+}: Props) {
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         const assets = Number(fd.get("totalAssets"));
         const income = Number(fd.get("monthlyIncome") ?? 0);
         if (assets < 0 || Number.isNaN(assets)) return;
+        // Server Action を呼び出す
+        formAction(fd);
+        // ローカル state をすぐに更新（楽観的 UI）
         onSave(assets, income);
     }
 
@@ -70,6 +86,12 @@ export function SetupModal({ onSave, defaultAssets, defaultIncome, onClose }: Pr
                             あと何年・何ヶ月 自由に暮らせるか
                         </span>
                         がわかります。
+                    </p>
+                )}
+
+                {actionState.error && (
+                    <p className="mb-4 rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
+                        {actionState.error}
                     </p>
                 )}
 
