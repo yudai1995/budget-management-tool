@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 42,
+      "total_points": 45,
       "pbis": [
         {
           "issue": 135,
@@ -173,6 +173,14 @@
           "points": 5,
           "cycle_time_hours": 0.1,
           "pr": 169
+        },
+        {
+          "issue": 99,
+          "title": "[Tech Debt] ユースケースのエラーハンドリングを Result 型に移行する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.2,
+          "pr": 170
         }
       ]
     }
