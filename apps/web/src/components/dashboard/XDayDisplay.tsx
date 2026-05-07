@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useActionState } from "react";
+import { Flame } from "lucide-react";
 import {
     calcRealtimeAssets,
     calcExpenseImpact,
@@ -22,6 +23,8 @@ interface Props {
     avgDailyExpense: number;
     /** 記録済み日数n（Server側で算出） */
     recordedDays: number;
+    /** 連続記録日数（今日から遡り記録がある日が続く日数） */
+    recordingStreak: number;
     /** サーバーから取得した総資産（null = 未設定） */
     initialAssets: number | null;
     /** サーバーから取得した月次収入 */
@@ -96,6 +99,7 @@ export function XDayDisplay({
     zeroStreakDays,
     avgDailyExpense,
     recordedDays,
+    recordingStreak,
     initialAssets,
     initialIncome,
 }: Props) {
@@ -258,6 +262,16 @@ export function XDayDisplay({
                 </div>
                 <TrustBar value={trustWeight} />
             </div>
+
+            {/* 連続記録バッジ */}
+            {recordingStreak >= 1 && (
+                <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#fff6ee] px-3 py-2">
+                    <Flame size={16} className="text-[#f18840]" />
+                    <span className="text-xs font-bold text-[#f18840]">
+                        {recordingStreak}日連続記録中
+                    </span>
+                </div>
+            )}
 
             {/* 積み上げメッセージ */}
             {zeroStreakDays >= 2 && (
