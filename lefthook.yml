@@ -42,7 +42,26 @@ pre-commit:
         fi
       fail_text: "デザイントークンが最新ではありません。`pnpm run sync:tokens` を実行し、生成結果をステージングしてください。"
 
-    # 6. ユニット・コンポーネントテスト（DB 不要・高速）
+    # 6. Prisma マイグレーション整合性チェック:
+    #    schema.prisma が変更されているのに migration SQL が存在しない場合はコミットをブロックする
+    #    （prisma db push はテスト用途のみ。本番には migrate deploy が必要）
+    migration-sync:
+      run: |
+        SCHEMA_STAGED=$(git diff --cached --name-only -- "apps/api/prisma/schema.prisma" | wc -l)
+        MIGRATION_STAGED=$(git diff --cached --name-only --diff-filter=A -- "apps/api/prisma/migrations" | grep "\.sql$" | wc -l)
+
+        if [ "${SCHEMA_STAGED}" -gt 0 ] && [ "${MIGRATION_STAGED}" -eq 0 ]; then
+          echo "エラー: schema.prisma が変更されていますが、マイグレーションファイルが追加されていません。"
+          echo ""
+          echo "以下を実行してマイグレーションを作成してコミットに含めてください:"
+          echo "  cd apps/api && npx prisma migrate dev --name <変更内容の説明>"
+          echo ""
+          echo "注意: prisma db push はテスト用途のみ。本番 DB は migrate deploy を使用します。"
+          exit 1
+        fi
+      fail_text: "schema.prisma の変更にはマイグレーションファイルが必要です。`cd apps/api && npx prisma migrate dev --name <説明>` を実行してください。"
+
+    # 7. ユニット・コンポーネントテスト（DB 不要・高速）
     #    common / api / web の全ユニットテストを実行する
     #    新規コード追加時は対応するテストが存在しなければコミットをブロックする
     unit-test:
