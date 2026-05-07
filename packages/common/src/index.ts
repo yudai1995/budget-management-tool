@@ -1,5 +1,6 @@
 export * from './utils/xday'
 export * from './utils/statistics'
+export * from './utils/streak'
 export * from './types/expense'
 export * from './types/user'
 export * from './types/budget'

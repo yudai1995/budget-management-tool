@@ -7,6 +7,7 @@ import {
     calcExpenseImpact,
     calculateXDay,
     DEFAULT_STATS_DAILY_EXPENSE,
+    getZeroStreakMilestone,
 } from "@budget/common";
 import { SetupModal } from "./SetupModal";
 import { upsertSettingsAction } from "@/lib/actions/settings";
@@ -273,12 +274,27 @@ export function XDayDisplay({
                 </div>
             )}
 
-            {/* 積み上げメッセージ */}
-            {zeroStreakDays >= 2 && (
-                <p className="mb-3 rounded-xl bg-[#ecfaf8] p-3 text-xs font-bold text-[#35b5a2]">
-                    {zeroStreakDays}日連続で支出ゼロ — 着実に余裕が積み上がっています
-                </p>
-            )}
+            {/* 積み上げメッセージ + マイルストーンバッジ */}
+            {zeroStreakDays >= 2 && (() => {
+                const ms = getZeroStreakMilestone(zeroStreakDays);
+                return (
+                    <div className="mb-3 rounded-xl bg-[#ecfaf8] p-3">
+                        <p className="text-xs font-bold text-[#35b5a2]">
+                            {zeroStreakDays}日連続で支出ゼロ — 着実に余裕が積み上がっています
+                        </p>
+                        {ms.achieved !== null && (
+                            <p className="mt-1 text-xs font-extrabold text-[#35b5a2]">
+                                {ms.achieved}日達成
+                            </p>
+                        )}
+                        {ms.next !== null && ms.daysToNext !== null && (
+                            <p className="mt-0.5 text-xs font-medium text-[#35b5a2]/60">
+                                次の目標: {ms.next}日まであと{ms.daysToNext}日
+                            </p>
+                        )}
+                    </div>
+                );
+            })()}
             {todayExpense === 0 && zeroStreakDays < 2 && (
                 <p className="mb-3 rounded-xl bg-[#ecfaf8] p-3 text-xs font-bold text-[#35b5a2]">
                     今日は支出ゼロ — 余裕が1日分増えました
