@@ -112,6 +112,23 @@ describe('ExpenseCreateForm', () => {
         expect(select.value).toBe('0')
     })
 
+    it('defaultBalanceType=1 のとき: 収入タブが初期選択される', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null, success: false },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<ExpenseCreateForm userId="user-1" defaultBalanceType={1} />)
+
+        // 収入タブがアクティブ（style で判定）
+        const incomeButton = screen.getByRole('button', { name: '収入' })
+        expect(incomeButton).toHaveStyle({ color: '#fff' })
+        // 支出タブは非アクティブ
+        const expenseButton = screen.getByRole('button', { name: '支出' })
+        expect(expenseButton).not.toHaveStyle({ color: '#fff' })
+    })
+
     it('支出→収入に切り替えたとき: カテゴリが「未分類」（id=0）にリセットされる', () => {
         vi.mocked(React.useActionState).mockReturnValue([
             { error: null, success: false },
