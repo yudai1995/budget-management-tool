@@ -52,7 +52,7 @@
     },
     {
       "date": "2026-05-08",
-      "total_points": 25,
+      "total_points": 28,
       "pbis": [
         {
           "issue": 135,
@@ -133,6 +133,14 @@
           "points": 2,
           "cycle_time_hours": null,
           "pr": 164
+        },
+        {
+          "issue": 101,
+          "title": "[Tech Debt] フロントエンドで自動生成 API クライアントを一貫して使用する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 165
         }
       ]
     }
