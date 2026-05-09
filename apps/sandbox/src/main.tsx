@@ -7,6 +7,7 @@ import { BottomNavPrototype } from './pages/BottomNavPrototype'
 import { QuickEntryPrototype } from './pages/QuickEntryPrototype'
 import { NavLayoutPrototype } from './pages/NavLayoutPrototype'
 import { AccountSectionPrototype } from './pages/AccountSectionPrototype'
+import { OnboardingPrototype } from './pages/OnboardingPrototype'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/quick-entry" element={<QuickEntryPrototype />} />
         <Route path="/nav-layout" element={<NavLayoutPrototype />} />
         <Route path="/account-section" element={<AccountSectionPrototype />} />
+        <Route path="/onboarding" element={<OnboardingPrototype />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
