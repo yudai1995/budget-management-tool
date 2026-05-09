@@ -252,7 +252,7 @@
     {
       "sprint_number": 5,
       "date": "2026-05-09",
-      "total_points": 2,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 179,
@@ -261,6 +261,14 @@
           "points": 2,
           "cycle_time_hours": null,
           "pr": 180
+        },
+        {
+          "issue": 132,
+          "title": "[PBI-B] フリップ形式オンボーディング画面の実装",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 3.5,
+          "pr": 181
         }
       ]
     }
