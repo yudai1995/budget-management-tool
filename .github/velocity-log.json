@@ -248,6 +248,21 @@
           "pr": 178
         }
       ]
+    },
+    {
+      "sprint_number": 5,
+      "date": "2026-05-09",
+      "total_points": 2,
+      "pbis": [
+        {
+          "issue": 179,
+          "title": "design: 設定ページにユーザー情報・ログアウト導線を追加する（モバイル向け）",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 180
+        }
+      ]
     }
   ]
 }
