@@ -9,10 +9,12 @@
       "XL": 8
     },
     "initial_velocity_estimate": 6,
-    "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。"
+    "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
+    "next_sprint_number": 5
   },
   "sprints": [
     {
+      "sprint_number": 1,
       "date": "2026-05-06",
       "total_points": 9,
       "pbis": [
@@ -51,6 +53,7 @@
       ]
     },
     {
+      "sprint_number": 2,
       "date": "2026-05-08",
       "total_points": 45,
       "pbis": [
@@ -185,6 +188,7 @@
       ]
     },
     {
+      "sprint_number": 3,
       "date": "2026-05-09",
       "total_points": 8,
       "pbis": [
@@ -213,6 +217,12 @@
           "pr": 174
         }
       ]
+    },
+    {
+      "sprint_number": 4,
+      "date": "2026-05-09",
+      "total_points": 0,
+      "pbis": []
     }
   ]
 }
