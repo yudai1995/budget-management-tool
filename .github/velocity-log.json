@@ -221,7 +221,7 @@
     {
       "sprint_number": 4,
       "date": "2026-05-09",
-      "total_points": 5,
+      "total_points": 6,
       "pbis": [
         {
           "issue": 175,
@@ -238,6 +238,14 @@
           "points": 2,
           "cycle_time_hours": 0,
           "pr": 177
+        },
+        {
+          "issue": 130,
+          "title": "ファビコン・プロジェクトロゴを設定する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0,
+          "pr": 178
         }
       ]
     }
