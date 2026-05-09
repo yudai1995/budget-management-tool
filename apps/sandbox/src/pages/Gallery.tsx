@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -49,6 +49,14 @@ const prototypes: PrototypeCard[] = [
     description: '3ステップで給料日・固定費・残高を入力し1日予算を即時提示するフリップUI。',
     icon: PlayCircle,
     issue: '#132',
+    status: 'ready',
+  },
+  {
+    path: '/calendar-page',
+    title: 'カレンダーページ刷新',
+    description: 'ドット表示・日付タップで明細表示・クイック入力ボトムシート。モバイルファーストレイアウト。',
+    icon: CalendarDays,
+    issue: '#183 #184',
     status: 'ready',
   },
 ]
