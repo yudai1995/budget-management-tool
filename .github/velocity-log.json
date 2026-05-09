@@ -186,7 +186,7 @@
     },
     {
       "date": "2026-05-09",
-      "total_points": 5,
+      "total_points": 8,
       "pbis": [
         {
           "issue": 153,
@@ -203,6 +203,14 @@
           "points": 3,
           "cycle_time_hours": 0.1,
           "pr": 173
+        },
+        {
+          "issue": 134,
+          "title": "[PBI-D] AI解析入力エンドポイントの雛形作成（レシート・一言入力対応）",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 174
         }
       ]
     }
