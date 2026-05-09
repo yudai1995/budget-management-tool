@@ -62,6 +62,7 @@ export async function createExpenseAction(
 export type UpdateExpenseFieldErrors = {
   amount?: string[];
   balanceType?: string[];
+  categoryId?: string[];
   date?: string[];
 };
 

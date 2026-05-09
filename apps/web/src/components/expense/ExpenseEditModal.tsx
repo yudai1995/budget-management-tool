@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { updateExpenseAction } from "@/lib/actions/expense";
 import type { UpdateExpenseActionState } from "@/lib/actions/expense";
 import type { ExpenseResponse } from "@/lib/api/types";
+import { getCategoriesByType } from "@/lib/constants/categories";
 
 type Props = {
   expense: ExpenseResponse;
@@ -16,6 +17,9 @@ const initialState: UpdateExpenseActionState = { error: null, success: false };
 export function ExpenseEditModal({ expense, onClose }: Props) {
   const boundAction = updateExpenseAction.bind(null, expense.id);
   const [state, formAction, isPending] = useActionState(boundAction, initialState);
+  const [balanceType, setBalanceType] = useState<0 | 1>(expense.balanceType);
+  const [categoryId, setCategoryId] = useState<number>(expense.categoryId);
+  const categories = getCategoriesByType(balanceType);
 
   // 更新成功時にモーダルを閉じる
   useEffect(() => {
@@ -50,7 +54,13 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
             <label className="text-xs font-bold text-[#1c1410]/60">種別</label>
             <select
               name="balanceType"
-              defaultValue={String(expense.balanceType)}
+              value={balanceType}
+              onChange={(e) => {
+                const next = Number(e.target.value) as 0 | 1;
+                setBalanceType(next);
+                // 種別変更時はカテゴリを「未分類」にリセット
+                setCategoryId(0);
+              }}
               className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
             >
               <option value="0">支出</option>
@@ -59,6 +69,21 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
             {state.fieldErrors?.balanceType && (
               <p className="text-xs text-red-500">{state.fieldErrors.balanceType[0]}</p>
             )}
+          </div>
+
+          {/* カテゴリ */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-bold text-[#1c1410]/60">カテゴリ</label>
+            <select
+              name="categoryId"
+              value={categoryId}
+              onChange={(e) => setCategoryId(Number(e.target.value))}
+              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
+            >
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
           </div>
 
           {/* 金額 */}
