@@ -5,6 +5,8 @@ import { createOpenAPIApp } from '../../lib/openapi-app';
 import {
     CreateExpenseBodySchema,
     ErrorResponseSchema,
+    ExpenseParseRequestSchema,
+    ExpenseParseResponseSchema,
     ExpenseResponseSchema,
     IdParamSchema,
     UpdateExpenseBodySchema,
@@ -120,6 +122,27 @@ const updateExpenseRoute = createRoute({
     },
 });
 
+const parseExpenseRoute = createRoute({
+    method: 'post',
+    path: '/expense/parse',
+    tags: ['Expense'],
+    summary: 'テキストから支出情報をパース',
+    security: [{ bearerAuth: [] }],
+    request: {
+        body: { content: { 'application/json': { schema: ExpenseParseRequestSchema } }, required: true },
+    },
+    responses: {
+        200: {
+            content: { 'application/json': { schema: ExpenseParseResponseSchema } },
+            description: 'パース結果',
+        },
+        401: {
+            content: { 'application/json': { schema: ErrorResponseSchema } },
+            description: '未認証',
+        },
+    },
+});
+
 const deleteExpenseRoute = createRoute({
     method: 'delete',
     path: '/expense/{id}',
@@ -146,6 +169,7 @@ export function createExpenseRoutes({
     expenseRepository,
     createExpenseUseCase,
     updateExpenseUseCase,
+    parseExpenseUseCase,
 }: RouteServices) {
     const auth = createAuthMiddleware(tokenService);
     const app = createOpenAPIApp();
@@ -191,6 +215,12 @@ export function createExpenseRoutes({
             );
         }
         return c.json({ expense: toExpenseDto(result.value) }, 200);
+    });
+
+    app.openapi(parseExpenseRoute, (c) => {
+        const { text } = c.req.valid('json');
+        const result = parseExpenseUseCase.execute({ text });
+        return c.json(result, 200);
     });
 
     app.openapi(deleteExpenseRoute, async (c) => {

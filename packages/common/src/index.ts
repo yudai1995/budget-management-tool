@@ -1,4 +1,5 @@
 export * from './utils/xday'
+export * from './utils/parse'
 export * from './utils/statistics'
 export * from './utils/streak'
 export * from './utils/comparison'
