@@ -252,6 +252,44 @@ components:
           description: 更新データ
       required:
         - updateData
+    ExpenseParseResponse:
+      type: object
+      properties:
+        amount:
+          type: integer
+          nullable: true
+          description: 抽出された金額（円）。見つからない場合は null
+          example: 900
+        categoryId:
+          type: integer
+          description: "推定カテゴリ ID（0: 未分類）"
+          example: 1
+        content:
+          type: string
+          description: 入力テキスト（備考欄の初期値として利用）
+          example: ランチ代¥900
+        date:
+          type: string
+          description: パース実行日（YYYY-MM-DD）
+          example: 2026-05-09
+      required:
+        - amount
+        - categoryId
+        - content
+        - date
+    ExpenseParseRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          description: "パース対象テキスト（例: 「ランチ代¥900」「スーパーで1200円」）"
+          example: ランチ代¥900
+        imageBase64:
+          type: string
+          description: レシート画像（Base64）。現時点では未対応（将来的に AI モデルで処理）
+      required:
+        - text
     BudgetResponse:
       type: object
       properties:
@@ -1052,6 +1090,32 @@ paths:
                       - success
                 required:
                   - result
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/expense/parse:
+    post:
+      tags:
+        - Expense
+      summary: テキストから支出情報をパース
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseParseRequest"
+      responses:
+        "200":
+          description: パース結果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpenseParseResponse"
         "401":
           description: 未認証
           content:

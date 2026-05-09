@@ -8,6 +8,7 @@ import type { RegisterUserUseCase } from './application/use-cases/auth/RegisterU
 import type { ResetPasswordUseCase } from './application/use-cases/auth/ResetPasswordUseCase';
 import type { VerifyRecoveryAnswerUseCase } from './application/use-cases/auth/VerifyRecoveryAnswerUseCase';
 import type { CreateExpenseUseCase } from './application/use-cases/CreateExpenseUseCase';
+import type { ParseExpenseUseCase } from './application/use-cases/parse/ParseExpenseUseCase';
 import type { ExportUserDataUseCase } from './application/use-cases/export/ExportUserDataUseCase';
 import type { UpdateExpenseUseCase } from './application/use-cases/UpdateExpenseUseCase';
 import type { CheckUserNameUseCase } from './application/use-cases/user/CheckUserNameUseCase';
@@ -59,6 +60,7 @@ export type RouteServices = {
     // Expense
     createExpenseUseCase: CreateExpenseUseCase;
     updateExpenseUseCase: UpdateExpenseUseCase;
+    parseExpenseUseCase: ParseExpenseUseCase;
     // Export
     exportUseCase: ExportUserDataUseCase;
     // Recovery / Registration

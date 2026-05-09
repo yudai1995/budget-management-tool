@@ -7,6 +7,7 @@ import { ResetPasswordUseCase } from './application/use-cases/auth/ResetPassword
 import { VerifyRecoveryAnswerUseCase } from './application/use-cases/auth/VerifyRecoveryAnswerUseCase';
 import { CreateExpenseUseCase } from './application/use-cases/CreateExpenseUseCase';
 import { ExportUserDataUseCase } from './application/use-cases/export/ExportUserDataUseCase';
+import { ParseExpenseUseCase, RuleBasedExpenseParser } from './application/use-cases/parse/ParseExpenseUseCase';
 import { UpdateExpenseUseCase } from './application/use-cases/UpdateExpenseUseCase';
 import { CheckUserNameUseCase } from './application/use-cases/user/CheckUserNameUseCase';
 import { CreateUserUseCase } from './application/use-cases/user/CreateUserUseCase';
@@ -56,6 +57,7 @@ export function buildServices(deps: AppDeps, tokenService: TokenService): RouteS
         // Expense
         createExpenseUseCase: new CreateExpenseUseCase(deps.expenseRepository, deps.userRepository),
         updateExpenseUseCase: new UpdateExpenseUseCase(deps.expenseRepository),
+        parseExpenseUseCase: new ParseExpenseUseCase(new RuleBasedExpenseParser()),
         // Export
         exportUseCase: new ExportUserDataUseCase(deps.expenseRepository),
         // Recovery / Registration

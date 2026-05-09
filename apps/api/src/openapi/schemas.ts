@@ -141,6 +141,39 @@ export const IdParamSchema = z.object({
     id: z.string().openapi({ description: 'リソース ID (ULID)', example: '01ARZ3NDEKTSV4RRFFQ69G5FAV' }),
 });
 
+export const ExpenseParseRequestSchema = z
+    .object({
+        text: z.string().min(1, 'テキストを入力してください').openapi({
+            description: 'パース対象テキスト（例: 「ランチ代¥900」「スーパーで1200円」）',
+            example: 'ランチ代¥900',
+        }),
+        imageBase64: z.string().optional().openapi({
+            description: 'レシート画像（Base64）。現時点では未対応（将来的に AI モデルで処理）',
+        }),
+    })
+    .openapi('ExpenseParseRequest');
+
+export const ExpenseParseResponseSchema = z
+    .object({
+        amount: z.number().int().nullable().openapi({
+            description: '抽出された金額（円）。見つからない場合は null',
+            example: 900,
+        }),
+        categoryId: z.number().int().openapi({
+            description: '推定カテゴリ ID（0: 未分類）',
+            example: 1,
+        }),
+        content: z.string().openapi({
+            description: '入力テキスト（備考欄の初期値として利用）',
+            example: 'ランチ代¥900',
+        }),
+        date: z.string().openapi({
+            description: 'パース実行日（YYYY-MM-DD）',
+            example: '2026-05-09',
+        }),
+    })
+    .openapi('ExpenseParseResponse');
+
 // ─── 予算 (Budget) ───────────────────────────────────────────────
 
 export const BudgetResponseSchema = z
