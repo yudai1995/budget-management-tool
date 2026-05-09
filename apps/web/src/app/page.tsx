@@ -62,25 +62,33 @@ function computeXDayInputs(expenses: { balanceType: number; amount: number; date
 }
 
 async function DashboardContent({ userId }: { userId: string }) {
-  let expenses;
-  let settings = { totalAssets: null as number | null, monthlyIncome: 0 };
+  const [expensesResult, settingsResult] = await Promise.allSettled([
+    getExpenses(),
+    getSettings(),
+  ]);
 
-  try {
-    const [expenseData, settingsData] = await Promise.all([getExpenses(), getSettings()]);
-    expenses = expenseData.expense ?? [];
-    settings = {
-      totalAssets: settingsData.totalAssets === 0 && settingsData.monthlyIncome === 0
-        ? null  // 未設定扱い（初回セットアップ）
-        : settingsData.totalAssets,
-      monthlyIncome: settingsData.monthlyIncome,
-    };
-  } catch (err) {
-    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-      redirect("/login");
+  // 認証エラーはログインページにリダイレクト
+  for (const result of [expensesResult, settingsResult]) {
+    if (result.status === "rejected" && result.reason instanceof ApiError) {
+      if (result.reason.status === 401 || result.reason.status === 403) {
+        redirect("/login");
+      }
     }
-    // settings の取得に失敗しても expenses は続行できる場合はそのまま
-    if (expenses === undefined) throw err;
   }
+
+  // 支出取得失敗はクラッシュ（認証エラー以外）
+  if (expensesResult.status === "rejected") throw expensesResult.reason;
+
+  const expenses = expensesResult.value.expense ?? [];
+
+  // 設定取得失敗はデフォルト値で続行（マイグレーション未適用等でもホーム画面を表示する）
+  const settingsData = settingsResult.status === "fulfilled" ? settingsResult.value : null;
+  const settings = {
+    totalAssets: settingsData && !(settingsData.totalAssets === 0 && settingsData.monthlyIncome === 0)
+      ? settingsData.totalAssets
+      : null,
+    monthlyIncome: settingsData?.monthlyIncome ?? 0,
+  };
 
   const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays, recordingStreak } =
     computeXDayInputs(expenses);
