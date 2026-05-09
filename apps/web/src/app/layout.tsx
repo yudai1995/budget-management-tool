@@ -22,6 +22,13 @@ export const metadata: Metadata = {
   },
   description: "日々の支出・収入を記録・管理する家計管理ツール",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: { url: "/icon.svg", type: "image/svg+xml" },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
