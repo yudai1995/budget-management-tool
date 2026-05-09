@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -33,6 +33,14 @@ const prototypes: PrototypeCard[] = [
     description: 'PC:左サイドバー / モバイル:ボトムナビ。NAV_ITEMSを1箇所で定義。',
     icon: Layout,
     issue: '#141',
+    status: 'ready',
+  },
+  {
+    path: '/account-section',
+    title: 'アカウントセクション（設定ページ）',
+    description: 'モバイル向けユーザー名表示・ログアウト導線の試作。',
+    icon: User,
+    issue: '#179',
     status: 'ready',
   },
 ]
