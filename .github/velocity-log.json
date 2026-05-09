@@ -221,7 +221,7 @@
     {
       "sprint_number": 4,
       "date": "2026-05-09",
-      "total_points": 3,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 175,
@@ -230,6 +230,14 @@
           "points": 3,
           "cycle_time_hours": 0.1,
           "pr": 176
+        },
+        {
+          "issue": 123,
+          "title": "feature: ログイン画面をブランドアイデンティティに沿ったデザインにリデザインする",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0,
+          "pr": 177
         }
       ]
     }
