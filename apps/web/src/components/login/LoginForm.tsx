@@ -47,40 +47,27 @@ export function LoginForm({ returnTo }: Props) {
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#fffdf5] px-4">
-      {/* 背景の幾何学デコレーション（控えめなサイズ） */}
-      <div
-        className="pointer-events-none fixed left-8 top-20 h-16 w-16 rounded-full border border-[#f18840]/20 bg-[#fff6ee]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none fixed right-12 bottom-24 h-10 w-10 rotate-12 rounded-md border border-[#35b5a2]/20 bg-[#ecfaf8]"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none fixed left-1/4 bottom-16 h-7 w-7 rounded-sm border border-[#fbbf24]/30 bg-[#fef3c7]"
-        aria-hidden="true"
-      />
-
-      <section
-        className="w-full max-w-sm rounded-2xl border-2 border-[#1c1410] bg-white p-8"
-        style={{ boxShadow: "var(--shadow-pop)" }}
-      >
-        {/* ヘッダー */}
-        <div className="mb-6 flex items-center gap-3">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#fef5ee] px-4 gap-6">
+      {/* ブランドロゴ + キャッチコピー（カード外・上部） */}
+      <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex items-center gap-3">
           <span
-            className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#1c1410] bg-[#f18840] text-base font-extrabold text-white"
+            className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#1c1410] bg-[#f18840] text-lg font-extrabold text-white"
             style={{ boxShadow: "var(--shadow-pop-sm)" }}
           >
             B
           </span>
-          <div>
-            <h1 className="text-xl font-bold text-[#1c1410] leading-tight">
-              ログイン
-            </h1>
-            <p className="text-xs text-[#1c1410]/50">家計を整えよう</p>
-          </div>
+          <span className="text-2xl font-extrabold text-[#1c1410] tracking-tight">
+            Budget
+          </span>
         </div>
+        <p className="text-sm text-[#1c1410]/60 font-medium">
+          家計を、もっとシンプルに。
+        </p>
+      </div>
+
+      <section className="w-full max-w-sm rounded-2xl border border-[#e8c8b0] bg-white p-8">
+        <h1 className="mb-5 text-lg font-bold text-[#1c1410]">ログイン</h1>
 
         <Suspense>
           <NotificationBanner />

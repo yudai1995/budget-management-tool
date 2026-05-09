@@ -129,4 +129,17 @@ describe('LoginForm', () => {
 
         expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
+
+    it('ブランドキャッチコピーが表示される', () => {
+        vi.mocked(React.useActionState).mockReturnValue([
+            { error: null },
+            vi.fn(),
+            false,
+        ] as unknown as ReturnType<typeof React.useActionState>)
+
+        render(<LoginForm />)
+
+        expect(screen.getByText('家計を、もっとシンプルに。')).toBeInTheDocument()
+        expect(screen.getByText('Budget')).toBeInTheDocument()
+    })
 })
