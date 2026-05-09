@@ -87,24 +87,49 @@ jobs:
               }
             }
 
-            // マージ日を JST で取得（スプリント日付として使用）
+            // マージ日を JST で取得（スプリントエントリの date フィールドに使用）
             const mergedAt = new Date(pr.merged_at);
             const mergedDateJst = new Date(mergedAt.getTime() + 9 * 60 * 60 * 1000)
               .toISOString().slice(0, 10);
+
+            // PR 本文から Sprint: N を抽出してスプリント番号を取得
+            const sprintMatch = prBody.match(/Sprint:\s*(\d+)/i);
+            const sprintNumber = sprintMatch ? parseInt(sprintMatch[1], 10) : null;
+
+            if (sprintNumber === null) {
+              console.log('Sprint: N が PR 本文に見つかりませんでした。日付でフォールバックします。');
+            }
 
             // velocity-log.json を読み込んで更新
             const logPath = '.github/velocity-log.json';
             const log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
 
-            // 同じ日付のスプリントエントリを探す（なければ新規作成）
-            let sprint = log.sprints.find(s => s.date === mergedDateJst);
-            if (!sprint) {
-              sprint = {
-                date: mergedDateJst,
-                total_points: 0,
-                pbis: [],
-              };
-              log.sprints.push(sprint);
+            // sprint_number でスプリントエントリを探す（なければ新規作成）
+            let sprint;
+            if (sprintNumber !== null) {
+              sprint = log.sprints.find(s => s.sprint_number === sprintNumber);
+              if (!sprint) {
+                sprint = {
+                  sprint_number: sprintNumber,
+                  date: mergedDateJst,
+                  total_points: 0,
+                  pbis: [],
+                };
+                log.sprints.push(sprint);
+                // sprint_number 昇順に並べ替え
+                log.sprints.sort((a, b) => (a.sprint_number ?? 0) - (b.sprint_number ?? 0));
+              }
+            } else {
+              // フォールバック: 日付で探す（Sprint: N なし PR 用）
+              sprint = log.sprints.find(s => s.date === mergedDateJst && s.sprint_number == null);
+              if (!sprint) {
+                sprint = {
+                  date: mergedDateJst,
+                  total_points: 0,
+                  pbis: [],
+                };
+                log.sprints.push(sprint);
+              }
             }
 
             // PBI を追記（重複チェック）
@@ -124,8 +149,10 @@ jobs:
             // ファイルに書き戻し
             fs.writeFileSync(logPath, JSON.stringify(log, null, 2) + '\n');
 
-            console.log(`Issue #${issueNumber}: ${points}pt を ${mergedDateJst} のスプリントに記録しました`);
+            const sprintLabel = sprintNumber !== null ? `スプリント #${sprintNumber}` : mergedDateJst;
+            console.log(`Issue #${issueNumber}: ${points}pt を ${sprintLabel} に記録しました`);
             core.setOutput('updated', 'true');
+            core.setOutput('sprint_number', String(sprintNumber ?? ''));
             core.setOutput('sprint_date', mergedDateJst);
             core.setOutput('issue_number', String(issueNumber));
             core.setOutput('points', String(points));
@@ -136,5 +163,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .github/velocity-log.json
-          git diff --cached --quiet || git commit -m "chore(velocity): Issue #${{ steps.update.outputs.issue_number }} の完了を記録する（${{ steps.update.outputs.points }}pt / ${{ steps.update.outputs.sprint_date }}）"
+          SPRINT_LABEL="${{ steps.update.outputs.sprint_number }}"
+          if [ -n "${SPRINT_LABEL}" ]; then
+            SPRINT_LABEL="Sprint #${SPRINT_LABEL}"
+          else
+            SPRINT_LABEL="${{ steps.update.outputs.sprint_date }}"
+          fi
+          git diff --cached --quiet || git commit -m "chore(velocity): Issue #${{ steps.update.outputs.issue_number }} の完了を記録する（${{ steps.update.outputs.points }}pt / ${SPRINT_LABEL}）"
           git push

@@ -95,6 +95,7 @@
 1. **リファインメント**: `スプリントリファインメントをして` のロジックで `backlog` を整査する
    - `size` / `priority` / 完了条件の欠落がある Issue は自動でラベルを補完・コメントで通知する
 2. **プランニング**: `スプリントプランニングをして` のロジックでスコープを確定する
+   - `meta.next_sprint_number` をインクリメントして現スプリント番号を確定し main にコミットする
    - ベロシティから今日のキャパシティを計算し、収まる PBI を自動選定する
    - 選定した PBI に `sprint-backlog` + `in-progress` ラベルを付与する
 3. **実装ループ**: `スプリントを進めて` のメインループを実行する（全 PBI 完了まで繰り返す）
@@ -162,19 +163,31 @@
 
 #### `スプリントプランニングをして`
 
-1. `.github/velocity-log.json` を読み込み、直近3スプリントの平均ベロシティを計算する
+1. **スプリント番号を採番する**（最初に必ず実行）:
+   - `.github/velocity-log.json` を読み込み、`meta.next_sprint_number` を取得する
+   - 現在のスプリント番号 = `next_sprint_number` の現在値
+   - `meta.next_sprint_number` を +1 してファイルに書き戻す（スプリント開始宣言）
+   - 変更をコミット・プッシュして main に反映する:
+     ```bash
+     git add .github/velocity-log.json
+     git commit -m "chore(sprint): スプリント #N を開始する"
+     git push origin main
+     ```
+   - 以降このスプリントで作成する **すべての PR 本文に `Sprint: N`** を含める
+2. `.github/velocity-log.json` から直近3スプリントの平均ベロシティを計算する
    - 実績がない場合は初期値 6pt を使用する
-2. 全オープン Issue を取得して候補を選定する（ラベルの有無は問わない）
+3. 全オープン Issue を取得して候補を選定する（ラベルの有無は問わない）
    ```
    gh issue list --state open --json number,title,body,labels,assignees --limit 50
    ```
-3. 以下の基準で PBI を選定し、合計ポイントが平均ベロシティ以内に収まる組み合わせを提案する：
+4. 以下の基準で PBI を選定し、合計ポイントが平均ベロシティ以内に収まる組み合わせを提案する：
    - `priority: P0/P1` を最優先
    - `size: XS/S/M` を優先（1日で完了しやすい）
    - 依存関係（ブロッカー）を確認
    - 完了不可と判断した PBI は分割案を提示する
-4. 以下の形式でユーザーに提示する：
+5. 以下の形式でユーザーに提示する：
    ```
+   スプリント #N（next_sprint_number から採番）
    今日のキャパシティ: Xpt（直近3スプリント平均 or 初期値）
    前回との比較: +X / -X pt（実績がある場合）
 
@@ -182,7 +195,7 @@
    - #番号 タイトル（size: M / 3pt）
    - #番号 タイトル（size: S / 2pt）
    ```
-5. 承認後、対象 PBI に `sprint-backlog` ラベルを付与し、続けて実装する場合は `in-progress` も付与する
+6. 承認後、対象 PBI に `sprint-backlog` ラベルを付与し、続けて実装する場合は `in-progress` も付与する
 
 #### `スプリントを進めて`（メインループ）
 
@@ -218,6 +231,7 @@
 9. **PR 作成 & ラベル更新**: `gh pr create` で PR を作成する。以下を必ず守ること：
    - `.github/pull-request-instructions.md` の生成ルールに従う（チェックリスト評価・記入必須）
    - 本文に `Closes #Issue番号` を含める（サイクルタイム・ベロシティの自動計測に必要）
+   - 本文に `Sprint: N`（プランニング時に採番したスプリント番号）を含める（ベロシティログのグルーピングキー）
    - PR 作成後、`in-progress` を外して `in-review` を付与する：
      ```bash
      gh issue edit {Issue番号} --remove-label "in-progress" --add-label "in-review"
