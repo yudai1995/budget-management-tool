@@ -221,8 +221,17 @@
     {
       "sprint_number": 4,
       "date": "2026-05-09",
-      "total_points": 0,
-      "pbis": []
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 175,
+          "title": "chore: スプリント番号によるベロシティ記録の設計改善（日付キー → sprint_number キー）",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 176
+        }
+      ]
     }
   ]
 }
