@@ -183,6 +183,20 @@
           "pr": 170
         }
       ]
+    },
+    {
+      "date": "2026-05-09",
+      "total_points": 2,
+      "pbis": [
+        {
+          "issue": 153,
+          "title": "fix: カテゴリを選択しても常に食費/給料として保存される",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 37.8,
+          "pr": 172
+        }
+      ]
     }
   ]
 }
