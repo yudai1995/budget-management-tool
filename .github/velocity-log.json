@@ -186,7 +186,7 @@
     },
     {
       "date": "2026-05-09",
-      "total_points": 2,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 153,
@@ -195,6 +195,14 @@
           "points": 2,
           "cycle_time_hours": 37.8,
           "pr": 172
+        },
+        {
+          "issue": 171,
+          "title": "bug: ログイン後ホーム画面が「This page couldn't load」になるマイグレーション未適用問題の恒久対策",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 173
         }
       ]
     }
