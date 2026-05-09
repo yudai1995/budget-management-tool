@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -41,6 +41,14 @@ const prototypes: PrototypeCard[] = [
     description: 'モバイル向けユーザー名表示・ログアウト導線の試作。',
     icon: User,
     issue: '#179',
+    status: 'ready',
+  },
+  {
+    path: '/onboarding',
+    title: 'オンボーディングウィザード',
+    description: '3ステップで給料日・固定費・残高を入力し1日予算を即時提示するフリップUI。',
+    icon: PlayCircle,
+    issue: '#132',
     status: 'ready',
   },
 ]

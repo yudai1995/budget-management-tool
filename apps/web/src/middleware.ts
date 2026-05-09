@@ -16,17 +16,31 @@ async function getPublicKey(): Promise<CryptoKey | null> {
   return cachedPublicKey;
 }
 
+/** オンボーディングをスキップしてよいルート（設定・オンボーディング自身） */
+const ONBOARDING_EXEMPT_PATHS = ["/onboarding", "/settings"];
+
+/** 認証済みユーザーに対してオンボーディング未完了チェックを行い、必要ならリダイレクトを返す */
+function getOnboardingRedirect(request: NextRequest): NextResponse | null {
+  const isCompleted = request.cookies.has("onboarding_completed");
+  if (isCompleted) return null;
+  const isExempt = ONBOARDING_EXEMPT_PATHS.some((p) =>
+    request.nextUrl.pathname.startsWith(p),
+  );
+  if (isExempt) return null;
+  return NextResponse.redirect(new URL("/onboarding", request.url));
+}
+
 export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
   const publicKey = await getPublicKey();
 
-  // アクセストークンが有効なら通過
+  // アクセストークンが有効なら通過（オンボーディング未完了チェック付き）
   if (accessToken && publicKey) {
     try {
       await jwtVerify(accessToken, publicKey, { algorithms: [ALGORITHM] });
-      return NextResponse.next();
+      return getOnboardingRedirect(request) ?? NextResponse.next();
     } catch {
       // 期限切れ等 → リフレッシュを試みる
     }
@@ -50,7 +64,7 @@ export async function middleware(request: NextRequest) {
           };
 
         const secure = process.env.NODE_ENV === "production";
-        const response = NextResponse.next();
+        const response = getOnboardingRedirect(request) ?? NextResponse.next();
 
         response.cookies.set("access_token", newAccess, {
           httpOnly: true,
@@ -81,6 +95,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // /register, /forgot-password は公開ルートのため除外
-  // /settings は認証が必要なため含める
-  matcher: ["/expenses/:path*", "/report", "/report/:path*", "/settings", "/settings/:path*", "/analysis", "/analysis/:path*"],
+  // /onboarding は認証が必要なため含める
+  matcher: ["/expenses/:path*", "/report", "/report/:path*", "/settings", "/settings/:path*", "/analysis", "/analysis/:path*", "/onboarding"],
 };

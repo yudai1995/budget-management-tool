@@ -1,11 +1,42 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { putSettings } from "@/lib/api/settings";
+import type { UpsertUserSettingsBody } from "@budget/api-client";
+
+/** オンボーディング完了 Cookie の有効期間（1年） */
+const ONBOARDING_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
 export type SettingsActionState = {
   error: string | null;
   success: boolean;
 };
+
+/**
+ * オンボーディング用: ユーザー設定を保存し、完了 Cookie をセットしてホームへリダイレクト。
+ * エラー時は { error: string } を返す（redirect は try/catch 外で実行する Next.js の作法に従う）。
+ */
+export async function saveUserSettingsAction(
+    data: UpsertUserSettingsBody,
+): Promise<{ error: string } | null> {
+    try {
+        await putSettings(data);
+        const cookieStore = await cookies();
+        cookieStore.set("onboarding_completed", "1", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: ONBOARDING_COOKIE_MAX_AGE,
+            path: "/",
+        });
+    } catch (e) {
+        return {
+            error: e instanceof Error ? e.message : "設定の保存に失敗しました",
+        };
+    }
+    redirect("/");
+}
 
 /** ユーザー設定をサーバーに保存する Server Action */
 export async function upsertSettingsAction(
