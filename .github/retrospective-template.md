@@ -41,14 +41,16 @@ gh issue create \
 
 ### Step 4: アクションアイテムを個別 Issue 化
 
-Try セクションの各アイテムを個別 Issue として作成し、`retro-action` + `backlog` ラベルを付ける：
+Try セクションの各アイテムを個別 Issue として作成し、`retro-action` + `backlog` + **`size: XS/S/M/L`（必須）** ラベルを付ける：
 
 ```bash
 gh issue create \
   --title "[Retro Action] {アクションの内容}" \
-  --label "retro-action,backlog" \
+  --label "retro-action" --label "backlog" --label "size: XS" \
   --body "Sprint #N のレトロで特定した改善アクション。\n\n## 背景\n{Problemの内容}\n\n## 対応\n{Tryの内容}\n\nRef: Retro #{Retro Issue番号}"
 ```
+
+> **注意**: `size:` ラベルの設定は必須。未設定の場合 `points=null` となりベロシティ計算から除外される。`--label "retro-action,backlog"` の形式ではスペース付きラベルが正しく適用されないため、`--label` を個別に指定すること。
 
 ### Step 5: Retro Issue をプロジェクトボードに登録
 
