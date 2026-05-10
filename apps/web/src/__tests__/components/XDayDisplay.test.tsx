@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { XDayDisplay } from '../../components/dashboard/XDayDisplay'
 
 // upsertSettingsAction をモック（useActionState 内で使用）
@@ -90,8 +90,27 @@ describe('XDayDisplay', () => {
 
         it('initialAssets=null のとき設定促進フォールバックが表示される', () => {
             render(<XDayDisplay {...defaultProps} initialAssets={null} />)
-            // 設定促進フォールバックメッセージが表示される
             expect(screen.getByText('設定を完了すると「家計の寿命」が表示されます')).toBeInTheDocument()
+        })
+
+        it('initialAssets=null のとき「設定する」ボタンが表示される', () => {
+            render(<XDayDisplay {...defaultProps} initialAssets={null} />)
+            expect(screen.getByRole('button', { name: '設定する' })).toBeInTheDocument()
+        })
+
+        it('initialAssets=null のとき「設定する」ボタンを押すと SetupModal が開く', () => {
+            render(<XDayDisplay {...defaultProps} initialAssets={null} />)
+            const button = screen.getByRole('button', { name: '設定する' })
+            fireEvent.click(button)
+            // SetupModal の Dialog タイトルが表示される
+            expect(screen.getByRole('dialog')).toBeInTheDocument()
+        })
+
+        it('initialAssets=null のとき SetupModal に閉じるボタンが表示されない', () => {
+            render(<XDayDisplay {...defaultProps} initialAssets={null} />)
+            fireEvent.click(screen.getByRole('button', { name: '設定する' }))
+            // 初期設定時は onClose を渡さないため、モーダルに閉じるボタンがない
+            expect(screen.queryByRole('button', { name: /閉じる|close/i })).not.toBeInTheDocument()
         })
     })
 })
