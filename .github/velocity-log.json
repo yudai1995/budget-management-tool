@@ -446,7 +446,7 @@
     {
       "sprint_number": 10,
       "date": "2026-05-10",
-      "total_points": 3,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 213,
@@ -471,6 +471,14 @@
           "points": 1,
           "cycle_time_hours": 0,
           "pr": 225
+        },
+        {
+          "issue": 216,
+          "title": "chore: スプリント開始時に前スプリントの Retro Issue を自動クローズする仕組みを作る",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0,
+          "pr": 226
         }
       ]
     }
