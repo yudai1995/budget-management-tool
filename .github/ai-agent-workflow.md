@@ -87,6 +87,21 @@
 
 ---
 
+## shadcn/ui ラッパー規約（UI コンポーネント実装時の必須事項）
+
+> この規約は **ESLint `no-restricted-imports`** によって自動強制される。違反はコミット時に `lefthook` でブロックされる。
+> 詳細は `.github/coding-conventions.md` の「shadcn/ui ラッパーコンポーネント規約」を参照すること。
+
+### AI エージェントへの行動指針
+
+1. **プリミティブを直接使わない**: `@radix-ui/*`・`vaul`・`sonner` の `Toaster` を `src/components/ui/` 以外から直接インポートしてはならない
+2. **ラッパーが存在するか確認する**: UI コンポーネントを実装する前に `src/components/ui/` を確認し、既存ラッパーを使用する
+3. **ラッパーがなければ先に作る**: 既存ラッパーがない場合は `src/components/ui/{component}.tsx` を先に作成し、その後で使用する
+4. **ネイティブ要素を避ける**: `<button>`, `<input>`, `<select>`, `<dialog>` などのネイティブ HTML 要素は、対応する shadcn/ui ラッパーが存在する場合は使用禁止（ただし `<input type="hidden">` など shadcn/ui に相当なしの場合は可）
+5. **例外を乱用しない**: 「shadcn/ui で再現できない」と判断する場合はユーザーに理由を説明し承認を得てから使用すること
+
+---
+
 ## コード品質制約
 
 - **正確な情報源の提示**: 根拠を明示すること
