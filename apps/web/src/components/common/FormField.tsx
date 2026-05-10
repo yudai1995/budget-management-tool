@@ -4,11 +4,16 @@ import {
   type FieldPath,
   type FieldValues,
   type RegisterOptions,
-  useFormContext,
 } from 'react-hook-form'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import {
+  FormField as UiFormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from '@/components/ui/form'
 
 export interface FormFieldProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -22,25 +27,28 @@ export interface FormFieldProps<
   placeholder?: string
   /** input type */
   type?: React.InputHTMLAttributes<HTMLInputElement>['type']
-  /** RHF バリデーションオプション */
+  /** RHF バリデーションオプション（useForm の rules）*/
   rules?: RegisterOptions<TFieldValues, TName>
   /** 補助テキスト */
   description?: string
-  /** 追加クラス（ラッパー div） */
+  /** 追加クラス（FormItem ラッパー） */
   className?: string
   disabled?: boolean
 }
 
 /**
- * React Hook Form + Radix Label + shadcn/ui Input を統合したフィールドコンポーネント。
- * useFormContext() を使用するため FormProvider の内側に配置すること。
+ * shadcn/ui Form プリミティブ（FormField / FormItem / FormLabel / FormControl /
+ * FormDescription / FormMessage）を組み合わせた便利コンポーネント。
+ * Form（= FormProvider）の内側に配置すること。
  *
  * @example
  * ```tsx
  * const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) })
- * <FormProvider {...form}>
- *   <FormField name="email" label="メールアドレス" type="email" />
- * </FormProvider>
+ * <Form {...form}>
+ *   <form onSubmit={form.handleSubmit(onSubmit)}>
+ *     <FormField name="email" label="メールアドレス" type="email" />
+ *   </form>
+ * </Form>
  * ```
  */
 export function FormField<
@@ -56,36 +64,25 @@ export function FormField<
   className,
   disabled,
 }: FormFieldProps<TFieldValues, TName>) {
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext<TFieldValues>()
-
-  const error = errors[name]
-  const errorMessage = error?.message as string | undefined
-
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
-      {label && <Label htmlFor={name}>{label}</Label>}
-      <Input
-        id={name}
-        type={type}
-        placeholder={placeholder}
-        disabled={disabled}
-        aria-invalid={!!error}
-        aria-describedby={error ? `${name}-error` : description ? `${name}-desc` : undefined}
-        {...register(name, rules)}
-      />
-      {description && !error && (
-        <p id={`${name}-desc`} className="text-xs text-[#1c1410]/50">
-          {description}
-        </p>
+    <UiFormField
+      name={name}
+      rules={rules}
+      render={({ field }) => (
+        <FormItem className={className}>
+          {label && <FormLabel>{label}</FormLabel>}
+          <FormControl>
+            <Input
+              type={type}
+              placeholder={placeholder}
+              disabled={disabled}
+              {...field}
+            />
+          </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
+          <FormMessage />
+        </FormItem>
       )}
-      {errorMessage && (
-        <p id={`${name}-error`} role="alert" className="text-xs font-medium text-[#f43f5e]">
-          {errorMessage}
-        </p>
-      )}
-    </div>
+    />
   )
 }

@@ -1,9 +1,19 @@
 'use client'
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { useForm, FormProvider } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import {
+  Form,
+  FormField as UiFormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { FormField } from './FormField'
 import { Button } from './Button'
 
@@ -20,74 +30,119 @@ export default meta
 
 type Story = StoryObj<typeof FormField>
 
-// ストーリー用ラッパー: FormProvider が必要なため render で包む
-function FormWrapper({ children }: { children: React.ReactNode }) {
-  const form = useForm()
-  return <FormProvider {...form}><form className="w-80 flex flex-col gap-4">{children}</form></FormProvider>
-}
-
 /** テキスト入力（基本） */
 export const Text: Story = {
-  render: () => (
-    <FormWrapper>
-      <FormField name="username" label="ユーザー名" placeholder="yamamoto" />
-    </FormWrapper>
-  ),
+  render: () => {
+    const form = useForm<{ username: string }>()
+    return (
+      <Form {...form}>
+        <form className="w-80">
+          <FormField name="username" label="ユーザー名" placeholder="yamamoto" />
+        </form>
+      </Form>
+    )
+  },
 }
 
-/** メールアドレス */
+/** メールアドレス + description */
 export const Email: Story = {
-  render: () => (
-    <FormWrapper>
-      <FormField name="email" label="メールアドレス" type="email" placeholder="you@example.com" description="ログインに使用します" />
-    </FormWrapper>
-  ),
+  render: () => {
+    const form = useForm<{ email: string }>()
+    return (
+      <Form {...form}>
+        <form className="w-80">
+          <FormField
+            name="email"
+            label="メールアドレス"
+            type="email"
+            placeholder="you@example.com"
+            description="ログインに使用します"
+          />
+        </form>
+      </Form>
+    )
+  },
 }
 
 /** パスワード */
 export const Password: Story = {
-  render: () => (
-    <FormWrapper>
-      <FormField name="password" label="パスワード" type="password" placeholder="8文字以上" />
-    </FormWrapper>
-  ),
+  render: () => {
+    const form = useForm<{ password: string }>()
+    return (
+      <Form {...form}>
+        <form className="w-80">
+          <FormField name="password" label="パスワード" type="password" placeholder="8文字以上" />
+        </form>
+      </Form>
+    )
+  },
 }
 
 /** disabled 状態 */
 export const Disabled: Story = {
-  render: () => (
-    <FormWrapper>
-      <FormField name="email" label="メールアドレス" type="email" placeholder="変更不可" disabled />
-    </FormWrapper>
-  ),
+  render: () => {
+    const form = useForm<{ email: string }>({ defaultValues: { email: 'yamamoto@example.com' } })
+    return (
+      <Form {...form}>
+        <form className="w-80">
+          <FormField name="email" label="メールアドレス" type="email" disabled />
+        </form>
+      </Form>
+    )
+  },
 }
 
-// バリデーションエラー表示用ストーリー
-const schema = z.object({
+// バリデーションエラー表示
+const loginSchema = z.object({
   email: z.string().email('有効なメールアドレスを入力してください'),
   password: z.string().min(8, 'パスワードは8文字以上必要です'),
 })
 
-function ValidationForm() {
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: { email: '', password: '' },
-  })
-  return (
-    <FormProvider {...form}>
-      <form
-        className="w-80 flex flex-col gap-4"
-        onSubmit={form.handleSubmit(() => {})}
-      >
-        <FormField name="email" label="メールアドレス" type="email" placeholder="you@example.com" />
-        <FormField name="password" label="パスワード" type="password" placeholder="8文字以上" />
-        <Button type="submit" variant="primary">送信（エラーを確認）</Button>
-      </form>
-    </FormProvider>
-  )
+/** バリデーション付き（送信ボタンを押すとエラー表示） */
+export const WithValidation: Story = {
+  render: () => {
+    const form = useForm<z.infer<typeof loginSchema>>({
+      resolver: zodResolver(loginSchema),
+      defaultValues: { email: '', password: '' },
+    })
+    return (
+      <Form {...form}>
+        <form
+          className="w-80 flex flex-col gap-4"
+          onSubmit={form.handleSubmit(() => {})}
+        >
+          <FormField name="email" label="メールアドレス" type="email" placeholder="you@example.com" />
+          <FormField name="password" label="パスワード" type="password" placeholder="8文字以上" />
+          <Button type="submit">送信（エラーを確認）</Button>
+        </form>
+      </Form>
+    )
+  },
 }
 
-/** バリデーションエラー（送信ボタンを押すとエラー表示） */
-export const WithValidation: Story = {
-  render: () => <ValidationForm />,
+/** shadcn/ui プリミティブを直接使う例（上級者向け） */
+export const PrimitivesDirectly: Story = {
+  render: () => {
+    const form = useForm<{ bio: string }>({ defaultValues: { bio: '' } })
+    return (
+      <Form {...form}>
+        <form className="w-80">
+          <UiFormField
+            control={form.control}
+            name="bio"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>自己紹介</FormLabel>
+                <FormControl>
+                  <Input placeholder="100文字以内で入力" {...field} />
+                </FormControl>
+                <FormDescription>プロフィールに表示されます</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    )
+  },
 }
