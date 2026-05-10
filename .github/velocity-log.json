@@ -402,8 +402,8 @@
           "pbi_type": "chore",
           "size": "XS",
           "points": 1,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 0,
+          "pr": 204
         },
         {
           "issue": 202,
@@ -411,8 +411,8 @@
           "pbi_type": "chore",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 0,
+          "pr": 206
         },
         {
           "issue": 182,
@@ -420,8 +420,8 @@
           "pbi_type": "chore",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 0.1,
+          "pr": 207
         }
       ]
     }
