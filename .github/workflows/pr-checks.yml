@@ -137,10 +137,11 @@ jobs:
     permissions:
       contents: read
       security-events: write  # SARIF 結果を GitHub Security タブへアップロード
+      issues: write            # CVE 検知時に GitHub Issue を即時作成する
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Trivy filesystem scan
+      - name: Run Trivy filesystem scan (SARIF)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
@@ -160,6 +161,96 @@ jobs:
         with:
           sarif_file: trivy-fs.sarif
           category: trivy-fs
+
+      - name: Run Trivy scan (JSON) and create Issues for new findings
+        # SARIF スキャンが失敗した場合のみ実行（= HIGH/CRITICAL CVE が存在する）
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # JSON 形式で再スキャンして CVE 詳細を取得
+          docker run --rm \
+            -v "${{ github.workspace }}:/workspace" \
+            aquasec/trivy:latest fs /workspace \
+            --severity HIGH,CRITICAL \
+            --exit-code 0 \
+            --ignore-unfixed \
+            --ignorefile /workspace/.trivyignore \
+            --skip-dirs usr/local/lib/node_modules/npm \
+            --format json \
+            --output /tmp/trivy-result.json 2>/dev/null || true
+
+          # CVE ごとに Open Issue が存在しない場合のみ作成
+          python3 << 'PYEOF'
+          import json, subprocess, os, sys
+
+          try:
+              with open('/tmp/trivy-result.json') as f:
+                  data = json.load(f)
+          except Exception as e:
+              print(f"JSON 読み込みエラー: {e}")
+              sys.exit(0)
+
+          vulns = []
+          for result in data.get('Results', []):
+              for v in result.get('Vulnerabilities') or []:
+                  if v.get('Severity') in ('HIGH', 'CRITICAL'):
+                      vulns.append(v)
+
+          if not vulns:
+              print("HIGH/CRITICAL の CVE なし。Issue 作成をスキップします。")
+              sys.exit(0)
+
+          print(f"検出された HIGH/CRITICAL CVE: {len(vulns)} 件")
+
+          for v in vulns:
+              cve_id = v.get('VulnerabilityID', '')
+              pkg = v.get('PkgName', '')
+              severity = v.get('Severity', '')
+              installed = v.get('InstalledVersion', '不明')
+              fixed = v.get('FixedVersion', '未リリース')
+              description = (v.get('Description') or 'N/A')[:300]
+              url = v.get('PrimaryURL', 'N/A')
+
+              # 重複チェック
+              result = subprocess.run(
+                  ['gh', 'issue', 'list', '--state', 'open',
+                   '--search', f'"{cve_id}" in:title',
+                   '--json', 'number', '--jq', 'length'],
+                  capture_output=True, text=True
+              )
+              if result.stdout.strip() != '0':
+                  print(f"{cve_id}: Open Issue 既存のためスキップ")
+                  continue
+
+              body = f"""## 概要
+
+          PR Checks の Security Scan (Trivy) が HIGH/CRITICAL CVE を検知しました。
+
+          ## 詳細
+
+          - 影響パッケージ: {pkg} {installed} → 修正版: {fixed}
+          - 深刻度: {severity}
+          - 説明: {description}
+          - 参照: {url}
+
+          ## 対応方針
+
+          - 影響パッケージのアップデートを検討する（`pnpm.overrides` で固定バージョンを指定）
+          - 修正版が未リリースの場合は `.trivyignore` に理由コメントとともに追記する
+
+          _自動作成: pr-checks.yml security-scan — PR #{os.environ.get('GITHUB_REF', '').replace('refs/pull/', '').replace('/merge', '')}_"""
+
+              subprocess.run([
+                  'gh', 'issue', 'create',
+                  '--title', f'[{severity}] {cve_id} が {pkg} で検出されました',
+                  '--label', 'type: chore',
+                  '--label', 'priority: P1',
+                  '--label', 'backlog',
+                  '--body', body,
+              ], check=False)
+              print(f"{cve_id}: Issue 作成完了")
+          PYEOF
 
   # ─── マイグレーションチェック ──────────────────────────────────────────────
   migration-check:
