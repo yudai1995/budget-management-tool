@@ -424,6 +424,21 @@
           "pr": 207
         }
       ]
+    },
+    {
+      "sprint_number": 9,
+      "date": "2026-05-10",
+      "total_points": 5,
+      "pbis": [
+        {
+          "issue": 133,
+          "title": "[PBI-C] ダッシュボードの「家計の寿命」→「今日使えるお金」へのリデザイン",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": 0.2,
+          "pr": 210
+        }
+      ]
     }
   ]
 }
