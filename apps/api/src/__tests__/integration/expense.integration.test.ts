@@ -189,6 +189,47 @@ describeIf('Expense 統合テスト（実 DB）', () => {
             expect((res.body as Record<string, unknown>).result).toBe('error');
         });
 
+        it('正常系 200: categoryId を指定したとき、指定した値でDBに保存される', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const client = await loginClient(users[0].userId);
+            const today = new Date().toISOString().slice(0, 10);
+
+            const res = await client.post(API_PATHS.EXPENSE, {
+                newData: {
+                    amount: 2000,
+                    balanceType: 0,
+                    userId: users[0].userId,
+                    date: today,
+                    categoryId: 3,
+                    content: 'カテゴリ指定テスト',
+                },
+            });
+
+            expect(res.status).toBe(200);
+            const body = res.body as { expense: ExpenseResponse };
+            // categoryId が正しく保存されていること（#153 再発防止）
+            expect(body.expense.categoryId).toBe(3);
+        });
+
+        it('正常系 200: categoryId を省略したとき、デフォルト値(1)でDBに保存される', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const client = await loginClient(users[0].userId);
+            const today = new Date().toISOString().slice(0, 10);
+
+            const res = await client.post(API_PATHS.EXPENSE, {
+                newData: {
+                    amount: 1500,
+                    balanceType: 0,
+                    userId: users[0].userId,
+                    date: today,
+                },
+            });
+
+            expect(res.status).toBe(200);
+            const body = res.body as { expense: ExpenseResponse };
+            expect(body.expense.categoryId).toBe(1);
+        });
+
         it('異常系 401: 未認証は 401 を返す', async () => {
             const res = await testRequest(app, API_PATHS.EXPENSE, {
                 method: 'POST',
@@ -218,6 +259,49 @@ describeIf('Expense 統合テスト（実 DB）', () => {
                 (e: ExpenseResponse) => e.content === null
             );
             expect(nullContent).toBeDefined();
+        });
+    });
+
+    // ------------------------------------------------------------------
+    // PUT /api/expense/:id
+    // ------------------------------------------------------------------
+    describe('PUT /api/expense/:id', () => {
+        it('正常系 200: categoryId を指定したとき、更新後に指定した値でDBに保存される', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const client = await loginClient(users[0].userId);
+            const today = new Date().toISOString().slice(0, 10);
+
+            // まず支出を 1 件登録（categoryId = 1 のまま）
+            const postRes = await client.post(API_PATHS.EXPENSE, {
+                newData: {
+                    amount: 1000,
+                    balanceType: 0,
+                    userId: users[0].userId,
+                    date: today,
+                },
+            });
+            const expenseId = (postRes.body as { expense: ExpenseResponse }).expense.id;
+
+            // categoryId を 5 に更新
+            const putRes = await client.put(`${API_PATHS.EXPENSE}/${expenseId}`, {
+                updateData: {
+                    amount: 1200,
+                    balanceType: 0,
+                    date: today,
+                    categoryId: 5,
+                },
+            });
+
+            expect(putRes.status).toBe(200);
+            const body = putRes.body as { expense: ExpenseResponse };
+            // categoryId が正しく更新されていること（#153 再発防止）
+            expect(body.expense.categoryId).toBe(5);
+            expect(body.expense.amount).toBe(1200);
+        });
+
+        it('異常系 401: 未認証は 401 を返す', async () => {
+            const res = await testRequest(app, `${API_PATHS.EXPENSE}/some-id`, { method: 'PUT' });
+            expect(res.status).toBe(401);
         });
     });
 

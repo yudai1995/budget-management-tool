@@ -107,6 +107,10 @@ export const CreateExpenseBodySchema = z
                     description: '日付 (YYYY-MM-DD)',
                     example: '2024-03-15',
                 }),
+                categoryId: z.number().int().min(0).optional().openapi({
+                    description: 'カテゴリID（省略時はデフォルト: 1=食費）',
+                    example: 3,
+                }),
                 content: z.string().nullable().optional().openapi({ description: '備考', example: '昼食代' }),
             })
             .openapi({ description: '支出データ' }),
@@ -130,6 +134,10 @@ export const UpdateExpenseBodySchema = z
                 date: z.string().min(1, '日付を入力してください').openapi({
                     description: '日付 (YYYY-MM-DD)',
                     example: '2024-03-15',
+                }),
+                categoryId: z.number().int().min(0).optional().openapi({
+                    description: 'カテゴリID',
+                    example: 3,
                 }),
                 content: z.string().nullable().optional().openapi({ description: '備考', example: '昼食代' }),
             })
