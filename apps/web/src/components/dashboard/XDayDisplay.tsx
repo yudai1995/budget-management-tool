@@ -155,32 +155,39 @@ export function XDayDisplay({
         return () => clearInterval(id);
     }, [totalAssets, netDailyExpense, snapshotAt]);
 
-    if (totalAssets === null) {
-        // 設定未完了のフォールバック表示（DailyBudgetCard と同様の方針）
-        // SetupModal は opacity 親要素によるバックドロップ描画不具合があるため使用しない。
-        // 設定入力は設定ページ（/settings）から行う。
-        return (
-            <div
-                className="rounded-2xl border-2 border-dashed p-5"
-                style={{ borderColor: "var(--border-default)", background: "var(--color-surface-subtle)" }}
-            >
-                <p className="text-sm font-medium text-[#1c1410]/50 text-center">
-                    設定を完了すると「家計の寿命」が表示されます
-                </p>
-            </div>
-        );
-    }
-
     if (showSetup) {
         return (
             <SetupModal
                 onSave={handleSetup}
                 formAction={formAction}
                 actionState={state}
-                defaultAssets={totalAssets}
+                defaultAssets={totalAssets ?? undefined}
                 defaultIncome={monthlyIncome}
-                onClose={() => setShowSetup(false)}
+                onClose={totalAssets !== null ? () => setShowSetup(false) : undefined}
             />
+        );
+    }
+
+    if (totalAssets === null) {
+        // 設定未完了のフォールバック表示
+        return (
+            <div
+                className="rounded-2xl border-2 border-dashed p-5"
+                style={{ borderColor: "var(--border-default)", background: "var(--color-surface-subtle)" }}
+            >
+                <p className="mb-3 text-sm font-medium text-[#1c1410]/50 text-center">
+                    設定を完了すると「家計の寿命」が表示されます
+                </p>
+                <div className="text-center">
+                    <button
+                        type="button"
+                        onClick={() => setShowSetup(true)}
+                        className="rounded-xl bg-[#f18840] px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-80"
+                    >
+                        設定する
+                    </button>
+                </div>
+            </div>
         );
     }
 
