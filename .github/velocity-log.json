@@ -575,6 +575,21 @@
           "pr": 263
         }
       ]
+    },
+    {
+      "sprint_number": 14,
+      "date": "2026-05-11",
+      "total_points": 1,
+      "pbis": [
+        {
+          "issue": 264,
+          "title": "fix: FormField.stories.tsx の zodResolver 型エラーでデプロイ(Docker build)が失敗する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0.1,
+          "pr": 267
+        }
+      ]
     }
   ]
 }
