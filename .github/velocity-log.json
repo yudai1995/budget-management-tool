@@ -560,6 +560,21 @@
           "pr": 259
         }
       ]
+    },
+    {
+      "sprint_number": 13,
+      "date": "2026-05-11",
+      "total_points": 2,
+      "pbis": [
+        {
+          "issue": 262,
+          "title": "chore: shadcn/ui ラッパーコンポーネント強制ルールを ESLint・規約・フックで整備する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0.1,
+          "pr": 263
+        }
+      ]
     }
   ]
 }
