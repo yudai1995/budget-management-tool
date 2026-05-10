@@ -11,7 +11,7 @@ const meta: Meta = {
     (Story) => (
       <>
         <Story />
-        <Toaster />
+        <Toaster position="bottom-center" />
       </>
     ),
   ],

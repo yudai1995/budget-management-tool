@@ -1,12 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import * as React from 'react'
+import * as Sonner from 'sonner'
 import { LoginForm } from '../../components/login/LoginForm'
 
 // Server Actionをモック
 vi.mock('@/lib/actions/auth', () => ({
     loginAction: vi.fn(),
     guestLoginAction: vi.fn(),
+}))
+
+// SessionExpiredToast は sonner の toast を使うためモック
+vi.mock('sonner', () => ({
+    toast: Object.assign(vi.fn(), {
+        warning: vi.fn(),
+        success: vi.fn(),
+        error: vi.fn(),
+    }),
 }))
 
 // useSearchParams が jsdom で null を返す問題を回避
@@ -105,7 +115,7 @@ describe('LoginForm', () => {
         expect(hiddenInput).toHaveValue('/expenses')
     })
 
-    it('returnTo が渡されたとき、セッション切れトーストが表示される', () => {
+    it('returnTo が渡されたとき、セッション切れトーストが呼ばれる', () => {
         vi.mocked(React.useActionState).mockReturnValue([
             { error: null },
             vi.fn(),
@@ -114,11 +124,13 @@ describe('LoginForm', () => {
 
         render(<LoginForm returnTo="/expenses" />)
 
-        expect(screen.getByRole('alert')).toBeInTheDocument()
-        expect(screen.getByText(/セッションが切れました/)).toBeInTheDocument()
+        expect(vi.mocked(Sonner.toast.warning)).toHaveBeenCalledWith(
+            'セッションが切れました。再度ログインしてください。',
+            expect.objectContaining({ duration: 5000 }),
+        )
     })
 
-    it('returnTo が未指定のとき、セッション切れトーストが表示されない', () => {
+    it('returnTo が未指定のとき、セッション切れトーストが呼ばれない', () => {
         vi.mocked(React.useActionState).mockReturnValue([
             { error: null },
             vi.fn(),
@@ -127,7 +139,7 @@ describe('LoginForm', () => {
 
         render(<LoginForm />)
 
-        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+        expect(vi.mocked(Sonner.toast.warning)).not.toHaveBeenCalled()
     })
 
     it('ブランドキャッチコピーが表示される', () => {

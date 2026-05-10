@@ -1,7 +1,13 @@
 "use client";
 
-import { X } from "lucide-react";
 import type { SettingsActionState } from "@/lib/actions/settings";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface Props {
     /** 保存完了後にローカル state を更新するコールバック */
@@ -32,23 +38,18 @@ export function SetupModal({
         const assets = Number(fd.get("totalAssets"));
         const income = Number(fd.get("monthlyIncome") ?? 0);
         if (assets < 0 || Number.isNaN(assets)) return;
-        // Server Action を呼び出す
         formAction(fd);
-        // ローカル state をすぐに更新（楽観的 UI）
         onSave(assets, income);
     }
 
     const isReconfigure = defaultAssets !== undefined;
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1410]/50"
-            onClick={onClose}
-        >
-            <div
-                className="relative mx-4 w-full max-w-md rounded-2xl border-2 border-[#1c1410] bg-[#fffdf5] p-8"
+        <Dialog open={true} onOpenChange={(open) => { if (!open) onClose?.(); }}>
+            <DialogContent
+                showCloseButton={Boolean(onClose)}
+                className="max-w-md border-2 border-[#1c1410] bg-[#fffdf5] p-8"
                 style={{ boxShadow: "var(--shadow-pop)" }}
-                onClick={e => e.stopPropagation()}
             >
                 {/* 幾何学デコレーション */}
                 <div
@@ -60,37 +61,26 @@ export function SetupModal({
                     aria-hidden="true"
                 />
 
-                {/* 閉じるボタン（再設定時のみ表示） */}
-                {onClose && (
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="閉じる"
-                        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#1c1410] bg-white text-[#1c1410] transition-colors hover:bg-[#fff6ee]"
-                        style={{ boxShadow: "var(--shadow-pop-sm)" }}
-                    >
-                        <X size={14} />
-                    </button>
-                )}
-
-                <p className="mb-1 text-xs font-bold text-[#1c1410]/40 uppercase tracking-wider">
-                    {isReconfigure ? "設定の更新" : "はじめに"}
-                </p>
-                <h1 className="mb-2 text-xl font-extrabold text-[#1c1410]">
-                    {isReconfigure ? "資産データを更新する" : "家計の寿命を計算します"}
-                </h1>
-                {!isReconfigure && (
-                    <p className="mb-6 text-sm text-[#1c1410]/60">
-                        現在の資産と収入を入力すると、今のペースで
-                        <span className="font-bold text-[#f18840]">
-                            あと何年・何ヶ月 自由に暮らせるか
-                        </span>
-                        がわかります。
+                <DialogHeader>
+                    <p className="text-xs font-bold text-[#1c1410]/40 uppercase tracking-wider">
+                        {isReconfigure ? "設定の更新" : "はじめに"}
                     </p>
-                )}
+                    <DialogTitle className="text-xl font-extrabold">
+                        {isReconfigure ? "資産データを更新する" : "家計の寿命を計算します"}
+                    </DialogTitle>
+                    {!isReconfigure && (
+                        <DialogDescription className="text-sm text-[#1c1410]/60">
+                            現在の資産と収入を入力すると、今のペースで
+                            <span className="font-bold text-[#f18840]">
+                                あと何年・何ヶ月 自由に暮らせるか
+                            </span>
+                            がわかります。
+                        </DialogDescription>
+                    )}
+                </DialogHeader>
 
                 {actionState.error && (
-                    <p className="mb-4 rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
+                    <p className="rounded-xl border border-[#f87171]/40 bg-[#fee2e2] px-3 py-2 text-sm font-medium text-[#1c1410]">
                         {actionState.error}
                     </p>
                 )}
@@ -138,7 +128,7 @@ export function SetupModal({
                         {isReconfigure ? "更新する" : "家計の寿命を計算する"}
                     </button>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 }

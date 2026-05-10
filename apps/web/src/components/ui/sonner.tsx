@@ -6,11 +6,13 @@ import { Toaster as SonnerToaster } from 'sonner'
  * Sonner トースト。
  * app/layout.tsx に <Toaster /> を1箇所配置するだけで全ページで使用可能。
  * toast() / toast.success() / toast.error() で呼び出す。
+ * position など props は上書き可能（Storybook 等で position="bottom-center" を渡す）。
  */
-function Toaster() {
+function Toaster({ ...props }: React.ComponentProps<typeof SonnerToaster>) {
   return (
     <SonnerToaster
       position="top-center"
+      theme="light"
       toastOptions={{
         classNames: {
           toast:
@@ -23,6 +25,7 @@ function Toaster() {
           cancelButton: 'bg-[#1c1410]/10 text-[#1c1410] rounded-lg px-3 py-1.5 text-xs',
         },
       }}
+      {...props}
     />
   )
 }
