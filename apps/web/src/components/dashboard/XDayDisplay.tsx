@@ -156,12 +156,18 @@ export function XDayDisplay({
     }, [totalAssets, netDailyExpense, snapshotAt]);
 
     if (totalAssets === null) {
+        // 設定未完了のフォールバック表示（DailyBudgetCard と同様の方針）
+        // SetupModal は opacity 親要素によるバックドロップ描画不具合があるため使用しない。
+        // 設定入力は設定ページ（/settings）から行う。
         return (
-            <SetupModal
-                onSave={handleSetup}
-                formAction={formAction}
-                actionState={state}
-            />
+            <div
+                className="rounded-2xl border-2 border-dashed p-5"
+                style={{ borderColor: "var(--border-default)", background: "var(--color-surface-subtle)" }}
+            >
+                <p className="text-sm font-medium text-[#1c1410]/50 text-center">
+                    設定を完了すると「家計の寿命」が表示されます
+                </p>
+            </div>
         );
     }
 
