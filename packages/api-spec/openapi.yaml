@@ -201,6 +201,11 @@ components:
               minLength: 1
               description: 日付 (YYYY-MM-DD)
               example: 2024-03-15
+            categoryId:
+              type: integer
+              minimum: 0
+              description: "カテゴリID（省略時はデフォルト: 1=食費）"
+              example: 3
             content:
               type: string
               nullable: true
@@ -240,6 +245,11 @@ components:
               minLength: 1
               description: 日付 (YYYY-MM-DD)
               example: 2024-03-15
+            categoryId:
+              type: integer
+              minimum: 0
+              description: カテゴリID
+              example: 3
             content:
               type: string
               nullable: true
