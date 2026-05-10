@@ -4,7 +4,7 @@
 
 今のペースで生活すると「あと何年暮らせるか」を数字で突きつけ、ユーザーの決断をサポートする家計管理ツール。
 
-> プロダクト詳細: [docs/product-identity.md](docs/product-identity.md)
+> プロダクト詳細: [.github/product-identity.md](.github/product-identity.md)
 
 ---
 
@@ -115,7 +115,9 @@ JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
 │   ├── common       … FE/BE 共用の型定義・Zod スキーマ
 │   ├── api-spec     … 生成された OpenAPI スペック（openapi.yaml）
 │   └── api-client   … 生成された API 型定義（schema.d.ts）
-├── docs             … ドキュメント
+├── docs
+│   └── database     … DB スキーマ定義（schema.dbml）— ツール連携のためここに配置
+├── .github          … 全規約・プロセス定義・スプリント管理の SSOT
 ├── mysql
 │   ├── init         … 初回 DB 初期化用 SQL
 │   └── my.cnf       … MySQL 設定
@@ -370,7 +372,7 @@ pnpm db:docs
 
 生成物:
 
-- `docs/database/schema.dbml`
+- `docs/database/schema.dbml`（DB スキーマはツール連携のため `docs/database/` に配置）
 
 ### dbdocs.io へアップロード（共有 URL 発行）
 
