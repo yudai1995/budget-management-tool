@@ -9,7 +9,9 @@
     "lint": "eslint",
     "type-check": "tsc --noEmit",
     "format": "eslint --fix",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@budget/api-client": "workspace:*",
@@ -23,6 +25,9 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.3.6",
+    "@storybook/addon-docs": "^10.3.6",
+    "@storybook/nextjs-vite": "^10.3.6",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -34,9 +39,12 @@
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "eslint-plugin-storybook": "^10.3.6",
     "jsdom": "^29.0.2",
+    "storybook": "^10.3.6",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vite": "^8.0.11",
     "vitest": "^4.1.4"
   }
 }
