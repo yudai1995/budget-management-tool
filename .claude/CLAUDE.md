@@ -159,6 +159,14 @@
    - **完了条件の欠落**: Issue 本文に「完了条件」「完了定義」がない → 追記を促す
    - **優先度未設定**: `priority:` ラベルがない → 推奨優先度を提案する
    - **依存関係の未解決**: 他 Issue への依存が記載されている場合、その Issue の状態を確認する
+   - **バックログ鮮度**: `created_at` から60日超 + `backlog` ラベルのままの Issue をClose候補として列挙する（自動クローズはしない）
+     ```bash
+     gh issue list --state open --label "backlog" --json number,title,createdAt --limit 100 \
+       | python3 -c "import json,sys,datetime; issues=json.load(sys.stdin); \
+         cutoff=datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(days=60); \
+         stale=[i for i in issues if datetime.datetime.fromisoformat(i['createdAt'].replace('Z','+00:00')) < cutoff]; \
+         [print(f\"#{i['number']} {i['title']}\") for i in stale]"
+     ```
 3. 整査結果をまとめてユーザーに提示し、修正が必要な Issue を `gh issue edit` で更新する（承認後）
 
 #### `スプリントプランニングをして`
