@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { loginAction, guestLoginAction } from "@/lib/actions/auth";
 import type { LoginState } from "@/lib/actions/auth";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -51,12 +52,14 @@ export function LoginForm({ returnTo }: Props) {
       {/* ブランドロゴ + キャッチコピー（カード外・上部） */}
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="flex items-center gap-3">
-          <span
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#1c1410] bg-[#f18840] text-lg font-extrabold text-white"
+          <Image
+            src="/logo192.png"
+            alt="Budget"
+            width={48}
+            height={48}
+            className="rounded-2xl"
             style={{ boxShadow: "var(--shadow-pop-sm)" }}
-          >
-            B
-          </span>
+          />
           <span className="text-2xl font-extrabold text-[#1c1410] tracking-tight">
             Budget
           </span>

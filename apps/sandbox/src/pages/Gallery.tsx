@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -66,6 +66,14 @@ const prototypes: PrototypeCard[] = [
     icon: Wallet,
     issue: '#133',
     status: 'ready',
+  },
+  {
+    path: '/daily-budget-card-palette',
+    title: 'カラーパレット比較（DailyBudgetCard）',
+    description: 'SAFE/CAUTION/DANGER の3ステートを3パレットパターンで横並び比較。現行との対比も掲載。',
+    icon: Palette,
+    issue: '#133',
+    status: 'wip',
   },
 ]
 

@@ -10,6 +10,7 @@ import { AccountSectionPrototype } from './pages/AccountSectionPrototype'
 import { OnboardingPrototype } from './pages/OnboardingPrototype'
 import { CalendarPagePrototype } from './pages/CalendarPagePrototype'
 import { DailyBudgetCardPrototype } from './pages/DailyBudgetCardPrototype'
+import { DailyBudgetCardPalettePrototype } from './pages/DailyBudgetCardPalettePrototype'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -23,6 +24,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/onboarding" element={<OnboardingPrototype />} />
         <Route path="/calendar-page" element={<CalendarPagePrototype />} />
         <Route path="/daily-budget-card" element={<DailyBudgetCardPrototype />} />
+        <Route path="/daily-budget-card-palette" element={<DailyBudgetCardPalettePrototype />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
