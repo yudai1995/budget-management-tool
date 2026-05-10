@@ -1,36 +1,39 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { Tooltip } from './Tooltip'
+import { Button } from './Button'
 
 const meta: Meta<typeof Tooltip> = {
   title: 'Common/Tooltip',
   component: Tooltip,
-  parameters: {
-    layout: 'centered',
-  },
+  parameters: { layout: 'centered' },
   tags: ['autodocs'],
 }
 
 export default meta
-
 type Story = StoryObj<typeof Tooltip>
 
-/** ホバーでツールチップが表示される */
-export const Default: Story = {
-  args: {
-    content: 'ツールチップの内容がここに表示されます',
-    children: <span className="cursor-default rounded border border-[#e8c8b0] bg-white px-3 py-1.5 text-sm font-medium text-[#1c1410]">ホバーしてください</span>,
-  },
+export const Basic: Story = {
+  render: () => (
+    <Tooltip content="ホバー / フォーカスで表示されます">
+      <Button variant="secondary">ホバーしてみて</Button>
+    </Tooltip>
+  ),
 }
 
-/** リッチなコンテンツを持つツールチップ */
-export const RichContent: Story = {
-  args: {
-    content: (
-      <span className="space-y-1 block">
-        <strong className="font-bold text-[#1c1410]">セキュリティについて</strong>
-        <p className="leading-relaxed">入力内容は暗号化されサーバーに安全に保存されます。</p>
-      </span>
-    ),
-    children: <span className="cursor-default rounded border border-[#e8c8b0] bg-white px-3 py-1.5 text-sm font-medium text-[#1c1410]">リッチコンテンツ</span>,
-  },
+export const IconButton: Story = {
+  render: () => (
+    <Tooltip content="セキュリティバッジについて詳しく見る">
+      <button className="inline-flex size-6 items-center justify-center rounded-full bg-[#1c1410]/10 text-xs font-bold text-[#1c1410]/60 hover:bg-[#1c1410]/20">
+        ?
+      </button>
+    </Tooltip>
+  ),
+}
+
+export const LongText: Story = {
+  render: () => (
+    <Tooltip content="このカードには直近30日間の収支バランスが表示されます。緑色は収入超過、赤色は支出超過を示します。">
+      <Button variant="ghost">説明を見る</Button>
+    </Tooltip>
+  ),
 }
