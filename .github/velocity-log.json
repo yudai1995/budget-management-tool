@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
-    "next_sprint_number": 8
+    "next_sprint_number": 9
   },
   "sprints": [
     {
@@ -386,6 +386,42 @@
           "points": 1,
           "cycle_time_hours": 0,
           "pr": 200
+        }
+      ]
+    },
+    {
+      "sprint_number": 8,
+      "date": "2026-05-10",
+      "goal": "開発運用の継続的改善を定着させ、プロセス品質と安全基盤を整える",
+      "hypothesis": "sizeラベル標準化・Retroバックフィル・CVE自動検出の整備で、ベロシティ計算精度と脆弱性対応速度が向上する",
+      "total_points": 5,
+      "pbis": [
+        {
+          "issue": 203,
+          "title": "[Retro Action] retro-actionアイテム作成時にsizeラベル設定を必須化しCLAUDE.mdに明記する",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 202,
+          "title": "[Retro Action] Sprint #6のレトロスペクティブをバックフィル作成する",
+          "pbi_type": "chore",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 182,
+          "title": "chore: Security Scan で新規 CVE 検出時に自動で Issue を作成する",
+          "pbi_type": "chore",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
         }
       ]
     }
