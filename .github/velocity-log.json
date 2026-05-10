@@ -349,7 +349,7 @@
       "date": "2026-05-10",
       "goal": "スプリントの品質・仮説検証能力を計測可能にしAIエージェントの自律改善サイクルを確立する",
       "hypothesis": "ゴール・バグ率・バックログ鮮度を自動追跡することでスプリントの改善速度が上がる",
-      "total_points": 4,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 187,
@@ -376,6 +376,14 @@
           "points": 2,
           "cycle_time_hours": 0,
           "pr": 199
+        },
+        {
+          "issue": 196,
+          "title": "chore: バックログ鮮度チェックをスプリントリファインメントに組み込む",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0,
+          "pr": 200
         }
       ]
     }
