@@ -99,11 +99,29 @@ Won't（今回除外）: {スコープアウトする機能}
 以下のワークフローが自動で動作する（`.github/workflows/measure-cycle-time.yml`）：
 
 1. **作業開始時**: `in-progress` ラベルが付与された瞬間、Issue に開始タイムスタンプをコメント
+   - GH Actions は非同期で遅延する場合があるため、AI は `in-progress` ラベル付与直後に手動でも同コメントを投稿する（`.claude/CLAUDE.md` 参照）
 2. **作業終了時**: PR がマージされた瞬間、以下を自動実行：
    - Issue にサイクルタイムレポートをコメント投稿
    - Project ボードの `Cycle Time (h)` フィールドを更新
    - Project ボードの `Sprint #` フィールドを更新（PR 本文の `Sprint: N` から）
    - Project ボードの `Story Points` フィールドを更新（`size:` ラベルから）
+
+### velocity-log.json の手動補記タイミング
+
+GH Actions（`update-velocity.yml`）が PR マージ時に velocity-log.json を自動更新する。
+AI が手動で velocity-log.json を編集する場合は、**GH Actions の完了を待ってから**行うこと。
+
+- GH Actions の完了確認: `gh run list --workflow=update-velocity.yml --limit=3`
+- 目安: PRマージから **2〜3分後** に Actions が完了する
+- 競合を防ぐため、Actions 完了前に手動編集した場合は `git pull --rebase origin main` で解消する
+
+### 複数 Issue を同一 PR でクローズする場合のサイクルタイム計測方針
+
+1つの PR が複数の `Closes #N` を含む場合（例: 関連する2つのIssueを同一ブランチで解決）：
+
+- GH Actions は **すべての Issue に同一のサイクルタイムを記録**する（PR マージ時刻基準）
+- velocity-log.json には各 Issue を個別エントリとして記録し、`cycle_time_hours` は同値になる
+- **推奨**: 原則 1 PBI = 1 PR とし、複数 Issue をまとめる場合は PR 本文に理由を明記する
 
 ### Project ボードのフィールド定義（SSOT）
 
