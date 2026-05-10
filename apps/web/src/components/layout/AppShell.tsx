@@ -21,7 +21,7 @@ export function AppShell({ userName, children }: Props) {
       <div className="flex flex-1 flex-col min-w-0">
         {/* モバイルのボトムナビ分の余白 */}
         <div className="flex-1 pb-16 md:pb-0">{children}</div>
-        <BottomNav />
+        <BottomNav userId={userName} />
       </div>
     </div>
   );

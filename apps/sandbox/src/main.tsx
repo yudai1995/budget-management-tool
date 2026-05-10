@@ -8,6 +8,7 @@ import { QuickEntryPrototype } from './pages/QuickEntryPrototype'
 import { NavLayoutPrototype } from './pages/NavLayoutPrototype'
 import { AccountSectionPrototype } from './pages/AccountSectionPrototype'
 import { OnboardingPrototype } from './pages/OnboardingPrototype'
+import { CalendarPagePrototype } from './pages/CalendarPagePrototype'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/nav-layout" element={<NavLayoutPrototype />} />
         <Route path="/account-section" element={<AccountSectionPrototype />} />
         <Route path="/onboarding" element={<OnboardingPrototype />} />
+        <Route path="/calendar-page" element={<CalendarPagePrototype />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

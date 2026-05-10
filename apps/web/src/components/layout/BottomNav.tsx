@@ -4,14 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { NAV_ITEMS } from "./navItems";
 import type { NavItem } from "./navItems";
+import { QuickEntryDrawer } from "@/components/expense/QuickEntryDrawer";
 
-export function BottomNav() {
+type Props = {
+  userId?: string;
+};
+
+export function BottomNav({ userId }: Props) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [fabOpen, setFabOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -20,43 +23,13 @@ export function BottomNav() {
   const leftItems = NAV_ITEMS.slice(0, 2);
   const rightItems = NAV_ITEMS.slice(2);
 
-  function handleFabSelect(type: "expense" | "income") {
-    setFabOpen(false);
-    router.push(`/expenses/new?type=${type}`);
-  }
-
   return (
     <>
-      {/* FAB展開時のオーバーレイ */}
-      {fabOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-[#1c1410]/50"
-          onClick={() => setFabOpen(false)}
-        >
-          {/* 選択メニュー */}
-          <div
-            className="absolute bottom-24 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => handleFabSelect("income")}
-              className="rounded-2xl px-8 py-3 text-sm font-bold text-white shadow-lg transition-transform active:scale-95"
-              style={{ background: "var(--color-income, #4caf82)" }}
-            >
-              収入を記録
-            </button>
-            <button
-              type="button"
-              onClick={() => handleFabSelect("expense")}
-              className="rounded-2xl px-8 py-3 text-sm font-bold text-white shadow-lg transition-transform active:scale-95"
-              style={{ background: "var(--color-expense, #e05c5c)" }}
-            >
-              支出を記録
-            </button>
-          </div>
-        </div>
-      )}
+      <QuickEntryDrawer
+        userId={userId ?? ""}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+      />
 
       {/* ボトムナビゲーションバー（モバイルのみ表示） */}
       <nav
@@ -77,16 +50,16 @@ export function BottomNav() {
         <div className="flex flex-1 items-center justify-center">
           <button
             type="button"
-            aria-label={fabOpen ? "メニューを閉じる" : "記録する"}
-            aria-expanded={fabOpen}
-            onClick={() => setFabOpen(!fabOpen)}
+            aria-label={drawerOpen ? "メニューを閉じる" : "クイック記録"}
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(!drawerOpen)}
             className="relative -top-3 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95"
             style={{
               background: "var(--color-brand-primary, #f08030)",
               boxShadow: "0 4px 16px rgba(240,128,48,0.4)",
             }}
           >
-            {fabOpen ? (
+            {drawerOpen ? (
               <X size={22} className="text-white" />
             ) : (
               <Plus size={22} className="text-white" />
