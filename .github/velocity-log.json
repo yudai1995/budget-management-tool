@@ -372,6 +372,7 @@
         {
           "issue": 195,
           "title": "chore: pbi_typeフィールドをvelocity-logに追加しレトロでバグ率を自動診断する",
+          "pbi_type": "chore",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 0,
@@ -380,6 +381,7 @@
         {
           "issue": 196,
           "title": "chore: バックログ鮮度チェックをスプリントリファインメントに組み込む",
+          "pbi_type": "chore",
           "size": "XS",
           "points": 1,
           "cycle_time_hours": 0,
