@@ -47,6 +47,18 @@
   --background: #fffdf5;
   --foreground: #1c1410;
 
+  /* ピンチ度カラー（1日予算カード用）
+   *  safe    : 余裕あり（残予算 ≥ 80%）→ 青系
+   *  caution : 注意（残予算 20〜80%）→ 黄系
+   *  danger  : ピンチ / 予算超過（残予算 < 20% or マイナス）→ 赤系
+   */
+  --color-safe: #3b82f6;
+  --color-safe-light: #eff6ff;
+  --color-caution: #f59e0b;
+  --color-caution-light: #fffbeb;
+  --color-danger: #ef4444;
+  --color-danger-light: #fef2f2;
+
   /* ボーダー */
   --border-default: #e8c8b0;
   --border-strong: #1c1410;
@@ -96,6 +108,13 @@
     --color-playful-coral-light: #3a1010;
     --color-playful-amber: #fbbf24;
     --color-playful-amber-light: #3a2a00;
+
+    --color-safe: #60a5fa;
+    --color-safe-light: #1e2a3a;
+    --color-caution: #fbbf24;
+    --color-caution-light: #2a2000;
+    --color-danger: #f87171;
+    --color-danger-light: #2a1010;
   }
 }
 
@@ -121,6 +140,13 @@
   --color-playful-coral-light: var(--color-playful-coral-light);
   --color-playful-amber: var(--color-playful-amber);
   --color-playful-amber-light: var(--color-playful-amber-light);
+
+  --color-safe: var(--color-safe);
+  --color-safe-light: var(--color-safe-light);
+  --color-caution: var(--color-caution);
+  --color-caution-light: var(--color-caution-light);
+  --color-danger: var(--color-danger);
+  --color-danger-light: var(--color-danger-light);
 
   --font-sans: var(--font-outfit);
   --font-display: var(--font-outfit);

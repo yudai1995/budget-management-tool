@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -57,6 +57,14 @@ const prototypes: PrototypeCard[] = [
     description: 'ドット表示・日付タップで明細表示・クイック入力ボトムシート。モバイルファーストレイアウト。',
     icon: CalendarDays,
     issue: '#183 #184',
+    status: 'ready',
+  },
+  {
+    path: '/daily-budget-card',
+    title: '今日使えるお金カード',
+    description: '給料日までの1日予算をヒーローナンバーで表示。信号機カラーによるピンチ度の視覚化。',
+    icon: Wallet,
+    issue: '#133',
     status: 'ready',
   },
 ]
