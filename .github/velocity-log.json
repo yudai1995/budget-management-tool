@@ -579,7 +579,7 @@
     {
       "sprint_number": 14,
       "date": "2026-05-11",
-      "total_points": 1,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 264,
@@ -588,19 +588,13 @@
           "points": 1,
           "cycle_time_hours": 0.1,
           "pr": 267
-        }
-      ]
-    },
-    {
-      "date": "2026-05-11",
-      "total_points": 4,
-      "pbis": [
+        },
         {
           "issue": 265,
           "title": "fix: 初期設定が未完了のとき SetupModal が表示されず空フォールバックが永続する",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
+          "cycle_time_hours": 0.1,
           "pr": 268
         },
         {
@@ -608,7 +602,7 @@
           "title": "chore: デプロイ失敗時に GitHub Issue を自動作成し PR 段階で Docker ビルドを検証する",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
+          "cycle_time_hours": 0.1,
           "pr": 269
         }
       ]
