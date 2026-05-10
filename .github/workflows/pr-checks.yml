@@ -54,6 +54,33 @@ jobs:
       - name: Lint & type-check
         run: pnpm turbo run lint type-check
 
+  # ─── Storybook ビルド確認 ─────────────────────────────────────────────────
+  storybook-build:
+    name: Storybook Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Build common & api-client
+        run: |
+          pnpm --filter @budget/common build
+          pnpm --filter @budget/api-client build
+
+      - name: Build Storybook
+        run: pnpm --filter web build-storybook
+
   # ─── ユニットテスト ────────────────────────────────────────────────────────
   unit-test:
     name: Unit Test

@@ -1,11 +1,23 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { X } from "lucide-react";
 import { updateExpenseAction } from "@/lib/actions/expense";
 import type { UpdateExpenseActionState } from "@/lib/actions/expense";
 import type { ExpenseResponse } from "@/lib/api/types";
 import { getCategoriesByType } from "@/lib/constants/categories";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type Props = {
   expense: ExpenseResponse;
@@ -29,43 +41,36 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
   }, [state.success, onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="閉じる"
-          className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full text-[#1c1410]/40 hover:bg-[#f5ebe0] hover:text-[#1c1410]"
-        >
-          <X size={16} />
-        </button>
-
-        <h2 className="mb-5 text-base font-bold text-[#1c1410]">支出を編集</h2>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>支出を編集</DialogTitle>
+        </DialogHeader>
 
         <form action={formAction} className="flex flex-col gap-4">
+          {/* Radix Select は FormData に含まれないため hidden input で送信 */}
+          <input type="hidden" name="balanceType" value={balanceType} />
+          <input type="hidden" name="categoryId" value={categoryId} />
+
           {/* 種別 */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-[#1c1410]/60">種別</label>
-            <select
-              name="balanceType"
-              value={balanceType}
-              onChange={(e) => {
-                const next = Number(e.target.value) as 0 | 1;
+            <Select
+              value={String(balanceType)}
+              onValueChange={(v) => {
+                const next = Number(v) as 0 | 1;
                 setBalanceType(next);
-                // 種別変更時はカテゴリを「未分類」にリセット
                 setCategoryId(0);
               }}
-              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
             >
-              <option value="0">支出</option>
-              <option value="1">収入</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">支出</SelectItem>
+                <SelectItem value="1">収入</SelectItem>
+              </SelectContent>
+            </Select>
             {state.fieldErrors?.balanceType && (
               <p className="text-xs text-red-500">{state.fieldErrors.balanceType[0]}</p>
             )}
@@ -74,16 +79,21 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
           {/* カテゴリ */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-bold text-[#1c1410]/60">カテゴリ</label>
-            <select
-              name="categoryId"
-              value={categoryId}
-              onChange={(e) => setCategoryId(Number(e.target.value))}
-              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
+            <Select
+              value={String(categoryId)}
+              onValueChange={(v) => setCategoryId(Number(v))}
             >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* 金額 */}
@@ -94,7 +104,7 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
               name="amount"
               defaultValue={expense.amount}
               min={1}
-              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
+              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#f18840]/30"
             />
             {state.fieldErrors?.amount && (
               <p className="text-xs text-red-500">{state.fieldErrors.amount[0]}</p>
@@ -108,7 +118,7 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
               type="date"
               name="date"
               defaultValue={expense.date}
-              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
+              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#f18840]/30"
             />
             {state.fieldErrors?.date && (
               <p className="text-xs text-red-500">{state.fieldErrors.date[0]}</p>
@@ -122,7 +132,7 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
               type="text"
               name="content"
               defaultValue={expense.content ?? ""}
-              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#c8956c]"
+              className="rounded-xl border border-[#e8c8b0] bg-[#fdf8f5] px-3 py-2 text-sm text-[#1c1410] focus:outline-none focus:ring-2 focus:ring-[#f18840]/30"
             />
           </div>
 
@@ -133,12 +143,12 @@ export function ExpenseEditModal({ expense, onClose }: Props) {
           <button
             type="submit"
             disabled={isPending}
-            className="mt-1 w-full rounded-xl bg-[#c8956c] py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="mt-1 w-full rounded-xl bg-[#f18840] py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-80 disabled:opacity-50"
           >
             {isPending ? "更新中..." : "更新する"}
           </button>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

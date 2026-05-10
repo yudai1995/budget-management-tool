@@ -1,0 +1,76 @@
+# ============================================================
+# storybook-deploy.yml — Storybook を GitHub Pages へデプロイ
+#
+# トリガー: main ブランチへの push（apps/web/src 以下の変更時のみ実行）
+# デプロイ先: GitHub Pages（リポジトリの gh-pages ブランチ）
+# URL: https://{owner}.github.io/{repo}/
+#
+# 注意:
+# - Storybook は devDependencies にのみ存在するため ECS/Docker ビルドには影響しない
+# - GitHub Pages の有効化が必要（Settings > Pages > Source: GitHub Actions）
+# ============================================================
+
+name: Deploy Storybook to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/src/**'
+      - 'apps/web/.storybook/**'
+      - 'apps/web/package.json'
+      - 'packages/common/src/**'
+      - 'packages/api-client/src/**'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Storybook
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Build common & api-client
+        run: |
+          pnpm --filter @budget/common build
+          pnpm --filter @budget/api-client build
+
+      - name: Build Storybook
+        run: pnpm --filter web build-storybook
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/storybook-static
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
