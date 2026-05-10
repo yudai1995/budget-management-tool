@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
-    "next_sprint_number": 11
+    "next_sprint_number": 12
   },
   "sprints": [
     {
@@ -495,6 +495,51 @@
           "points": 2,
           "cycle_time_hours": 0.1,
           "pr": 228
+        }
+      ]
+    },
+    {
+      "sprint_number": 11,
+      "date": "2026-05-10",
+      "goal": "P0バグを根治しPriority付与フローを自動化して開発プロセスの質を底上げする",
+      "hypothesis": "categoryIdバグの恒久修正とpriority自動付与でバックログ管理の抜け漏れがゼロになる",
+      "total_points": 6,
+      "pbis": [
+        {
+          "issue": 231,
+          "title": "fix: categoryId が OpenAPI スキーマ未定義のため常に食費/給料として保存される",
+          "pbi_type": "fix",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 232,
+          "title": "chore: backlog Issue に priority ラベルがない場合に priority: P2 を自動付与する GH Actions を追加する",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 233,
+          "title": "chore: GitHub Issue Forms で priority を必須選択フィールドにする",
+          "pbi_type": "chore",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 234,
+          "title": "chore: CLAUDE.md / sprint-protocol.md に priority ラベル必須ルールと基準定義を追記する",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": null
         }
       ]
     }
