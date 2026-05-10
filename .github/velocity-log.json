@@ -542,6 +542,24 @@
           "pr": null
         }
       ]
+    },
+    {
+      "sprint_number": 12,
+      "date": "2026-05-10",
+      "goal": "shadcn/ui コンポーネントカタログを構築し、UI の一貫性・アクセシビリティ・デザインシステム基盤を整える",
+      "hypothesis": "shadcn/ui プリミティブ化により今後の UI 実装速度が上がり、アクセシビリティ準拠が自動化される",
+      "total_points": 5,
+      "pbis": [
+        {
+          "issue": 250,
+          "title": "feat: Storybook による全基盤 UI コンポーネントのカタログ化（UI SSOT）",
+          "pbi_type": "feature",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": 4.1,
+          "pr": 259
+        }
+      ]
     }
   ]
 }
