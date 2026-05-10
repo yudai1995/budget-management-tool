@@ -446,7 +446,7 @@
     {
       "sprint_number": 10,
       "date": "2026-05-10",
-      "total_points": 2,
+      "total_points": 3,
       "pbis": [
         {
           "issue": 213,
@@ -463,6 +463,14 @@
           "points": 1,
           "cycle_time_hours": 0,
           "pr": 224
+        },
+        {
+          "issue": 222,
+          "title": "chore: プロジェクトボードに「Archived」ステータスを追加しスプリント未記録の完了済みアイテムを分離する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0,
+          "pr": 225
         }
       ]
     }
