@@ -1,0 +1,104 @@
+name: 機能追加・改善（PBI）
+description: 新機能・UX改善・技術的改善の要求を起票する
+labels:
+  - "backlog"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能要求・改善提案を起票します。以下の情報を入力してください。
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: 種別
+      options:
+        - "feature — 新機能"
+        - "tech-debt — 技術的改善・リファクタ"
+        - "chore — ビルド・インフラ・プロセス改善"
+        - "design — UI/UX デザイン"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      description: プロダクト目標への貢献度・緊急度を選択してください
+      options:
+        - "P0 — 今すぐ必要（ブロッカー）"
+        - "P1 — 今スプリントで実装したい"
+        - "P2 — 近いうちに実装（標準バックログ）"
+        - "P3 — あれば嬉しい（低優先）"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: 見積もりサイズ
+      description: 実装の規模を選択してください（不明な場合は「不明」）
+      options:
+        - "XS — 30分以内"
+        - "S — 1〜2時間"
+        - "M — 2〜4時間"
+        - "L — 半日"
+        - "XL — 1日以上"
+        - "不明"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 影響エリア
+      multiple: true
+      options:
+        - "frontend"
+        - "backend"
+        - "common"
+        - "infra"
+        - "design"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 概要
+      description: 何を作るか・何を改善するかを簡潔に記述してください
+      placeholder: |
+        例: レポート画面にカテゴリ別グラフを追加して支出傾向を可視化する
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景・目的
+      description: なぜこれが必要か、どんな課題を解決するかを記述してください
+      placeholder: |
+        現状: レポートに合計金額しか表示されず、どのカテゴリで使いすぎているかがわからない
+        課題: ユーザーが支出の内訳を把握できず、節約行動につながらない
+        目的: カテゴリ別の可視化で「どこを削るか」の判断を促す
+    validations:
+      required: true
+
+  - type: textarea
+    id: done-criteria
+    attributes:
+      label: 完了条件（AC）
+      description: 実装完了を判断するための受け入れ基準を記述してください
+      placeholder: |
+        - カテゴリ別の支出グラフが表示されること
+        - 月次・年次で切り替えできること
+        - モバイル・デスクトップ両方で正しく表示されること
+        - 単体テスト・E2Eテストがパスすること
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 実装メモ・依存関係
+      description: 技術的な注意事項や、先に完了すべき Issue があれば記述してください

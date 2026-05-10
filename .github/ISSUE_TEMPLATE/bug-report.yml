@@ -1,0 +1,95 @@
+name: バグ報告
+description: 動作の不具合・予期しない挙動を報告する
+labels:
+  - "type: bug"
+  - "backlog"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        バグ報告ありがとうございます。以下の情報を入力してください。
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      description: このバグの影響範囲・緊急度を選択してください
+      options:
+        - "P0 — 即日対応必須（本番障害・データ損失）"
+        - "P1 — 今スプリント対応（主要機能が使えない）"
+        - "P2 — 次スプリント対応（機能低下だが代替手段あり）"
+        - "P3 — 余裕があれば対応（軽微・UX 改善レベル）"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: 見積もりサイズ
+      description: 修正の難易度・規模を選択してください（不明な場合は「不明」）
+      options:
+        - "XS — 30分以内"
+        - "S — 1〜2時間"
+        - "M — 2〜4時間"
+        - "L — 半日"
+        - "XL — 1日以上"
+        - "不明"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: バグの概要
+      description: 何が起きているか、どうあるべきかを簡潔に記述してください
+      placeholder: |
+        例: カテゴリを「交通費」で保存しても「食費」として記録される
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: バグを再現するための手順を記述してください
+      placeholder: |
+        1. ホーム画面を開く
+        2. 支出を入力する
+        3. カテゴリを「交通費」に変更する
+        4. 保存する
+        5. レポートを確認すると「食費」になっている
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する動作
+      placeholder: "カテゴリが「交通費」として保存されること"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      placeholder: "カテゴリが「食費（デフォルト）」として保存される"
+    validations:
+      required: true
+
+  - type: textarea
+    id: done-criteria
+    attributes:
+      label: 完了条件
+      description: このバグが「修正完了」と判断できる基準を記述してください
+      placeholder: |
+        - 指定したカテゴリで支出が保存されること
+        - 統合テストがパスすること
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 補足情報
+      description: スクリーンショット、ブラウザ、OS などの補足情報があれば記入してください
