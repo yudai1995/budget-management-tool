@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, FileText, X } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, Plus, FileText, Home, Calendar, BarChart2, Settings } from 'lucide-react'
+import { Drawer } from 'vaul'
 
 const WEEK_DAYS = ['日', '月', '火', '水', '木', '金', '土'] as const
 
@@ -100,19 +101,16 @@ function CompactCalendar({
               className={[
                 'relative flex flex-col items-center justify-center border-b border-r border-[#e8c8b0] py-1 transition-colors',
                 day.isCurrentMonth ? 'cursor-pointer hover:bg-[#fff6ee]' : 'cursor-default',
-                isSelected ? 'bg-[#fff1e5]' : day.isToday ? 'bg-[#fff5ec]' : '',
+                isSelected ? 'bg-[#fff1e5]' : '',
               ].join(' ')}
               style={{ height: 44 }}
             >
-              {/* 選択インジケーター */}
-              {isSelected && (
-                <span className="absolute inset-0 border-2 border-[#f18840] rounded-sm pointer-events-none" />
-              )}
               {/* 日付 */}
               <span className={[
-                'text-xs font-bold leading-none',
+                'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold leading-none transition-colors',
                 !day.isCurrentMonth ? 'text-[#1c1410]/20'
-                  : day.isToday ? 'rounded-full bg-[#f18840] px-1 text-white'
+                  : isSelected ? 'bg-[#f18840] text-white'
+                  : day.isToday ? 'border-2 border-[#f18840] text-[#f18840]'
                   : 'text-[#1c1410]',
               ].join(' ')}>
                 {day.date.getDate()}
@@ -190,11 +188,22 @@ function DayExpenseList({ dateStr }: { dateStr: string }) {
   )
 }
 
-// クイック入力ボトムシート（#184）
-function QuickEntrySheet({ onClose }: { onClose: () => void }) {
+// ボトムナビ個別アイテム
+function BottomNavItem({ icon: Icon, label, active }: { icon: React.ElementType; label: string; active: boolean }) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+      style={{ color: active ? 'var(--color-brand-primary)' : 'rgba(28,20,16,0.4)' }}>
+      <Icon size={22} />
+      <span className="text-[10px] font-semibold">{label}</span>
+    </div>
+  )
+}
+
+// クイック入力ドロワー（vaul）
+function QuickEntryDrawer({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('食費')
-  const [type, setType] = useState<0 | 1>(0) // 0:支出 1:収入
+  const [type, setType] = useState<0 | 1>(0)
 
   const categories = type === 0
     ? ['食費', '日用品', '交通費', '医療費', '衣服', '娯楽', 'その他']
@@ -203,62 +212,70 @@ function QuickEntrySheet({ onClose }: { onClose: () => void }) {
   const color = type === 0 ? 'var(--color-expense)' : 'var(--color-income)'
 
   return (
-    <div className="absolute inset-0 z-10 flex flex-col justify-end" style={{ background: 'rgba(28,20,16,0.4)' }}>
-      <div className="rounded-t-3xl bg-white border-t-2 border-[#1c1410] overflow-hidden" style={{ boxShadow: '0 -4px 16px rgba(28,20,16,0.12)' }}>
-        {/* シートハンドル */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <h3 className="text-sm font-extrabold text-[#1c1410]">クイック記録</h3>
-          <button type="button" onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f5f0eb]">
-            <X size={14} />
-          </button>
-        </div>
+    <Drawer.Root open={open} onOpenChange={onOpenChange}>
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 z-40" style={{ background: 'rgba(28,20,16,0.4)' }} />
+        <Drawer.Content
+          className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-3xl bg-white outline-none"
+          style={{ boxShadow: '0 -4px 32px rgba(28,20,16,0.16)' }}
+        >
+          {/* ドラッグハンドル */}
+          <div className="mx-auto mt-3 mb-1 h-1.5 w-12 rounded-full bg-[#1c1410]/20" />
 
-        <div className="px-5 pb-6 flex flex-col gap-4">
-          {/* 種別タブ */}
-          <div className="flex rounded-xl border border-[#1c1410]/12 bg-[#f5f0eb] p-1">
-            {([0, 1] as const).map((t) => (
-              <button key={t} type="button" onClick={() => { setType(t); setCategory(t === 0 ? '食費' : '給料') }}
-                className="flex-1 rounded-lg py-2 text-sm font-bold transition-all"
-                style={type === t ? { background: t === 0 ? 'var(--color-expense)' : 'var(--color-income)', color: '#fff' } : { color: 'rgba(28,20,16,0.4)' }}>
-                {t === 0 ? '支出' : '収入'}
-              </button>
-            ))}
-          </div>
+          <Drawer.Title className="px-5 pt-2 pb-1 text-sm font-extrabold text-[#1c1410]">
+            クイック記録
+          </Drawer.Title>
 
-          {/* 金額 */}
-          <div className="rounded-xl border border-[#1c1410]/12 bg-[#fafaf8] px-4 py-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-extrabold" style={{ color }}>¥</span>
-              <input type="number" inputMode="numeric" placeholder="0" value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="flex-1 bg-transparent text-3xl font-extrabold tabular-nums outline-none placeholder:text-[#1c1410]/20"
-                style={{ color }} autoFocus />
+          <div className="px-5 pb-8 pt-2 flex flex-col gap-4">
+            {/* 種別タブ */}
+            <div className="flex rounded-xl border border-[#1c1410]/12 bg-[#f5f0eb] p-1">
+              {([0, 1] as const).map((t) => (
+                <button key={t} type="button"
+                  onClick={() => { setType(t); setCategory(t === 0 ? '食費' : '給料') }}
+                  className="flex-1 rounded-lg py-2 text-sm font-bold transition-all"
+                  style={type === t
+                    ? { background: t === 0 ? 'var(--color-expense)' : 'var(--color-income)', color: '#fff' }
+                    : { color: 'rgba(28,20,16,0.4)' }}>
+                  {t === 0 ? '支出' : '収入'}
+                </button>
+              ))}
             </div>
-          </div>
 
-          {/* カテゴリ（横スクロール選択） */}
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-            {categories.map((c) => (
-              <button key={c} type="button" onClick={() => setCategory(c)}
-                className="shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition-all"
-                style={category === c
-                  ? { background: color, borderColor: color, color: '#fff' }
-                  : { background: '#fff', borderColor: 'rgba(28,20,16,0.12)', color: 'rgba(28,20,16,0.6)' }}>
-                {c}
-              </button>
-            ))}
-          </div>
+            {/* 金額 */}
+            <div className="rounded-xl border border-[#1c1410]/12 bg-[#fafaf8] px-4 py-3">
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-extrabold" style={{ color }}>¥</span>
+                <input type="number" inputMode="numeric" placeholder="0" value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="flex-1 bg-transparent text-3xl font-extrabold tabular-nums outline-none placeholder:text-[#1c1410]/20"
+                  style={{ color }} autoFocus />
+              </div>
+            </div>
 
-          {/* 送信ボタン */}
-          <button type="button" disabled={!amount || Number(amount) <= 0}
-            onClick={onClose}
-            className="w-full rounded-2xl py-4 text-base font-extrabold text-white transition-all active:scale-95 disabled:opacity-40"
-            style={{ background: 'var(--color-brand-primary)' }}>
-            記録する
-          </button>
-        </div>
-      </div>
-    </div>
+            {/* カテゴリ（横スクロール） */}
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+              {categories.map((c) => (
+                <button key={c} type="button" onClick={() => setCategory(c)}
+                  className="shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition-all"
+                  style={category === c
+                    ? { background: color, borderColor: color, color: '#fff' }
+                    : { background: '#fff', borderColor: 'rgba(28,20,16,0.12)', color: 'rgba(28,20,16,0.6)' }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {/* 送信ボタン */}
+            <button type="button" disabled={!amount || Number(amount) <= 0}
+              onClick={() => { setAmount(''); onOpenChange(false) }}
+              className="w-full rounded-2xl py-4 text-base font-extrabold text-white transition-all active:scale-95 disabled:opacity-40"
+              style={{ background: 'var(--color-brand-primary)' }}>
+              記録する
+            </button>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   )
 }
 
@@ -300,7 +317,7 @@ export function CalendarPagePrototype() {
         </div>
 
         {/* スクロール可能コンテンツ */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-16">
           {/* カレンダー（上部固定ゾーン） */}
           <div className="px-3 pt-3">
             <CompactCalendar
@@ -312,7 +329,7 @@ export function CalendarPagePrototype() {
 
           {/* 日付選択エリア */}
           {selectedDate ? (
-            <div className="px-3 pt-3 pb-24 flex flex-col gap-3">
+            <div className="px-3 pt-3 pb-4 flex flex-col gap-3">
               <DaySummary dateStr={selectedDate} />
               <p className="text-xs font-bold text-[#1c1410]/40 px-1">明細</p>
               <DayExpenseList dateStr={selectedDate} />
@@ -324,20 +341,30 @@ export function CalendarPagePrototype() {
           )}
         </div>
 
-        {/* フローティング「+」ボタン（クイック記録） */}
-        <div className="absolute bottom-4 right-4">
-          <button
-            type="button"
-            onClick={() => setShowQuickEntry(true)}
-            className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#1c1410] text-white transition-all active:scale-95"
-            style={{ background: 'var(--color-brand-primary)', boxShadow: 'var(--shadow-pop)' }}
-          >
-            <Plus size={24} />
-          </button>
+        {/* 既存ボトムナビ（中央FABでクイック入力を開く） */}
+        <div
+          className="absolute bottom-0 left-0 right-0 z-10 flex items-center border-t border-[#1c1410]/10 bg-white"
+          style={{ height: 64 }}
+        >
+          <BottomNavItem icon={Home} label="ホーム" active={false} />
+          <BottomNavItem icon={Calendar} label="カレンダー" active={true} />
+          {/* 中央FAB */}
+          <div className="flex flex-1 items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setShowQuickEntry(true)}
+              className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-full transition-transform active:scale-95"
+              style={{ background: 'var(--color-brand-primary)', boxShadow: '0 4px 16px rgba(240,128,48,0.4)' }}
+            >
+              <Plus size={22} className="text-white" />
+            </button>
+          </div>
+          <BottomNavItem icon={BarChart2} label="レポート" active={false} />
+          <BottomNavItem icon={Settings} label="設定" active={false} />
         </div>
 
-        {/* クイック入力シート */}
-        {showQuickEntry && <QuickEntrySheet onClose={() => setShowQuickEntry(false)} />}
+        {/* クイック入力ドロワー（vaul） */}
+        <QuickEntryDrawer open={showQuickEntry} onOpenChange={setShowQuickEntry} />
       </div>
 
       {/* 説明 */}

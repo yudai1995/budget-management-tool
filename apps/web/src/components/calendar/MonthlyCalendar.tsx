@@ -7,6 +7,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   expenses: ExpenseResponse[];
+  /** trueのとき金額数値を非表示にしてドットのみ表示する（モバイル向け） */
+  compactMode?: boolean;
+  /** 指定するとページ遷移の代わりにコールバックが呼ばれる */
+  onDaySelect?: (dateStr: string) => void;
+  /** 選択中の日付（onDaySelect と組み合わせて使う） */
+  selectedDate?: string | null;
 };
 
 type DayData = {
@@ -79,7 +85,7 @@ function buildCalendarDays(year: number, month: number, expenses: ExpenseRespons
   return days;
 }
 
-export function MonthlyCalendar({ expenses }: Props) {
+export function MonthlyCalendar({ expenses, compactMode = false, onDaySelect, selectedDate }: Props) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -107,7 +113,11 @@ export function MonthlyCalendar({ expenses }: Props) {
 
   const handleDayClick = (day: DayData) => {
     if (!day.isCurrentMonth) return;
-    router.push(`/expenses/new?date=${day.dateStr}`);
+    if (onDaySelect) {
+      onDaySelect(day.dateStr);
+    } else {
+      router.push(`/expenses/new?date=${day.dateStr}`);
+    }
   };
 
   return (
@@ -154,60 +164,92 @@ export function MonthlyCalendar({ expenses }: Props) {
       </div>
 
       {/* 日付グリッド */}
-      <div className="grid flex-1 grid-cols-7 grid-rows-6">
-        {days.map((day, idx) => (
-          <button
-            key={day.dateStr + (day.isCurrentMonth ? "" : `-pad${idx}`)}
-            type="button"
-            onClick={() => handleDayClick(day)}
-            disabled={!day.isCurrentMonth}
-            className={[
-              "relative flex flex-col items-start border-b border-r border-[#e8c8b0] p-1 text-left text-xs transition-colors",
-              day.isCurrentMonth
-                ? "hover:bg-[#fff6ee] cursor-pointer"
-                : "cursor-default",
-              day.isToday ? "bg-[#fff5ec]" : "",
-            ].join(" ")}
-          >
-            {/* 日付数字 */}
-            <span
+      <div className={["grid flex-1 grid-cols-7", compactMode ? "grid-rows-6" : "grid-rows-6"].join(" ")}>
+        {days.map((day, idx) => {
+          const isSelected = selectedDate != null && day.dateStr === selectedDate;
+          return (
+            <button
+              key={day.dateStr + (day.isCurrentMonth ? "" : `-pad${idx}`)}
+              type="button"
+              onClick={() => handleDayClick(day)}
+              disabled={!day.isCurrentMonth}
               className={[
-                "mb-0.5 text-xs font-bold",
-                !day.isCurrentMonth
-                  ? "text-[#1c1410]/20"
-                  : day.isToday
-                  ? "rounded-full bg-[#f18840] px-1 text-white"
-                  : "text-[#1c1410]",
+                "relative flex flex-col items-center justify-center border-b border-r border-[#e8c8b0] transition-colors",
+                compactMode ? "py-1" : "items-start p-1 text-left",
+                day.isCurrentMonth
+                  ? "hover:bg-[#fff6ee] cursor-pointer"
+                  : "cursor-default",
+                isSelected ? "bg-[#fff1e5]" : "",
               ].join(" ")}
+              style={compactMode ? { height: 44 } : {}}
             >
-              {day.date.getDate()}
-            </span>
-
-            {/* 支出 */}
-            {day.outgo > 0 && (
-              <div className="flex items-center gap-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#f18840]" />
-                <span className="text-[9px] font-bold text-[#1c1410]/60">
-                  {day.outgo >= 1000
-                    ? `${Math.floor(day.outgo / 1000)}k`
-                    : day.outgo}
-                </span>
-              </div>
-            )}
-
-            {/* 収入 */}
-            {day.income > 0 && (
-              <div className="flex items-center gap-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#35b5a2]" />
-                <span className="text-[9px] font-bold text-[#1c1410]/60">
-                  {day.income >= 1000
-                    ? `${Math.floor(day.income / 1000)}k`
-                    : day.income}
-                </span>
-              </div>
-            )}
-          </button>
-        ))}
+              {compactMode ? (
+                <>
+                  {/* コンパクト: 日付数字を丸で強調 */}
+                  <span
+                    className={[
+                      "flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold leading-none transition-colors",
+                      !day.isCurrentMonth
+                        ? "text-[#1c1410]/20"
+                        : isSelected
+                        ? "bg-[#f18840] text-white"
+                        : day.isToday
+                        ? "border-2 border-[#f18840] text-[#f18840]"
+                        : "text-[#1c1410]",
+                    ].join(" ")}
+                  >
+                    {day.date.getDate()}
+                  </span>
+                  {/* ドットのみ */}
+                  <div className="flex items-center gap-0.5 mt-0.5">
+                    {day.outgo > 0 && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#f18840]" />
+                    )}
+                    {day.income > 0 && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#35b5a2]" />
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* 通常: 日付数字 + 金額表示 */}
+                  <span
+                    className={[
+                      "mb-0.5 text-xs font-bold",
+                      !day.isCurrentMonth
+                        ? "text-[#1c1410]/20"
+                        : day.isToday
+                        ? "rounded-full bg-[#f18840] px-1 text-white"
+                        : "text-[#1c1410]",
+                    ].join(" ")}
+                  >
+                    {day.date.getDate()}
+                  </span>
+                  {day.outgo > 0 && (
+                    <div className="flex items-center gap-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#f18840]" />
+                      <span className="text-[9px] font-bold text-[#1c1410]/60">
+                        {day.outgo >= 1000
+                          ? `${Math.floor(day.outgo / 1000)}k`
+                          : day.outgo}
+                      </span>
+                    </div>
+                  )}
+                  {day.income > 0 && (
+                    <div className="flex items-center gap-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#35b5a2]" />
+                      <span className="text-[9px] font-bold text-[#1c1410]/60">
+                        {day.income >= 1000
+                          ? `${Math.floor(day.income / 1000)}k`
+                          : day.income}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </button>
+          );
+        })}
       </div>
     </section>
   );
