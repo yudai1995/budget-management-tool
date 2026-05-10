@@ -1,15 +1,17 @@
 # ============================================================
-# security-scan-issue.yml — 新規 CVE 検出時に GitHub Issue を自動作成する
+# security-scan-issue.yml — CVE 検出時に GitHub Issue を自動作成する
 #
 # フロー:
 #   1. Trivy FS スキャンを実行（JSON 形式で出力）
-#   2. 前回の成功ワークフランからアーティファクトをダウンロード
-#   3. 前回との diff で新規 CVE（HIGH/CRITICAL）を特定
-#   4. 新規 CVE ごとに Open Issue がなければ GitHub Issue を作成
-#   5. 現在のスキャン結果をアーティファクトとして保存（次回比較用）
+#   2. 各 CVE に対して Open Issue が存在するか確認
+#   3. 存在しない CVE（HIGH/CRITICAL）に対して Issue を新規作成
+#
+# ─ pr-checks.yml との役割分担 ────────────────────────────────
+#   pr-checks.yml: PR 時に即時検知 → 同ジョブ内で Issue 作成（P1 で起票）
+#   このワークフロー: 定期スキャンで見落とし検知（週次 + 手動実行）
 #
 # 実行タイミング:
-#   - 毎週月曜 09:00 UTC（定期スキャン）
+#   - 毎週月曜 09:00 UTC（定期スキャン・見落とし防止）
 #   - workflow_dispatch（手動実行）
 # ============================================================
 
@@ -31,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Trivy filesystem scan
+      - name: Run Trivy filesystem scan (JSON)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
@@ -43,121 +45,83 @@ jobs:
           trivyignores: .trivyignore
           skip-dirs: usr/local/lib/node_modules/npm
 
-      - name: Download previous scan results
+      - name: Create Issues for CVEs without existing tracking
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 前回の成功ワークフロー ID を取得
-          PREV_RUN_ID=$(gh run list \
-            --workflow=security-scan-issue.yml \
-            --status=success \
-            --limit=1 \
-            --json databaseId \
-            --jq '.[0].databaseId // empty')
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          from datetime import datetime, timezone
 
-          if [ -n "$PREV_RUN_ID" ]; then
-            echo "前回の成功ラン: $PREV_RUN_ID からアーティファクトをダウンロード"
-            mkdir -p prev-scan
-            gh run download "$PREV_RUN_ID" -n trivy-scan-results -D prev-scan/ 2>/dev/null || {
-              echo "アーティファクトのダウンロード失敗（初回実行の可能性）"
-            }
-          else
-            echo "前回の成功ランなし（初回実行）"
-          fi
+          try:
+              with open('current-scan.json') as f:
+                  data = json.load(f)
+          except Exception as e:
+              print(f"JSON 読み込みエラー: {e}")
+              sys.exit(0)
 
-      - name: Compare CVEs and create issues for new findings
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # 前回結果がない場合は初回実行として比較をスキップ
-          if [ ! -f prev-scan/trivy-scan.json ]; then
-            echo "初回実行のため比較スキップ。次回から差分検出を開始します。"
-            cp current-scan.json trivy-scan.json
-            exit 0
-          fi
+          vulns = []
+          for result in data.get('Results', []):
+              for v in result.get('Vulnerabilities') or []:
+                  if v.get('Severity') in ('HIGH', 'CRITICAL'):
+                      vulns.append(v)
 
-          # 現在のCVE一覧（CVE_ID PKG_NAME SEVERITY の形式）
-          jq -r '
-            .Results[]?.Vulnerabilities[]?
-            | select(.Severity == "CRITICAL" or .Severity == "HIGH")
-            | "\(.VulnerabilityID) \(.PkgName) \(.Severity)"
-          ' current-scan.json 2>/dev/null | sort | uniq > current-cves.txt || touch current-cves.txt
+          if not vulns:
+              print("HIGH/CRITICAL の CVE なし。スキャン完了。")
+              sys.exit(0)
 
-          # 前回のCVE一覧
-          jq -r '
-            .Results[]?.Vulnerabilities[]?
-            | select(.Severity == "CRITICAL" or .Severity == "HIGH")
-            | "\(.VulnerabilityID) \(.PkgName) \(.Severity)"
-          ' prev-scan/trivy-scan.json 2>/dev/null | sort | uniq > prev-cves.txt || touch prev-cves.txt
+          print(f"検出された HIGH/CRITICAL CVE: {len(vulns)} 件")
+          created = 0
 
-          # 新規CVEを検出（現在にあって前回にないもの）
-          NEW_CVES=$(comm -23 current-cves.txt prev-cves.txt || true)
+          for v in vulns:
+              cve_id = v.get('VulnerabilityID', '')
+              pkg = v.get('PkgName', '')
+              severity = v.get('Severity', '')
+              installed = v.get('InstalledVersion', '不明')
+              fixed = v.get('FixedVersion', '未リリース')
+              description = (v.get('Description') or 'N/A')[:300]
+              url = v.get('PrimaryURL', 'N/A')
 
-          if [ -z "$NEW_CVES" ]; then
-            echo "新規CVEなし。スキャン完了。"
-            cp current-scan.json trivy-scan.json
-            exit 0
-          fi
+              # 重複チェック: 同一 CVE_ID の Open Issue が存在する場合はスキップ
+              result = subprocess.run(
+                  ['gh', 'issue', 'list', '--state', 'open',
+                   '--search', f'"{cve_id}" in:title',
+                   '--json', 'number', '--jq', 'length'],
+                  capture_output=True, text=True
+              )
+              if result.stdout.strip() != '0':
+                  print(f"{cve_id}: Open Issue 既存のためスキップ")
+                  continue
 
-          echo "新規CVE検出:"
-          echo "$NEW_CVES"
+              now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
+              body = f"""## 概要
 
-          # 新規CVEごとに Issue を作成
-          while IFS= read -r CVE_LINE; do
-            [ -z "$CVE_LINE" ] && continue
+          定期 Security Scan (Trivy) が HIGH/CRITICAL CVE を検知しました。
 
-            CVE_ID=$(echo "$CVE_LINE" | awk '{print $1}')
-            PKG=$(echo "$CVE_LINE" | awk '{print $2}')
-            SEVERITY=$(echo "$CVE_LINE" | awk '{print $3}')
+          ## 詳細
 
-            # 重複チェック（同一CVE IDの Open Issue が存在する場合はスキップ）
-            EXISTING=$(gh issue list \
-              --state open \
-              --search "\"$CVE_ID\" in:title" \
-              --json number \
-              --jq 'length')
+          - 影響パッケージ: {pkg} {installed} → 修正版: {fixed}
+          - 深刻度: {severity}
+          - 説明: {description}
+          - 参照: {url}
 
-            if [ "$EXISTING" -gt 0 ]; then
-              echo "$CVE_ID: Open Issue が既に存在するためスキップ"
-              continue
-            fi
+          ## 対応方針
 
-            # CVE の詳細情報を取得
-            CVE_DETAIL=$(jq -r --arg cve "$CVE_ID" '
-              .Results[]?.Vulnerabilities[]?
-              | select(.VulnerabilityID == $cve)
-              | "- 影響パッケージ: \(.PkgName) \(.InstalledVersion // "不明") → 修正版: \(.FixedVersion // "未リリース")\n- 深刻度: \(.Severity)\n- 説明: \(.Description // "N/A" | .[0:300])\n- 参照: \(.PrimaryURL // "N/A")"
-            ' current-scan.json | head -6)
+          - 影響パッケージのアップデートを検討する（`pnpm.overrides` で固定バージョンを指定）
+          - 修正版が未リリースの場合は `.trivyignore` に理由コメントとともに追記する
 
-            gh issue create \
-              --title "[$SEVERITY] $CVE_ID が $PKG で検出されました" \
-              --label "type: chore" \
-              --label "priority: P2" \
-              --label "backlog" \
-              --body "## 概要
+          _自動作成: security-scan-issue.yml — {now}_"""
 
-Security Scan (Trivy) が新規 CVE を検出しました。前回スキャン時は存在しなかった脆弱性です。
+              subprocess.run([
+                  'gh', 'issue', 'create',
+                  '--title', f'[{severity}] {cve_id} が {pkg} で検出されました',
+                  '--label', 'type: chore',
+                  '--label', 'priority: P1',
+                  '--label', 'backlog',
+                  '--body', body,
+              ], check=False)
+              print(f"{cve_id}: Issue 作成完了")
+              created += 1
 
-## 詳細
-
-${CVE_DETAIL}
-
-## 対応方針
-
-- 影響パッケージのアップデートを検討する（\`pnpm.overrides\` で固定バージョンを指定）
-- 修正版が未リリースの場合は \`.trivyignore\` に理由コメントとともに追記する
-
-_自動作成: security-scan-issue.yml — $(date -u '+%Y-%m-%d %H:%M UTC')_"
-
-            echo "$CVE_ID: Issue 作成完了"
-          done <<< "$NEW_CVES"
-
-          # 現在のスキャン結果を保存（次回比較用）
-          cp current-scan.json trivy-scan.json
-
-      - name: Upload scan results as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-scan-results
-          path: trivy-scan.json
-          retention-days: 30
+          print(f"\n完了: {created} 件の新規 Issue を作成しました")
+          PYEOF
