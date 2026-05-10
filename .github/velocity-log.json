@@ -271,6 +271,21 @@
           "pr": 181
         }
       ]
+    },
+    {
+      "sprint_number": 6,
+      "date": "2026-05-10",
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 183,
+          "title": "スマホ版カレンダーページのUI/UX刷新",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.7,
+          "pr": 185
+        }
+      ]
     }
   ]
 }
