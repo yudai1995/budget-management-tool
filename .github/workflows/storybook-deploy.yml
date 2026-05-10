@@ -67,6 +67,9 @@ jobs:
     name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
+    # GitHub Pages が Settings で有効化されていない場合にデプロイが失敗しても
+    # CI 全体を失敗とみなさない。Storybook Build が成功すれば完了とする。
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
