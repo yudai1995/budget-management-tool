@@ -2,8 +2,6 @@
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Form } from '@/components/ui/form'
 import { SelectField } from './SelectField'
 import { Button } from './Button'
@@ -40,17 +38,21 @@ export const Basic: Story = {
   },
 }
 
-const schema = z.object({ category: z.string().min(1, 'カテゴリを選択してください') })
-
+// デモ用インラインバリデーション（zodResolver は Zod v4 との型互換性問題のため stories では使用しない）
 export const WithValidation: Story = {
   render: () => {
-    const form = useForm<z.infer<typeof schema>>({
-      resolver: zodResolver(schema),
+    const form = useForm<{ category: string }>({
       defaultValues: { category: '' },
+      mode: 'onSubmit',
     })
+    function onSubmit(data: { category: string }) {
+      if (!data.category) {
+        form.setError('category', { message: 'カテゴリを選択してください' })
+      }
+    }
     return (
       <Form {...form}>
-        <form className="w-80 flex flex-col gap-4" onSubmit={form.handleSubmit(() => {})}>
+        <form className="w-80 flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>
           <SelectField
             name="category"
             label="カテゴリ"
