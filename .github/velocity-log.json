@@ -312,7 +312,7 @@
       "date": "2026-05-10",
       "goal": "スプリントの品質・仮説検証能力を計測可能にしAIエージェントの自律改善サイクルを確立する",
       "hypothesis": "ゴール・バグ率・バックログ鮮度を自動追跡することでスプリントの改善速度が上がる",
-      "total_points": 0,
+      "total_points": 2,
       "pbis": [
         {
           "issue": 187,
@@ -321,6 +321,14 @@
           "points": null,
           "cycle_time_hours": 0,
           "pr": 197
+        },
+        {
+          "issue": 194,
+          "title": "chore: スプリントゴール・仮説をvelocity-logとレトロに統合する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0.1,
+          "pr": 198
         }
       ]
     }
