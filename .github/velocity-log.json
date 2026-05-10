@@ -339,7 +339,7 @@
           "pbi_type": "feature",
           "size": "M",
           "points": 3,
-          "cycle_time_hours": null,
+          "cycle_time_hours": 0.7,
           "pr": 185
         }
       ]
