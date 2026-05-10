@@ -18,7 +18,42 @@ const eslintConfig = defineConfig([
     // Storybook ビルド出力（コミットしないが lint 対象外にする）
     "storybook-static/**",
   ]),
-  ...storybook.configs["flat/recommended"]
+  ...storybook.configs["flat/recommended"],
+  // shadcn/ui ラッパー強制ルール:
+  // src/components/ui/ 配下のラッパーを経由せず Radix UI プリミティブや vaul を直接インポートすることを禁止する。
+  // src/components/ui/ 自体はラッパー実装のため除外する。
+  {
+    files: ["**/*.{ts,tsx}"],
+    // src/components/ui/ はラッパー実装のため除外。__tests__/**はモック目的のnamespace importが必要なため除外。
+    ignores: ["**/components/ui/**", "**/__tests__/**", "**/*.stories.tsx"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "sonner",
+              importNames: ["Toaster"],
+              message:
+                "Toaster を直接インポートせず @/components/ui/sonner の Toaster を使用してください。toast() 関数は直接インポート可です。",
+            },
+          ],
+          patterns: [
+            {
+              group: ["@radix-ui/*"],
+              message:
+                "@radix-ui/* を直接インポートせず @/components/ui/* のラッパーコンポーネントを使用してください。新規コンポーネントが必要な場合は先に src/components/ui/ にラッパーを作成してください。",
+            },
+            {
+              group: ["vaul"],
+              message:
+                "vaul を直接インポートせず @/components/ui/drawer を使用してください。",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

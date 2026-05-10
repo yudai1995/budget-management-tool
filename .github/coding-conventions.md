@@ -45,6 +45,34 @@
 - ローディング状態とエラー状態の表示を必ず考慮する
 - 破壊的な操作の前には必ず確認（モーダル等）を挟む
 
+### shadcn/ui ラッパーコンポーネント規約（必須）
+
+> **この規約は ESLint ルール（`no-restricted-imports`）によって自動強制される。違反はコミット時に `lefthook` でブロックされる。**
+
+| ルール | 内容 |
+|--------|------|
+| **プリミティブ直接インポート禁止** | `@radix-ui/*`・`vaul`・`sonner(Toaster)` を `src/` から直接インポートしてはならない |
+| **ラッパー経由の義務** | `src/components/ui/` 配下のラッパーコンポーネントを使用すること |
+| **ネイティブ要素の制限** | `<button>`, `<input>`, `<select>` 等は shadcn/ui 相当ラッパーが存在する場合は使用禁止 |
+| **新規コンポーネントの追加** | UI プリミティブが必要な場合は先に `src/components/ui/` にラッパーを作成してから使用する |
+| **例外** | `toast()` 関数など UI 以外の API は `sonner` から直接インポート可。`__tests__/` 内はモック目的のため除外 |
+
+**現在のラッパー一覧** (`src/components/ui/`):
+
+| ラッパー | 内部ライブラリ | 用途 |
+|----------|--------------|------|
+| `button.tsx` | `@radix-ui/react-slot` | ボタン |
+| `dialog.tsx` | `@radix-ui/react-dialog` | モーダル |
+| `drawer.tsx` | `vaul` | ドロワー |
+| `select.tsx` | `@radix-ui/react-select` | セレクトボックス |
+| `sonner.tsx` | `sonner` | トースト通知 |
+| `form.tsx` | `@radix-ui/react-label` | フォームフィールド |
+| `tabs.tsx` | `@radix-ui/react-tabs` | タブ |
+| `popover.tsx` | `@radix-ui/react-popover` | ポップオーバー |
+| `tooltip.tsx` | `@radix-ui/react-tooltip` | ツールチップ |
+| `checkbox.tsx` | `@radix-ui/react-checkbox` | チェックボックス |
+| `sheet.tsx` | `@radix-ui/react-dialog` | サイドシート |
+
 ---
 
 ## アイコン規約
