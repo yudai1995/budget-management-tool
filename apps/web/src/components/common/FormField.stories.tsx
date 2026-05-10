@@ -2,8 +2,6 @@
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import {
   Form,
   FormField as UiFormField,
@@ -92,24 +90,27 @@ export const Disabled: Story = {
   },
 }
 
-// バリデーションエラー表示
-const loginSchema = z.object({
-  email: z.string().email('有効なメールアドレスを入力してください'),
-  password: z.string().min(8, 'パスワードは8文字以上必要です'),
-})
-
 /** バリデーション付き（送信ボタンを押すとエラー表示） */
 export const WithValidation: Story = {
   render: () => {
-    const form = useForm<z.infer<typeof loginSchema>>({
-      resolver: zodResolver(loginSchema),
+    const form = useForm<{ email: string; password: string }>({
       defaultValues: { email: '', password: '' },
+      mode: 'onSubmit',
     })
+    function onSubmit(data: { email: string; password: string }) {
+      // デモ用インラインバリデーション（zodResolver は Zod v4 との型互換性問題のため stories では使用しない）
+      if (!data.email.includes('@')) {
+        form.setError('email', { message: '有効なメールアドレスを入力してください' })
+      }
+      if (data.password.length < 8) {
+        form.setError('password', { message: 'パスワードは8文字以上必要です' })
+      }
+    }
     return (
       <Form {...form}>
         <form
           className="w-80 flex flex-col gap-4"
-          onSubmit={form.handleSubmit(() => {})}
+          onSubmit={form.handleSubmit(onSubmit)}
         >
           <FormField name="email" label="メールアドレス" type="email" placeholder="you@example.com" />
           <FormField name="password" label="パスワード" type="password" placeholder="8文字以上" />
