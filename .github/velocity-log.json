@@ -593,7 +593,7 @@
     },
     {
       "date": "2026-05-11",
-      "total_points": 2,
+      "total_points": 4,
       "pbis": [
         {
           "issue": 265,
@@ -602,6 +602,14 @@
           "points": 2,
           "cycle_time_hours": null,
           "pr": 268
+        },
+        {
+          "issue": 266,
+          "title": "chore: デプロイ失敗時に GitHub Issue を自動作成し PR 段階で Docker ビルドを検証する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 269
         }
       ]
     }
