@@ -590,6 +590,20 @@
           "pr": 267
         }
       ]
+    },
+    {
+      "date": "2026-05-11",
+      "total_points": 2,
+      "pbis": [
+        {
+          "issue": 265,
+          "title": "fix: 初期設定が未完了のとき SetupModal が表示されず空フォールバックが永続する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 268
+        }
+      ]
     }
   ]
 }
