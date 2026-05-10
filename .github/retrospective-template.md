@@ -1,69 +1,149 @@
 # スプリントレトロスペクティブ テンプレート
 
-**用途**: スプリント完了時に AI エージェントが埋めて Issue にコメントする振り返りフォーム。
-`スプリントレビューをして` コマンドで自動生成される。
+**用途**: スプリント完了時に AI エージェントが埋めてスプリントボードに登録するための振り返り定義。
+`スプリントレビューをして` および `フルスプリントを回して` のクロージングフェーズで自動生成される。
+
+## このファイルの位置づけ
+
+- レトロは **「Retro: Sprint #N」という専用 Issue** として作成し、スプリントボードに登録する
+- コメントとして投稿するのは補助的な通知のみ（完了PBIへの参照リンクを貼る程度）
+- **アクションアイテム（Try）は個別の GitHub Issue として作成**し、`retro-action` ラベルを付けて次スプリントのバックログに自動追加する
 
 ---
 
-## 記入形式
+## AI が実行するクロージングフロー（詳細）
 
-AI は以下のテンプレートに実際のデータを埋めて Issue にコメントとして投稿すること。
-`{placeholder}` 形式の部分を実際の値に置き換え、不要なセクションは「該当なし」と記載する。
+### Step 1: データ収集
+
+```bash
+# 対象スプリントのPBIデータを取得
+cat .github/velocity-log.json
+
+# 前スプリントのRetro Issueを取得（前回のTry確認用）
+gh issue list --label "retro" --state closed --limit 3 --json number,title,body
+```
+
+### Step 2: 前回Tryの実行確認
+
+前回の「Retro: Sprint #N-1」Issueの `## Try` セクションを読み込み、
+各アクションアイテムの `retro-action` Issueが `Done` になっているか確認する。
+
+### Step 3: Retro Issue 作成
+
+以下のテンプレートを埋めて GitHub Issue を作成する：
+
+```bash
+gh issue create \
+  --title "Retro: Sprint #N" \
+  --label "retro" \
+  --body "..."
+```
+
+### Step 4: アクションアイテムを個別 Issue 化
+
+Try セクションの各アイテムを個別 Issue として作成し、`retro-action` + `backlog` ラベルを付ける：
+
+```bash
+gh issue create \
+  --title "[Retro Action] {アクションの内容}" \
+  --label "retro-action,backlog" \
+  --body "Sprint #N のレトロで特定した改善アクション。\n\n## 背景\n{Problemの内容}\n\n## 対応\n{Tryの内容}\n\nRef: Retro #{Retro Issue番号}"
+```
+
+### Step 5: Retro Issue をプロジェクトボードに登録
+
+```bash
+# Issue をプロジェクトに追加
+ITEM_ID=$(gh project item-add 1 --owner yyamamoto95 --url {Retro IssueのURL} --format json | jq -r '.id')
+
+# Sprint # フィールドを設定（PVTF_lAHOA-qlQM4BWtuozhSdS10）
+gh api graphql -f query='
+mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+  updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value}) {
+    projectV2Item { id }
+  }
+}' -f projectId="PVT_kwHOA-qlQM4BWtuo" -f itemId="$ITEM_ID" \
+   -f fieldId="PVTF_lAHOA-qlQM4BWtuozhSdS10" -F "value[number]={N}"
+
+# Status を Done に設定（PVTSSF_lAHOA-qlQM4BWtuozhR_pd4 / Done option: 5a3dd530）
+gh api graphql -f query='
+mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+  updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value}) {
+    projectV2Item { id }
+  }
+}' -f projectId="PVT_kwHOA-qlQM4BWtuo" -f itemId="$ITEM_ID" \
+   -f fieldId="PVTSSF_lAHOA-qlQM4BWtuozhR_pd4" -f "value[singleSelectOptionId]=5a3dd530"
+```
+
+### Step 6: 完了PBIにRetro IssueへのリンクをNotify
+
+```bash
+gh issue comment {PBI Issue番号} --body "スプリントレトロスペクティブを作成しました: #{Retro Issue番号}"
+```
 
 ---
+
+## Retro Issue 本文テンプレート
+
+AI は以下を実際のデータで埋めて Issue 本文とすること。`{placeholder}` を必ず置換する。
 
 ```markdown
-## スプリントレトロスペクティブ — {スプリント識別子（例: 2026-05-06 / Issue #140）}
-
-### 完了サマリー
+## スプリント概要
 
 | 項目 | 値 |
 |------|---|
-| 対象 PBI | #{Issue番号} {タイトル} |
-| 開始 | {in-progress ラベル付与日時} |
-| 完了 | {PR マージ日時} |
-| サイクルタイム | {実経過時間} |
-| サイズ見積もり | {size: S / M / L / XS} |
-| 実績との乖離 | {予定より短い / 予定通り / 予定より長い（+Xh）} |
+| スプリント番号 | #{N} |
+| 実施日 | {YYYY-MM-DD} |
+| 完了PBI | {PBI数}件 |
+| 合計ポイント | {X}pt |
+| 平均サイクルタイム | {X}h（計測済みPBIのみ） |
+| 前スプリント比 | {+X / -X pt}（前スプリントとの比較） |
 
 ---
 
-### Keep（続けること）
+## 完了PBI一覧
+
+| Issue | タイトル | Size | 見積pt | CT (h) | 乖離 |
+|-------|---------|------|--------|--------|------|
+| #{番号} | {タイトル} | {size} | {pt}pt | {CT}h | {予定通り / +Xh超過 / -Xh短縮} |
+
+---
+
+## Keep（続けること）
 
 - {うまくいったこと・再現したいアプローチ}
-- {有効だったツール・ワークフロー}
 
-### Problem（問題だったこと）
+---
+
+## Problem（問題だったこと）
 
 - {詰まったポイントとその原因}
-- {見積もりが外れた理由}
-- {ブロックの原因（環境・仕様不明・依存関係など）}
-
-### Try（次に試すこと）
-
-- {Problem に対する具体的な改善案}
-- {次スプリントで変えること}
 
 ---
 
-### 次スプリントへの持ち越し
+## Try — アクションアイテム
 
-| Issue | 理由 |
-|-------|------|
-| #{番号} {タイトル} | {なぜ今スプリントで完了できなかったか} |
+> 各アイテムは個別Issueとして作成済みです（`retro-action` ラベル）。
+> 次スプリントのRetroで実行確認します。
 
-持ち越しなし: {該当なしの場合はここに記載}
+- [ ] #{retro-action Issue番号} {アクションの内容}
 
 ---
 
-### AI による健康状態診断
+## 前スプリントのTryを実行できたか
 
-{以下の観点で開発フローの状態を1〜3文で診断する}
+| Try（Sprint #{N-1}） | 対応Issue | 結果 |
+|---------------------|----------|------|
+| {前回のTry内容} | #{番号} | {完了 / 未着手 / 進行中} |
 
-- **速度**: 直近3スプリントのサイクルタイムトレンド（短縮/横ばい/長期化）
-- **品質**: CI 失敗・バグ再発の有無
-- **詰まり**: ブロック頻度と主な原因パターン
-- **改善提案**: 次の1アクション
+---
+
+## AI診断
+
+- **速度**: {直近3スプリントのサイクルタイムトレンド}
+- **品質**: {CI失敗・バグ再発の有無}
+- **詰まり**: {ブロック頻度と主な原因}
+- **次の1アクション**: {最優先の改善提案}
 
 ---
 
@@ -74,8 +154,8 @@ _自動生成: Claude Code スプリントエージェント — {生成日時}_
 
 ## AI 記入時の注意事項
 
-1. `git log --oneline` と `gh pr view` でマージ済み PR の情報を取得してから記入する
-2. サイクルタイムは Issue の `in-progress` ラベル付与コメントと PR マージ日時から計算する
-3. 「健康状態診断」は直近3件のサイクルタイムと CI 結果に基づいて事実ベースで記述する
-4. 推測・憶測は記載しない。データがない場合は「計測データなし」と明記する
-5. コメント投稿後、Issue に `in-review` ラベルが残っている場合は `done` 相当の処理を案内する
+1. **データを必ず確認してから記入する**（`velocity-log.json` と `gh pr view` で事実ベース）
+2. **サイクルタイム乖離の基準**: XS < 0.5h / S < 2h / M < 4h / L < 5h
+3. **前回Tryの確認**: 前スプリントの `retro-action` Issue の状態を `gh issue view` で確認する
+4. **推測・憶測は記載しない**。データがない場合は「計測データなし」と明記する
+5. **アクションアイテムは具体的に**: 「改善する」ではなく「○○ファイルの○○手順を追記する」のように書く

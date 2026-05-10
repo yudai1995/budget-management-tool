@@ -1,11 +1,8 @@
 name: サイクルタイム計測
 
 on:
-  # in-progress ラベルが付与されたとき（スプリント開始）
   issues:
     types: [labeled]
-
-  # PR がマージされたとき（スプリント完了）
   pull_request:
     types: [closed]
 
@@ -14,14 +11,10 @@ permissions:
   pull-requests: read
 
 jobs:
-  # ─────────────────────────────────────────────
-  # Job 1: スプリント開始タイムスタンプを Issue に記録
-  # ─────────────────────────────────────────────
   record-sprint-start:
     name: スプリント開始を記録
     if: github.event_name == 'issues' && github.event.label.name == 'in-progress'
     runs-on: ubuntu-latest
-
     steps:
       - name: 開始タイムスタンプをコメント投稿
         uses: actions/github-script@v7
@@ -30,7 +23,6 @@ jobs:
             const now = new Date();
             const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
             const timestamp = jst.toISOString().replace('T', ' ').replace('Z', ' JST').slice(0, 22);
-
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -47,18 +39,15 @@ jobs:
               ].join('\n'),
             });
 
-  # ─────────────────────────────────────────────
-  # Job 2: PR マージ時にサイクルタイムを計算して Issue に投稿
-  # ─────────────────────────────────────────────
   record-sprint-complete:
     name: サイクルタイムを集計
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     steps:
-      - name: 関連 Issue を特定してサイクルタイムを投稿
+      - name: サイクルタイムを集計し Issue にコメント + Project フィールドを更新
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
             const prBody = pr.body || '';
@@ -68,70 +57,134 @@ jobs:
             const additions = pr.additions ?? 0;
             const deletions = pr.deletions ?? 0;
 
-            // PR 本文から Closes #番号 を抽出
-            const issueMatch = prBody.match(/Closes\s+#(\d+)/i);
-            if (!issueMatch) {
+            const PROJECT_ID = 'PVT_kwHOA-qlQM4BWtuo';
+            const CYCLE_TIME_FIELD_ID = 'PVTF_lAHOA-qlQM4BWtuozhSdS2U';
+            const SPRINT_FIELD_ID = 'PVTF_lAHOA-qlQM4BWtuozhSdS10';
+            const SP_FIELD_ID = 'PVTF_lAHOA-qlQM4BWtuozhSdS2Q';
+            const POINT_SCALE = { XS: 1, S: 2, M: 3, L: 5, XL: 8 };
+
+            const issueNumbers = [];
+            const closesPattern = /Closes\s+#(\d+)/gi;
+            let m;
+            while ((m = closesPattern.exec(prBody)) !== null) {
+              issueNumbers.push(parseInt(m[1], 10));
+            }
+            if (issueNumbers.length === 0) {
               console.log('Closes #番号 が PR 本文に見つかりませんでした。スキップします。');
               return;
             }
-            const issueNumber = parseInt(issueMatch[1], 10);
 
-            // Issue のコメントから開始タイムスタンプを取得
-            const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              per_page: 100,
-            });
+            const sprintMatch = prBody.match(/Sprint:\s*(\d+)/i);
+            const sprintNumber = sprintMatch ? parseInt(sprintMatch[1], 10) : null;
 
-            const startComment = comments.data.find(c =>
-              c.body.includes('スプリント開始') && c.body.includes('開始日時')
-            );
-
-            let cycleTimeText = '計測データなし（in-progress ラベル付与前にマージされた可能性があります）';
-            let startedAt = null;
-
-            if (startComment) {
-              // "開始日時 | YYYY-MM-DD HH:MM JST" の形式からパース
-              const dateMatch = startComment.body.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) JST/);
-              if (dateMatch) {
-                // JST → UTC に変換して Date オブジェクト化
-                startedAt = new Date(dateMatch[1].replace(' ', 'T') + ':00+09:00');
-                const diffMs = mergedAt - startedAt;
-                const diffH = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffM = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                cycleTimeText = `${diffH}時間 ${diffM}分`;
-              }
+            async function findProjectItemId(issueNumber) {
+              const res = await github.graphql(`
+                query($projectId: ID!) {
+                  node(id: $projectId) {
+                    ... on ProjectV2 {
+                      items(first: 100) {
+                        nodes { id content { ... on Issue { number } } }
+                      }
+                    }
+                  }
+                }`, { projectId: PROJECT_ID });
+              const item = res.node.items.nodes.find(n => n.content?.number === issueNumber);
+              return item?.id ?? null;
             }
 
-            // マージ日時を JST に変換
-            const mergedAtJst = new Date(mergedAt.getTime() + 9 * 60 * 60 * 1000)
-              .toISOString().replace('T', ' ').replace('Z', ' JST').slice(0, 22);
+            async function updateNumberField(itemId, fieldId, value) {
+              await github.graphql(`
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value
+                  }) { projectV2Item { id } }
+                }`, { projectId: PROJECT_ID, itemId, fieldId, value: { number: value } });
+            }
 
-            const body = [
-              '## スプリント完了 — サイクルタイムレポート',
-              '',
-              `| 項目 | 値 |`,
-              `|------|---|`,
-              `| 完了 PR | [#${pr.number} ${prTitle}](${pr.html_url}) |`,
-              `| 完了日時 | ${mergedAtJst} |`,
-              `| サイクルタイム | ${cycleTimeText} |`,
-              `| 変更ファイル数 | ${changedFiles} |`,
-              `| 追加 / 削除行 | +${additions} / -${deletions} |`,
-              '',
-              '---',
-              '',
-              '### 次のステップ',
-              '',
-              '- `スプリントレビューをして` を実行してレトロスペクティブを記録する',
-              '- 次の PBI を `sprint-backlog` から選択してスプリントを継続する',
-            ].join('\n');
+            for (const issueNumber of issueNumbers) {
+              let issue;
+              try {
+                const { data } = await github.rest.issues.get({
+                  owner: context.repo.owner, repo: context.repo.repo, issue_number: issueNumber,
+                });
+                issue = data;
+              } catch (e) {
+                console.log(`Issue #${issueNumber} の取得に失敗: ${e.message}`);
+                continue;
+              }
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              body,
-            });
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issueNumber, per_page: 100,
+              });
 
-            console.log(`Issue #${issueNumber} にサイクルタイムレポートを投稿しました`);
+              const startComment = comments.data.find(c =>
+                c.body.includes('スプリント開始') && c.body.includes('開始日時')
+              );
+
+              let cycleTimeText = '計測データなし（in-progress ラベル付与前にマージされた可能性があります）';
+              let cycleTimeHours = null;
+
+              if (startComment) {
+                const dateMatch = startComment.body.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) JST/);
+                if (dateMatch) {
+                  const startedAt = new Date(dateMatch[1].replace(' ', 'T') + ':00+09:00');
+                  const diffMs = mergedAt - startedAt;
+                  cycleTimeHours = Math.round((diffMs / (1000 * 60 * 60)) * 10) / 10;
+                  const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+                  const diffM = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                  cycleTimeText = `${diffH}時間 ${diffM}分`;
+                }
+              }
+
+              const mergedAtJst = new Date(mergedAt.getTime() + 9 * 60 * 60 * 1000)
+                .toISOString().replace('T', ' ').replace('Z', ' JST').slice(0, 22);
+
+              const commentBody = [
+                '## スプリント完了 — サイクルタイムレポート',
+                '',
+                `| 項目 | 値 |`,
+                `|------|---|`,
+                `| 完了 PR | [#${pr.number} ${prTitle}](${pr.html_url}) |`,
+                `| 完了日時 | ${mergedAtJst} |`,
+                `| サイクルタイム | ${cycleTimeText} |`,
+                `| 変更ファイル数 | ${changedFiles} |`,
+                `| 追加 / 削除行 | +${additions} / -${deletions} |`,
+                '',
+                '---',
+                '',
+                '### 次のステップ',
+                '',
+                '- `スプリントレビューをして` を実行してレトロスペクティブを記録する',
+                '- 次の PBI を `sprint-backlog` から選択してスプリントを継続する',
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: issueNumber, body: commentBody,
+              });
+
+              const itemId = await findProjectItemId(issueNumber);
+              if (itemId) {
+                if (cycleTimeHours !== null) {
+                  await updateNumberField(itemId, CYCLE_TIME_FIELD_ID, cycleTimeHours);
+                  console.log(`#${issueNumber}: Cycle Time (h) = ${cycleTimeHours}`);
+                }
+                if (sprintNumber !== null) {
+                  await updateNumberField(itemId, SPRINT_FIELD_ID, sprintNumber);
+                  console.log(`#${issueNumber}: Sprint # = ${sprintNumber}`);
+                }
+                const sizeLabel = issue.labels.find(l => l.name.startsWith('size: '));
+                if (sizeLabel) {
+                  const sizeKey = sizeLabel.name.replace('size: ', '');
+                  const points = POINT_SCALE[sizeKey];
+                  if (points) {
+                    await updateNumberField(itemId, SP_FIELD_ID, points);
+                    console.log(`#${issueNumber}: Story Points = ${points}`);
+                  }
+                }
+              } else {
+                console.log(`#${issueNumber}: Project アイテムが見つかりませんでした`);
+              }
+              console.log(`Issue #${issueNumber} にサイクルタイムレポートを投稿しました`);
+            }
