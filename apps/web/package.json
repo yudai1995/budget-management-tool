@@ -11,6 +11,7 @@
     "format": "eslint --fix",
     "test:unit": "vitest run",
     "storybook": "storybook dev -p 6006",
+    "storybook:network": "storybook dev -p 6006 --host 0.0.0.0",
     "build-storybook": "storybook build"
   },
   "dependencies": {
