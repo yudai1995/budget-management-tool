@@ -65,6 +65,15 @@ mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldVal
 }' -f projectId="PVT_kwHOA-qlQM4BWtuo" -f itemId="$ITEM_ID" \
    -f fieldId="PVTF_lAHOA-qlQM4BWtuozhSdS10" -F "value[number]={N}"
 
+# Source PBI フィールドを設定（PVTF_lAHOA-qlQM4BWtuozhSdYxg）
+gh api graphql -f query='
+mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+  updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: $value}) {
+    projectV2Item { id }
+  }
+}' -f projectId="PVT_kwHOA-qlQM4BWtuo" -f itemId="$ITEM_ID" \
+   -f fieldId="PVTF_lAHOA-qlQM4BWtuozhSdYxg" -f "value[text]=Sprint #{N} 全PBI（{PBI番号列}）"
+
 # Status を Done に設定（PVTSSF_lAHOA-qlQM4BWtuozhR_pd4 / Done option: 5a3dd530）
 gh api graphql -f query='
 mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
@@ -75,7 +84,23 @@ mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldVal
    -f fieldId="PVTSSF_lAHOA-qlQM4BWtuozhR_pd4" -f "value[singleSelectOptionId]=5a3dd530"
 ```
 
-### Step 6: 完了PBIにRetro IssueへのリンクをNotify
+### Step 6: retro-action Issue をプロジェクトボードに登録
+
+各 retro-action Issue をプロジェクトに追加し、以下のフィールドを設定する：
+
+```bash
+ACTION_ITEM_ID=$(gh project item-add 1 --owner yyamamoto95 --url {retro-action IssueのURL} --format json | jq -r '.id')
+
+# Sprint # = 発生したスプリント番号
+gh api graphql -f query='mutation(...) {...}' \
+  -f fieldId="PVTF_lAHOA-qlQM4BWtuozhSdS10" -F "value[number]={N}"
+
+# Source PBI = 課題が発生したPBI番号または "Process"
+gh api graphql -f query='mutation(...) {...}' \
+  -f fieldId="PVTF_lAHOA-qlQM4BWtuozhSdYxg" -f "value[text]={#番号 or Process（原因の説明）}"
+```
+
+### Step 7: 完了PBIにRetro IssueへのリンクをNotify
 
 ```bash
 gh issue comment {PBI Issue番号} --body "スプリントレトロスペクティブを作成しました: #{Retro Issue番号}"
