@@ -3,15 +3,18 @@
 #
 # フロー（全ジョブ並列実行）:
 #   1. lint-typecheck    — lint + 型チェック
-#   2. unit-test         — ユニットテスト
-#   3. integration-test  — 統合テスト（MySQL サービスコンテナ使用）
-#   4. security-scan     — Trivy FS スキャン（Docker ビルド不要）
-#   5. migration-check   — Prisma スキーマ検証 + 破壊的変更の検出
-#   6. infra-check       — Terraform 構文・フォーマットチェック
+#   2. nextjs-build      — Next.js プロダクションビルド（型エラーの早期検出）
+#   3. storybook-build   — Storybook ビルド確認
+#   4. unit-test         — ユニットテスト
+#   5. integration-test  — 統合テスト（MySQL サービスコンテナ使用）
+#   6. security-scan     — Trivy FS スキャン（Docker ビルド不要）
+#   7. migration-check   — Prisma スキーマ検証 + 破壊的変更の検出
+#   8. infra-check       — Terraform 構文・フォーマットチェック
 #
 # ブランチ保護設定（GitHub Settings > Branches > main）:
 #   Require status checks to pass before merging に以下を登録すること:
 #   - Lint & Type Check
+#   - Next.js Build
 #   - Unit Test
 #   - Integration Test
 #   - Security Scan (FS)
@@ -53,6 +56,39 @@ jobs:
 
       - name: Lint & type-check
         run: pnpm turbo run lint type-check
+
+  # ─── Next.js プロダクションビルド確認 ───────────────────────────────────────
+  # Docker ビルドと同等の next build を PR 時点で実行し、型エラーを事前検出する。
+  # pnpm turbo run type-check（tsc --noEmit）はインクリメンタルキャッシュを使用するため
+  # next build が検出する型エラーを見逃すケースがある。本ジョブで補完する。
+  nextjs-build:
+    name: Next.js Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Build common & api-client
+        run: |
+          pnpm --filter @budget/common build
+          pnpm --filter @budget/api-client build
+
+      - name: Generate Prisma client
+        run: pnpm --filter @budget/api exec prisma generate
+
+      - name: Next.js production build
+        run: pnpm --filter web build
 
   # ─── Storybook ビルド確認 ─────────────────────────────────────────────────
   storybook-build:
