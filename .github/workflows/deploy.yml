@@ -461,6 +461,8 @@ jobs:
        needs.db-seed.result == 'failure' ||
        needs.deploy-ecs.result == 'failure')
     steps:
+      - uses: actions/checkout@v4
+
       - name: Create deploy failure issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
