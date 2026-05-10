@@ -8,6 +8,8 @@
       "L": 5,
       "XL": 8
     },
+    "pbi_type_values": ["feature", "fix", "tech-debt", "chore"],
+    "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
     "next_sprint_number": 8
@@ -23,6 +25,7 @@
         {
           "issue": 145,
           "title": "chore: ベロシティ計測・スプリントキャパシティ予測・ボトルネック分析を自動化する",
+          "pbi_type": "chore",
           "size": "M",
           "points": 3,
           "cycle_time_hours": null,
@@ -31,6 +34,7 @@
         {
           "issue": 137,
           "title": "fix: スマホ入力モーダルで収入を選択しても支出として登録される",
+          "pbi_type": "fix",
           "size": "S",
           "points": 2,
           "cycle_time_hours": null,
@@ -39,6 +43,7 @@
         {
           "issue": 138,
           "title": "fix: 支出入力フォームでカテゴリが「食費」に固定される",
+          "pbi_type": "fix",
           "size": "S",
           "points": 2,
           "cycle_time_hours": null,
@@ -47,6 +52,7 @@
         {
           "issue": 136,
           "title": "design: Sandbox プロトタイプのカラー・デザインをデザインシステムに準拠させる",
+          "pbi_type": "chore",
           "size": "S",
           "points": 2,
           "cycle_time_hours": null,
@@ -64,6 +70,7 @@
         {
           "issue": 135,
           "title": "design: デザインシステムをフラット方針に統一する",
+          "pbi_type": "chore",
           "size": "M",
           "points": 3,
           "cycle_time_hours": null,
@@ -72,6 +79,7 @@
         {
           "issue": 139,
           "title": "chore: docs/ 配下の不要ファイルを整理し SSOT と整合させる",
+          "pbi_type": "chore",
           "size": "S",
           "points": 2,
           "cycle_time_hours": null,
@@ -80,6 +88,7 @@
         {
           "issue": 153,
           "title": "fix: カテゴリを選択しても常に食費/給料として保存される",
+          "pbi_type": "fix",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 0.1,
@@ -88,6 +97,7 @@
         {
           "issue": 152,
           "title": "fix: 収入を記録ボタンから遷移しても支出タブが選択されたままになる",
+          "pbi_type": "fix",
           "size": "XS",
           "points": 1,
           "cycle_time_hours": 0,
@@ -96,6 +106,7 @@
         {
           "issue": 100,
           "title": "[Tech Debt] レスポンス DTO をルートから分離してマッパー層を設ける",
+          "pbi_type": "tech-debt",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 0.1,
@@ -104,6 +115,7 @@
         {
           "issue": 141,
           "title": "design: ヘッダー/フッターのメニュー重複を解消する新レイアウト設計",
+          "pbi_type": "chore",
           "size": "M",
           "points": 3,
           "cycle_time_hours": null,
@@ -112,6 +124,7 @@
         {
           "issue": 81,
           "title": "[Feature] 総資産・月次収入をサーバーサイドに永続化する",
+          "pbi_type": "feature",
           "size": "L",
           "points": 5,
           "cycle_time_hours": 0.2,
@@ -120,6 +133,7 @@
         {
           "issue": 92,
           "title": "[Tech Debt] Expense / Budget リポジトリの重複を整理する",
+          "pbi_type": "tech-debt",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -128,6 +142,7 @@
         {
           "issue": 89,
           "title": "[Feature] 連続記録日数（記録ストリーク）を表示する",
+          "pbi_type": "feature",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 0.1,
@@ -136,6 +151,7 @@
         {
           "issue": 163,
           "title": "fix: user_settings テーブルのマイグレーションが欠落しておりホーム画面が 404 エラーになる",
+          "pbi_type": "fix",
           "size": "S",
           "points": 2,
           "cycle_time_hours": null,
@@ -144,6 +160,7 @@
         {
           "issue": 101,
           "title": "[Tech Debt] フロントエンドで自動生成 API クライアントを一貫して使用する",
+          "pbi_type": "tech-debt",
           "size": "M",
           "points": 3,
           "cycle_time_hours": null,
@@ -152,6 +169,7 @@
         {
           "issue": 88,
           "title": "[Feature] 支出ゼロ日の連続カウント（ストリーク）を実装する",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -160,6 +178,7 @@
         {
           "issue": 87,
           "title": "[Feature] 前月比・前年同月比レポートを追加する",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -168,6 +187,7 @@
         {
           "issue": 90,
           "title": "[Feature] PWA 化してモバイルのホーム画面から起動できるようにする",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -176,6 +196,7 @@
         {
           "issue": 131,
           "title": "[PBI-A] ユーザー設定とAPI拡張（給料日・固定費・1日予算算出）",
+          "pbi_type": "feature",
           "size": "L",
           "points": 5,
           "cycle_time_hours": 0.1,
@@ -184,6 +205,7 @@
         {
           "issue": 99,
           "title": "[Tech Debt] ユースケースのエラーハンドリングを Result 型に移行する",
+          "pbi_type": "tech-debt",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.2,
@@ -201,6 +223,7 @@
         {
           "issue": 153,
           "title": "fix: カテゴリを選択しても常に食費/給料として保存される",
+          "pbi_type": "fix",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 37.8,
@@ -209,6 +232,7 @@
         {
           "issue": 171,
           "title": "bug: ログイン後ホーム画面が「This page couldn't load」になるマイグレーション未適用問題の恒久対策",
+          "pbi_type": "fix",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -217,6 +241,7 @@
         {
           "issue": 134,
           "title": "[PBI-D] AI解析入力エンドポイントの雛形作成（レシート・一言入力対応）",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -234,6 +259,7 @@
         {
           "issue": 175,
           "title": "chore: スプリント番号によるベロシティ記録の設計改善（日付キー → sprint_number キー）",
+          "pbi_type": "chore",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
@@ -242,6 +268,7 @@
         {
           "issue": 123,
           "title": "feature: ログイン画面をブランドアイデンティティに沿ったデザインにリデザインする",
+          "pbi_type": "feature",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 0,
@@ -250,6 +277,7 @@
         {
           "issue": 130,
           "title": "ファビコン・プロジェクトロゴを設定する",
+          "pbi_type": "chore",
           "size": "XS",
           "points": 1,
           "cycle_time_hours": 0,
@@ -267,6 +295,7 @@
         {
           "issue": 179,
           "title": "design: 設定ページにユーザー情報・ログアウト導線を追加する（モバイル向け）",
+          "pbi_type": "feature",
           "size": "S",
           "points": 2,
           "cycle_time_hours": null,
@@ -275,6 +304,7 @@
         {
           "issue": 132,
           "title": "[PBI-B] フリップ形式オンボーディング画面の実装",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 3.5,
@@ -292,6 +322,7 @@
         {
           "issue": 183,
           "title": "スマホ版カレンダーページのUI/UX刷新",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.7,
@@ -300,6 +331,7 @@
         {
           "issue": 184,
           "title": "feat: 家計簿アプリの操作動線統合（クイック入力ドロワー）",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": null,
@@ -317,6 +349,7 @@
         {
           "issue": 187,
           "title": "[Retro Action] velocity-log.json の手動補記タイミングをprotocolに明記する",
+          "pbi_type": "chore",
           "size": "unknown",
           "points": null,
           "cycle_time_hours": 0,
@@ -325,6 +358,7 @@
         {
           "issue": 194,
           "title": "chore: スプリントゴール・仮説をvelocity-logとレトロに統合する",
+          "pbi_type": "chore",
           "size": "S",
           "points": 2,
           "cycle_time_hours": 0.1,
