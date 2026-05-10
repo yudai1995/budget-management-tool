@@ -11,7 +11,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'ghost', 'destructive'],
+      options: ['primary', 'secondary', 'ghost', 'destructive', 'link'],
     },
     size: {
       control: 'select',
@@ -45,6 +45,14 @@ export const Ghost: Story = {
   args: {
     variant: 'ghost',
     children: '詳細を見る',
+  },
+}
+
+/** アンカーリンク風のテキストボタン */
+export const Link: Story = {
+  args: {
+    variant: 'link',
+    children: 'パスワードを忘れた場合',
   },
 }
 
@@ -105,6 +113,7 @@ export const AllVariants: Story = {
       <Button variant="secondary">Secondary — キャンセル</Button>
       <Button variant="ghost">Ghost — 詳細を見る</Button>
       <Button variant="destructive">Destructive — 削除する</Button>
+      <Button variant="link">Link — パスワードを忘れた場合</Button>
     </div>
   ),
 }
