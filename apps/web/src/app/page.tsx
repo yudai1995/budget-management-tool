@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { calcDailyBudget } from "@budget/common";
 import { getExpenses } from "@/lib/api/expense";
 import { getSettings } from "@/lib/api/settings";
 import { ApiError } from "@/lib/api/client";
@@ -10,6 +11,7 @@ import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
 import { XDayDisplay } from "@/components/dashboard/XDayDisplay";
 import { MonthlyOverviewCard } from "@/components/dashboard/MonthlyOverviewCard";
 import { RecentExpenseList } from "@/components/dashboard/RecentExpenseList";
+import { DailyBudgetCard } from "@/components/dashboard/DailyBudgetCard";
 
 export const metadata: Metadata = {
   title: "ホーム | 家計管理",
@@ -83,34 +85,55 @@ async function DashboardContent({ userId }: { userId: string }) {
 
   // 設定取得失敗はデフォルト値で続行（マイグレーション未適用等でもホーム画面を表示する）
   const settingsData = settingsResult.status === "fulfilled" ? settingsResult.value : null;
+  const isSettingsConfigured =
+    settingsData !== null &&
+    !(settingsData.totalAssets === 0 && settingsData.monthlyIncome === 0);
   const settings = {
-    totalAssets: settingsData && !(settingsData.totalAssets === 0 && settingsData.monthlyIncome === 0)
-      ? settingsData.totalAssets
-      : null,
+    totalAssets: isSettingsConfigured ? settingsData.totalAssets : null,
     monthlyIncome: settingsData?.monthlyIncome ?? 0,
+    paydayDay: settingsData?.paydayDay ?? 25,
+    fixedExpenses: settingsData?.fixedExpenses ?? 0,
   };
 
   const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays, recordingStreak } =
     computeXDayInputs(expenses);
 
+  // 1日予算を算出（設定が揃っている場合のみ）
+  const dailyBudgetResult =
+    settings.totalAssets !== null
+      ? calcDailyBudget({
+          totalAssets: settings.totalAssets,
+          fixedExpenses: settings.fixedExpenses,
+          paydayDay: settings.paydayDay,
+          today: new Date(),
+        })
+      : null;
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4 bg-[#fffdf5]">
       {/*
         Mobile (default): stacked single column
-          1. 今月の収支サマリー（現状把握）
-          2. クイック入力（スクロールなしで操作可能）
-          3. 家計の寿命（中心指標）
-          4. 最近の記録5件
+          1. 今日使えるお金（主要指標 → 行動変容の即時フィードバック）
+          2. 今月の収支サマリー（現状把握）
+          3. クイック入力（スクロールなしで操作可能）
+          4. 家計の寿命（補助指標 → 段階的廃止予定）
+          5. 最近の記録5件
 
         Desktop (lg): 2-column
-          Left: 今月の収支 + 家計の寿命
+          Left: 今日使えるお金 + 今月の収支 + 家計の寿命
           Right: クイック入力 + 最近の記録
       */}
+      {/* 今日使えるお金: 全幅で最上位に配置 */}
+      <div className="mb-4">
+        <DailyBudgetCard todayExpense={todayExpense} budgetResult={dailyBudgetResult} />
+      </div>
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
-        {/* 左カラム（desktop）/ 先頭2カード（mobile） */}
+        {/* 左カラム（desktop）/ 先頭カード（mobile） */}
         <div className="flex flex-col gap-4">
           <MonthlyOverviewCard expenses={expenses} />
-          <div className="lg:block">
+          {/* 家計の寿命: 段階的廃止フェーズ1 — 表示は維持するが priority を下げる */}
+          <div className="lg:block opacity-80">
             <XDayDisplay
               todayExpense={todayExpense}
               yesterdayExpense={yesterdayExpense}
@@ -124,7 +147,7 @@ async function DashboardContent({ userId }: { userId: string }) {
           </div>
         </div>
 
-        {/* 右カラム（desktop）/ 後続2カード（mobile） */}
+        {/* 右カラム（desktop）/ 後続カード（mobile） */}
         <div className="flex flex-col gap-4">
           <ExpenseCreateForm userId={userId} />
           <RecentExpenseList expenses={expenses} />
