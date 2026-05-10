@@ -133,7 +133,8 @@ async function DashboardContent({ userId }: { userId: string }) {
         <div className="flex flex-col gap-4">
           <MonthlyOverviewCard expenses={expenses} />
           {/* 家計の寿命: 段階的廃止フェーズ1 — 表示は維持するが priority を下げる */}
-          <div className="lg:block opacity-80">
+          {/* opacity-80 は削除: XDayDisplay の SetupModal バックドロップが透明化する原因となるため */}
+          <div className="lg:block">
             <XDayDisplay
               todayExpense={todayExpense}
               yesterdayExpense={yesterdayExpense}

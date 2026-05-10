@@ -45,9 +45,10 @@ describe('XDayDisplay', () => {
             expect(screen.getByText('30日連続記録中')).toBeInTheDocument()
         })
 
-        it('initialAssets=null（未設定）のとき SetupModal が表示されバッジは表示されない', () => {
+        it('initialAssets=null（未設定）のとき設定促進フォールバックが表示されバッジは表示されない', () => {
             render(<XDayDisplay {...defaultProps} initialAssets={null} recordingStreak={5} />)
-            // SetupModal が表示されているので連続記録バッジは表示されない
+            // 設定促進フォールバックが表示されているので連続記録バッジは表示されない
+            expect(screen.getByText('設定を完了すると「家計の寿命」が表示されます')).toBeInTheDocument()
             expect(screen.queryByText('5日連続記録中')).not.toBeInTheDocument()
         })
     })
@@ -87,10 +88,10 @@ describe('XDayDisplay', () => {
             expect(screen.getByText('家計の寿命')).toBeInTheDocument()
         })
 
-        it('initialAssets=null のとき SetupModal が表示される', () => {
+        it('initialAssets=null のとき設定促進フォールバックが表示される', () => {
             render(<XDayDisplay {...defaultProps} initialAssets={null} />)
-            // SetupModal に含まれるテキストが表示される
-            expect(screen.getByText(/総資産|月次収入|設定/)).toBeInTheDocument()
+            // 設定促進フォールバックメッセージが表示される
+            expect(screen.getByText('設定を完了すると「家計の寿命」が表示されます')).toBeInTheDocument()
         })
     })
 })
