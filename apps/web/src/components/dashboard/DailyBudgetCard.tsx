@@ -37,28 +37,34 @@ type PinchStyle = {
   label: string;
 };
 
+/**
+ * Pattern D カラーパレット（#247）
+ *   SAFE    — ウォームグレー（余裕時は目立たせない）
+ *   CAUTION — コーラル #f87171（ブランドオレンジと競合しない注意色）
+ *   DANGER  — ローズ #f43f5e（より濃くエスカレートしピンチ感を強調）
+ */
 const PINCH_STYLES: Record<PinchLevel, PinchStyle> = {
   safe: {
-    bg: "var(--color-safe-light)",
-    border: "var(--color-safe)",
-    heroColor: "var(--color-safe)",
-    badgeBg: "var(--color-safe)",
+    bg: "#fafaf8",
+    border: "#c4b5a5",
+    heroColor: "#6b5b52",
+    badgeBg: "#c4b5a5",
     badgeText: "#ffffff",
     label: "余裕",
   },
   caution: {
-    bg: "var(--color-caution-light)",
-    border: "var(--color-caution)",
-    heroColor: "var(--color-caution)",
-    badgeBg: "var(--color-caution)",
-    badgeText: "#1c1410",
+    bg: "#fef2f2",
+    border: "#f87171",
+    heroColor: "#b91c1c",
+    badgeBg: "#f87171",
+    badgeText: "#ffffff",
     label: "注意",
   },
   danger: {
-    bg: "var(--color-danger-light)",
-    border: "var(--color-danger)",
-    heroColor: "var(--color-danger)",
-    badgeBg: "var(--color-danger)",
+    bg: "#fff1f2",
+    border: "#f43f5e",
+    heroColor: "#9f1239",
+    badgeBg: "#f43f5e",
     badgeText: "#ffffff",
     label: "ピンチ",
   },
@@ -124,7 +130,7 @@ export function DailyBudgetCard({ todayExpense, budgetResult }: Props) {
       <div className="mb-4">
         <p
           className="text-4xl font-extrabold leading-none"
-          style={{ color: isOverBudget ? "var(--color-danger)" : style.heroColor }}
+          style={{ color: isOverBudget ? PINCH_STYLES.danger.heroColor : style.heroColor }}
         >
           {isOverBudget ? `-${formatYen(Math.abs(remaining))}` : formatYen(remaining)}
         </p>
