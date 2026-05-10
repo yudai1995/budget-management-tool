@@ -446,7 +446,7 @@
     {
       "sprint_number": 10,
       "date": "2026-05-10",
-      "total_points": 1,
+      "total_points": 2,
       "pbis": [
         {
           "issue": 213,
@@ -455,6 +455,14 @@
           "points": 1,
           "cycle_time_hours": 0,
           "pr": 223
+        },
+        {
+          "issue": 220,
+          "title": "chore: ファビコン・ロゴを旧アプリのオリジナル画像（client/public/）で差し替える",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0,
+          "pr": 224
         }
       ]
     }
