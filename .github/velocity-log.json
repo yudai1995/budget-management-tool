@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
-    "next_sprint_number": 13
+    "next_sprint_number": 14
   },
   "sprints": [
     {
