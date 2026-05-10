@@ -548,7 +548,7 @@
       "date": "2026-05-10",
       "goal": "shadcn/ui コンポーネントカタログを構築し、UI の一貫性・アクセシビリティ・デザインシステム基盤を整える",
       "hypothesis": "shadcn/ui プリミティブ化により今後の UI 実装速度が上がり、アクセシビリティ準拠が自動化される",
-      "total_points": 5,
+      "total_points": 7,
       "pbis": [
         {
           "issue": 250,
@@ -558,6 +558,14 @@
           "points": 5,
           "cycle_time_hours": 4.1,
           "pr": 259
+        },
+        {
+          "issue": 247,
+          "title": "feat: DailyBudgetCard のカラーパレットを Pattern D（Rose）に更新する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 258
         }
       ]
     },
