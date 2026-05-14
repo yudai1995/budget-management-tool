@@ -16,6 +16,7 @@ import { HomeV4Prototype } from './pages/HomeV4Prototype'
 import { CategoryTopABPrototype } from './pages/CategoryTopABPrototype'
 import { AssetOutlookABPrototype } from './pages/AssetOutlookABPrototype'
 import { RecentRecordsABPrototype } from './pages/RecentRecordsABPrototype'
+import { PersonalSettingsPrototype } from './pages/PersonalSettingsPrototype'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/category-ab" element={<CategoryTopABPrototype />} />
         <Route path="/asset-outlook-ab" element={<AssetOutlookABPrototype />} />
         <Route path="/recent-records-ab" element={<RecentRecordsABPrototype />} />
+        <Route path="/personal-settings" element={<PersonalSettingsPrototype />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

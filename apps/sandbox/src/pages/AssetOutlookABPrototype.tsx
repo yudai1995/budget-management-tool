@@ -1,545 +1,732 @@
 /**
- * AssetOutlookABPrototype — 長期指標 表示パターン比較
+ * AssetOutlookABPrototype — 長期指標 リッチデザイン（Sprint #17 ブラッシュアップ版）
  *
- * Pattern A: 資産ランウェイ（「家計の寿命」現行）
+ * Pattern A: 資産ランウェイ
  * Pattern B: 今月の貯蓄額（先月比付き）
  * Pattern C: 年間貯蓄ペース予測
  * Pattern D: 財政健全スコア（複合指標）
  */
 
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
-    ChevronLeft, TrendingUp, TrendingDown,
-    Shield, AlertTriangle,
-    Target,
-} from "lucide-react";
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  useSpring as useMotionSpring,
+} from 'framer-motion'
+import {
+  ChevronLeft,
+  TrendingUp,
+  TrendingDown,
+  Shield,
+  AlertTriangle,
+  Target,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react'
 
-const R = { card: "12px", inner: "8px", badge: "9999px" } as const;
-const C = {
-    bg: "#fffdf5", card: "#ffffff", text: "#1c1410",
-    muted: "rgba(28,20,16,0.45)", border: "#e8c8b0",
-    shadow: "0 1px 4px 0 rgba(28,20,16,0.07), 0 0 0 1px rgba(28,20,16,0.06)",
-    brand: "#f18840", brandLight: "#fff6ee",
-    income: "#35b5a2", incomeLight: "#ecfaf8",
-    expense: "#f18840",
-    danger: "#f43f5e", dangerLight: "#fff1f2",
-    caution: "#f59e0b",
-} as const;
+// ─── Spring プリセット ───────────────────────────────────────────────────
+const SPRING = {
+  SNAP: { type: 'spring', stiffness: 600, damping: 35 },
+  QUICK: { type: 'spring', stiffness: 400, damping: 30 },
+  BASE: { type: 'spring', stiffness: 300, damping: 28 },
+  SMOOTH: { type: 'spring', stiffness: 200, damping: 26 },
+} as const
 
-// ─── モックデータ ────────────────────────────────────────────────────────────
+// ─── デザイントークン ─────────────────────────────────────────────────────
+const D = {
+  bg: '#f5f3ef',
+  card: '#ffffff',
+  text: '#1c1410',
+  muted: 'rgba(28,20,16,0.45)',
+  border: '#e8ddd5',
+  shadow: '0 2px 12px rgba(28,20,16,0.08), 0 0 0 1px rgba(28,20,16,0.06)',
+  brand: '#f18840',
+  income: '#35b5a2',
+  danger: '#f43f5e',
+  // ヒーローカード
+  heroBg: 'linear-gradient(145deg, #1e1a3a 0%, #2a2354 45%, #1b1635 100%)',
+  heroText: '#ffffff',
+  heroMuted: 'rgba(255,255,255,0.50)',
+  accentGreen: '#34d399',
+  accentPurple: '#a78bfa',
+  accentOrange: '#fb923c',
+  accentPink: '#f472b6',
+} as const
 
+// ─── モックデータ ────────────────────────────────────────────────────────
 const MOCK = {
-    totalAssets: 999853,
-    monthlyIncome: 252600,
-    avgDailyExpense: 9800,
-    // 今月
-    thisMonthExpense: 148700,
-    thisMonthIncome: 252600,
-    // 先月
-    lastMonthExpense: 136300,
-    lastMonthIncome: 252600,
-    // 計算値
-    netDailyExpense: 9800 - 252600 / 30, // 1,380円/日
-    // 記録日数
-    recordedMonths: 4,
-};
+  totalAssets: 999853,
+  monthlyIncome: 252600,
+  thisMonthExpense: 148700,
+  thisMonthIncome: 252600,
+  lastMonthExpense: 136300,
+  lastMonthIncome: 252600,
+  netDailyExpense: 9800 - 252600 / 30,
+  recordedMonths: 4,
+}
 
-const thisMonthSavings = MOCK.thisMonthIncome - MOCK.thisMonthExpense;       // 103,900
-const lastMonthSavings = MOCK.lastMonthIncome - MOCK.lastMonthExpense;       // 116,300
-const savingsDiff = thisMonthSavings - lastMonthSavings;                     // -12,400
-const annualSavingsPace = thisMonthSavings * 12;                             // 1,246,800
-const savingsRate = Math.round((thisMonthSavings / MOCK.thisMonthIncome) * 100); // 41%
-const assetRunwayDays = Math.floor(MOCK.totalAssets / MOCK.netDailyExpense); // 724日
+const thisMonthSavings = MOCK.thisMonthIncome - MOCK.thisMonthExpense       // 103,900
+const lastMonthSavings = MOCK.lastMonthIncome - MOCK.lastMonthExpense       // 116,300
+const savingsDiff = thisMonthSavings - lastMonthSavings                     // −12,400
+const annualSavingsPace = thisMonthSavings * 12                             // 1,246,800
+const savingsRate = Math.round((thisMonthSavings / MOCK.thisMonthIncome) * 100) // 41%
+const assetRunwayDays = Math.floor(MOCK.totalAssets / MOCK.netDailyExpense) // 724日
 const assetRunwayDate = (() => {
-    const d = new Date(2026, 4, 15); // 現在日（モック）
-    d.setDate(d.getDate() + assetRunwayDays);
-    return `${d.getFullYear()}年${d.getMonth() + 1}月`;
-})(); // "2028年5月"
-
-function yen(n: number) { return `¥${Math.round(n).toLocaleString("ja-JP")}`; }
-
-// ─── 共通コンポーネント ───────────────────────────────────────────────────
-
-function Meta({ pros, cons, data, warning }: {
-    pros: string[]; cons: string[]; data: string[]; warning?: string;
-}) {
-    return (
-        <div className="mt-4 space-y-3 border-t pt-4" style={{ borderColor: C.border }}>
-            {warning && (
-                <div
-                    className="flex items-start gap-2 rounded-lg px-3 py-2 text-[11px]"
-                    style={{ background: "#fff8f0", border: `1px solid ${C.brand}40`, color: C.text + "cc" }}
-                >
-                    <AlertTriangle size={11} style={{ color: C.brand, flexShrink: 0, marginTop: 1 }} />
-                    {warning}
-                </div>
-            )}
-            <div>
-                <div className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: C.muted }}>得られる情報</div>
-                <ul className="space-y-0.5">
-                    {data.map((d, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-[11px]" style={{ color: C.text + "cc" }}>
-                            <span style={{ color: C.income, flexShrink: 0 }}>•</span>{d}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <div className="mb-1 text-[10px] font-bold" style={{ color: C.income }}>メリット</div>
-                    <ul className="space-y-0.5">
-                        {pros.map((p, i) => (
-                            <li key={i} className="text-[11px]" style={{ color: C.text + "bb" }}>✓ {p}</li>
-                        ))}
-                    </ul>
-                </div>
-                <div>
-                    <div className="mb-1 text-[10px] font-bold" style={{ color: C.danger }}>デメリット</div>
-                    <ul className="space-y-0.5">
-                        {cons.map((c, i) => (
-                            <li key={i} className="text-[11px]" style={{ color: C.text + "bb" }}>✗ {c}</li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function PatternLabel({ label, name }: { label: string; name: string }) {
-    return (
-        <div className="mb-4 flex items-center gap-2">
-            <span
-                className="flex h-6 w-6 items-center justify-center text-xs font-extrabold text-white"
-                style={{ background: C.text, borderRadius: R.badge }}
-            >
-                {label}
-            </span>
-            <span className="text-sm font-bold" style={{ color: C.text }}>{name}</span>
-        </div>
-    );
-}
-
-// ─── Pattern A: 資産ランウェイ（現行「家計の寿命」）──────────────────────
-
-function PatternA() {
-    return (
-        <div>
-            <PatternLabel label="A" name="資産ランウェイ" />
-            <div
-                className="flex flex-col items-center justify-center py-6 text-center"
-                style={{ borderRadius: R.inner, background: C.incomeLight }}
-            >
-                <div className="mb-1 text-[11px] font-semibold" style={{ color: C.muted }}>
-                    今のペースで資産が尽きる時期
-                </div>
-                <motion.div
-                    className="text-3xl font-extrabold"
-                    style={{ color: C.income }}
-                    initial={{ opacity: 0.5 }}
-                    animate={{ opacity: 1 }}
-                >
-                    {assetRunwayDate}
-                </motion.div>
-                <div className="mt-1 text-[11px]" style={{ color: C.muted }}>
-                    残り約 {Math.round(assetRunwayDays / 30)} ヶ月
-                </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-                {[
-                    { label: "総資産", value: yen(MOCK.totalAssets) },
-                    { label: "純日次支出", value: yen(Math.round(MOCK.netDailyExpense)) },
-                ].map((item) => (
-                    <div key={item.label} className="px-3 py-2.5" style={{ background: C.bg, borderRadius: R.inner }}>
-                        <div className="text-[9px] font-bold mb-1" style={{ color: C.muted }}>{item.label}</div>
-                        <div className="font-mono text-[13px] font-extrabold tabular-nums" style={{ color: C.text }}>
-                            {item.value}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <Meta
-                data={[
-                    "今の純支出ペースが続いた場合の資産枯渇時期",
-                    "総資産 ÷ (平均日次支出 − 月収÷30) で算出",
-                    "資産が「減っているか」の長期サイン",
-                ]}
-                pros={["長期的な危機感を持てる", "資産と支出の関係が可視化される"]}
-                cons={["定収入がある人は ∞ になりやすく機能しない", "「尽きる」という表現がネガティブ", "月収が変動すると大きくブレる"]}
-                warning="定収入がある人は純日次支出がほぼ0になり「∞」表示になりやすい。その場合この指標は無意味。"
-            />
-        </div>
-    );
-}
-
-// ─── Pattern B: 今月の貯蓄額（先月比付き）───────────────────────────────
-
-function PatternB() {
-    const isPositive = savingsDiff >= 0;
-    return (
-        <div>
-            <PatternLabel label="B" name="今月の貯蓄額" />
-
-            <div
-                className="flex flex-col items-center justify-center py-6 text-center"
-                style={{ borderRadius: R.inner, background: C.incomeLight }}
-            >
-                <div className="mb-1 text-[11px] font-semibold" style={{ color: C.muted }}>今月の貯蓄</div>
-                <motion.div
-                    className="text-3xl font-extrabold tabular-nums"
-                    style={{ color: C.income }}
-                    initial={{ opacity: 0.5 }}
-                    animate={{ opacity: 1 }}
-                >
-                    {yen(thisMonthSavings)}
-                </motion.div>
-                <div
-                    className="mt-2 flex items-center gap-1 text-[12px] font-semibold"
-                    style={{ color: isPositive ? C.income : C.danger }}
-                >
-                    {isPositive
-                        ? <TrendingUp size={13} />
-                        : <TrendingDown size={13} />
-                    }
-                    先月比 {isPositive ? "+" : "−"}¥{Math.abs(savingsDiff).toLocaleString("ja-JP")}
-                </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-                {[
-                    { label: "収入", value: yen(MOCK.thisMonthIncome), color: C.income },
-                    { label: "支出", value: yen(MOCK.thisMonthExpense), color: C.expense },
-                    { label: "貯蓄率", value: `${savingsRate}%`, color: savingsRate >= 20 ? C.income : C.caution },
-                    { label: "先月の貯蓄", value: yen(lastMonthSavings), color: C.muted },
-                ].map((item) => (
-                    <div key={item.label} className="px-3 py-2.5" style={{ background: C.bg, borderRadius: R.inner }}>
-                        <div className="text-[9px] font-bold mb-1" style={{ color: C.muted }}>{item.label}</div>
-                        <div className="font-mono text-[13px] font-extrabold tabular-nums" style={{ color: item.color }}>
-                            {item.value}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <Meta
-                data={[
-                    "今月の貯蓄額（収入 − 支出）",
-                    "先月比の貯蓄差額",
-                    "貯蓄率（手取りの何%を貯めているか）",
-                ]}
-                pros={["誰にでも直感的に理解できる", "毎月更新される達成感がある", "定収入の人にも有意義"]}
-                cons={["月中だと確定値ではなく予測", "長期的な視点がない", "先月データが必要"]}
-            />
-        </div>
-    );
-}
-
-// ─── Pattern C: 年間貯蓄ペース予測 ─────────────────────────────────────
-
-function PatternC() {
-    const annualTarget = 1500000; // 仮の目標額
-    const progressPct = Math.min(100, Math.round((annualSavingsPace / annualTarget) * 100));
-    return (
-        <div>
-            <PatternLabel label="C" name="年間貯蓄ペース予測" />
-
-            <div
-                className="flex flex-col items-center justify-center py-6 text-center"
-                style={{ borderRadius: R.inner, background: C.incomeLight }}
-            >
-                <div className="mb-1 text-[11px] font-semibold" style={{ color: C.muted }}>
-                    このペースで年間
-                </div>
-                <motion.div
-                    className="text-3xl font-extrabold tabular-nums"
-                    style={{ color: C.income }}
-                    initial={{ opacity: 0.5 }}
-                    animate={{ opacity: 1 }}
-                >
-                    {yen(annualSavingsPace)}
-                </motion.div>
-                <div className="mt-1 text-[11px]" style={{ color: C.muted }}>貯蓄できます</div>
-            </div>
-
-            {/* 目標との比較バー */}
-            <div className="mt-3 p-3" style={{ background: C.bg, borderRadius: R.inner }}>
-                <div className="mb-2 flex items-center justify-between text-[11px]">
-                    <span className="font-semibold" style={{ color: C.text }}>年間目標 {yen(annualTarget)}</span>
-                    <span className="font-bold tabular-nums" style={{ color: progressPct >= 100 ? C.income : C.brand }}>
-                        {progressPct}%
-                    </span>
-                </div>
-                <div className="h-2 overflow-hidden" style={{ background: "rgba(28,20,16,0.08)", borderRadius: R.badge }}>
-                    <motion.div
-                        className="h-full"
-                        style={{ background: progressPct >= 100 ? C.income : C.brand, borderRadius: R.badge }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPct}%` }}
-                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                </div>
-                <div className="mt-1.5 text-[10px]" style={{ color: C.muted }}>
-                    ※ 今月の貯蓄額 × 12 で算出（{MOCK.recordedMonths}ヶ月分の実績あり）
-                </div>
-            </div>
-
-            <div className="mt-2 grid grid-cols-3 gap-2">
-                {[
-                    { label: "今月の貯蓄", value: yen(thisMonthSavings) },
-                    { label: "貯蓄率", value: `${savingsRate}%` },
-                    { label: "目標達成率", value: `${progressPct}%` },
-                ].map((item) => (
-                    <div key={item.label} className="px-2 py-2 text-center" style={{ background: C.bg, borderRadius: R.inner }}>
-                        <div className="text-[9px] font-bold mb-1" style={{ color: C.muted }}>{item.label}</div>
-                        <div className="font-mono text-[12px] font-extrabold tabular-nums" style={{ color: C.text }}>
-                            {item.value}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <Meta
-                data={[
-                    "今月のペースで年換算した貯蓄額",
-                    "年間目標との達成率（目標設定時）",
-                    "貯蓄率（手取りに対する比率）",
-                ]}
-                pros={["前向きな目標感が生まれる", "「年間○○万貯める」という計画に使える"]}
-                cons={["今月1ヶ月のデータで年換算するのは精度が低い", "目標設定が必要（オンボーディング負荷）", "ボーナス月などで大きくブレる"]}
-                warning="今月の貯蓄が少ない月（大きな出費がある月など）に見ると不安になりやすい。直近3〜6ヶ月平均の方が安定する。"
-            />
-        </div>
-    );
-}
-
-// ─── Pattern D: 財政健全スコア ────────────────────────────────────────
-
-type ScoreTone = "good" | "ok" | "bad";
-
-function scoreTone(score: number): ScoreTone {
-    if (score >= 70) return "good";
-    if (score >= 40) return "ok";
-    return "bad";
-}
-function toneColor(t: ScoreTone) {
-    return t === "good" ? C.income : t === "ok" ? C.caution : C.danger;
-}
-function toneLabel(t: ScoreTone) {
-    return t === "good" ? "良好" : t === "ok" ? "普通" : "要注意";
-}
+  const d = new Date(2026, 4, 15)
+  d.setDate(d.getDate() + assetRunwayDays)
+  return `${d.getFullYear()}年${d.getMonth() + 1}月`
+})()
 
 const SCORE_FACTORS = [
-    {
-        label: "予算遵守率",
-        desc: "1日予算に対してどれだけ守れているか",
-        score: 72,
-        weight: 30,
-        note: "過去7日で5日が予算内",
-    },
-    {
-        label: "貯蓄率",
-        desc: "月収に対する貯蓄額の割合",
-        score: 82,
-        weight: 40,
-        note: `今月 ${savingsRate}% (目安: 20%以上)`,
-    },
-    {
-        label: "支出トレンド",
-        desc: "先月比の支出増減",
-        score: 55,
-        weight: 30,
-        note: "食費 +23%、医療費 +173% が押し下げ",
-    },
-];
+  { label: '予算遵守率', score: 72, weight: 30, note: '過去7日で5日が予算内' },
+  { label: '貯蓄率', score: 82, weight: 40, note: `今月 ${savingsRate}%（目安: 20% 以上）` },
+  { label: '支出トレンド', score: 55, weight: 30, note: '食費 +23%、医療費 +173% が押し下げ' },
+]
 const TOTAL_SCORE = Math.round(
-    SCORE_FACTORS.reduce((s, f) => s + (f.score * f.weight) / 100, 0)
-);
+  SCORE_FACTORS.reduce((s, f) => s + (f.score * f.weight) / 100, 0),
+)
 
-function PatternD() {
-    const tone = scoreTone(TOTAL_SCORE);
-    const color = toneColor(tone);
-    const ToneIcon = tone === "good" ? Shield : tone === "ok" ? Target : AlertTriangle;
+function yen(n: number) { return `¥${Math.round(n).toLocaleString('ja-JP')}` }
 
-    return (
-        <div>
-            <PatternLabel label="D" name="財政健全スコア" />
+// ─── SpringNumber ─────────────────────────────────────────────────────────
+function SpringNumber({
+  value,
+  format = (v: number) => v.toLocaleString('ja-JP'),
+}: {
+  value: number
+  format?: (v: number) => string
+}) {
+  const mv = useMotionValue(0)
+  const spring = useMotionSpring(mv, { stiffness: 70, damping: 18 })
+  const display = useTransform(spring, (v) => format(Math.round(v)))
 
-            <div
-                className="flex flex-col items-center justify-center py-6 text-center"
-                style={{ borderRadius: R.inner, background: `color-mix(in srgb, ${color} 8%, white)` }}
-            >
-                <ToneIcon size={28} style={{ color }} />
-                <div className="mt-2 text-[11px] font-semibold" style={{ color: C.muted }}>財政健全スコア</div>
-                <motion.div
-                    className="text-4xl font-extrabold tabular-nums"
-                    style={{ color }}
-                    initial={{ opacity: 0.5 }}
-                    animate={{ opacity: 1 }}
-                >
-                    {TOTAL_SCORE}
-                    <span className="text-lg font-semibold" style={{ color: C.muted }}> / 100</span>
-                </motion.div>
-                <div
-                    className="mt-1 px-3 py-0.5 text-[11px] font-bold text-white"
-                    style={{ background: color, borderRadius: R.badge }}
-                >
-                    {toneLabel(tone)}
-                </div>
+  useEffect(() => { mv.set(value) }, [mv, value])
+
+  return <motion.span>{display}</motion.span>
+}
+
+// ─── ProgressBar ──────────────────────────────────────────────────────────
+function ProgressBar({
+  pct,
+  color,
+  height = 6,
+  delay = 0,
+  trackColor = 'rgba(255,255,255,0.12)',
+}: {
+  pct: number
+  color: string
+  height?: number
+  delay?: number
+  trackColor?: string
+}) {
+  return (
+    <div
+      className="overflow-hidden"
+      style={{ height, borderRadius: 9999, background: trackColor }}
+    >
+      <motion.div
+        className="h-full"
+        style={{ borderRadius: 9999, background: color }}
+        initial={{ width: 0 }}
+        animate={{ width: `${Math.min(100, pct)}%` }}
+        transition={{ type: 'spring', stiffness: 70, damping: 18, delay }}
+      />
+    </div>
+  )
+}
+
+// ─── パターン定義 ─────────────────────────────────────────────────────────
+type PatternId = 'A' | 'B' | 'C' | 'D'
+
+const PATTERN_META: Record<PatternId, { name: string; accent: string }> = {
+  A: { name: '資産ランウェイ', accent: D.accentGreen },
+  B: { name: '今月の貯蓄額', accent: D.accentPurple },
+  C: { name: '年間ペース予測', accent: D.accentOrange },
+  D: { name: '財政健全スコア', accent: D.accentPink },
+}
+
+// ─── 共通ヒーローカードアニメーション ─────────────────────────────────────
+const heroVariants = {
+  hidden: { opacity: 0, y: 10, filter: 'blur(6px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: SPRING.BASE },
+  exit: { opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.15 } },
+}
+
+const itemVariants = (delay: number) => ({
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { ...SPRING.BASE, delay } },
+})
+
+// ─── ヒーローカード：Pattern A ───────────────────────────────────────────
+function PatternAHero() {
+  return (
+    <motion.div
+      className="flex flex-col items-center text-center"
+      variants={heroVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>
+        今のペースで資産が尽きる時期
+      </div>
+      <div className="text-[44px] font-extrabold leading-none mb-2" style={{ color: D.heroText }}>
+        {assetRunwayDate}
+      </div>
+      <div className="text-sm font-semibold" style={{ color: PATTERN_META.A.accent }}>
+        残り約 <SpringNumber value={Math.round(assetRunwayDays / 30)} /> ヶ月
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-3 w-full max-w-xs">
+        {[
+          { label: '総資産', value: yen(MOCK.totalAssets) },
+          { label: '純日次支出', value: yen(Math.round(MOCK.netDailyExpense)) },
+        ].map((item, i) => (
+          <motion.div
+            key={item.label}
+            className="rounded-2xl p-3 text-center"
+            style={{
+              background: 'rgba(255,255,255,0.09)',
+              border: '1px solid rgba(255,255,255,0.14)',
+            }}
+            variants={itemVariants(0.12 + i * 0.06)}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="text-[10px] mb-1" style={{ color: D.heroMuted }}>{item.label}</div>
+            <div className="text-sm font-extrabold tabular-nums" style={{ color: D.heroText }}>{item.value}</div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── ヒーローカード：Pattern B ───────────────────────────────────────────
+function PatternBHero() {
+  const isPositive = savingsDiff >= 0
+  return (
+    <motion.div
+      className="flex flex-col items-center text-center"
+      variants={heroVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>今月の貯蓄</div>
+      <div className="text-[52px] font-extrabold leading-none tabular-nums mb-3" style={{ color: D.heroText }}>
+        ¥<SpringNumber value={thisMonthSavings} />
+      </div>
+      <div
+        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold"
+        style={{
+          background: isPositive ? 'rgba(52,211,153,0.15)' : 'rgba(244,63,94,0.15)',
+          color: isPositive ? D.accentGreen : '#f87171',
+        }}
+      >
+        {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+        先月比 {isPositive ? '+' : '−'}¥{Math.abs(savingsDiff).toLocaleString('ja-JP')}
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-2.5 w-full max-w-xs">
+        {[
+          { label: '月収', value: yen(MOCK.thisMonthIncome), accent: D.accentGreen },
+          { label: '今月支出', value: yen(MOCK.thisMonthExpense), accent: '#f87171' },
+          { label: '貯蓄率', value: `${savingsRate}%`, accent: PATTERN_META.B.accent },
+          { label: '先月の貯蓄', value: yen(lastMonthSavings), accent: D.heroMuted },
+        ].map((item, i) => (
+          <motion.div
+            key={item.label}
+            className="rounded-2xl p-3 text-center"
+            style={{
+              background: 'rgba(255,255,255,0.09)',
+              border: '1px solid rgba(255,255,255,0.14)',
+            }}
+            variants={itemVariants(0.12 + i * 0.05)}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="text-[10px] mb-1" style={{ color: D.heroMuted }}>{item.label}</div>
+            <div className="text-sm font-extrabold tabular-nums" style={{ color: item.accent }}>
+              {item.value}
             </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
 
-            {/* スコア内訳 */}
-            <div className="mt-3 space-y-2">
-                {SCORE_FACTORS.map((f) => {
-                    const t = scoreTone(f.score);
-                    return (
-                        <div key={f.label} className="p-3" style={{ background: C.bg, borderRadius: R.inner }}>
-                            <div className="mb-1 flex items-center justify-between">
-                                <div>
-                                    <span className="text-[12px] font-semibold" style={{ color: C.text }}>{f.label}</span>
-                                    <span className="ml-1.5 text-[9px]" style={{ color: C.muted }}>（重み {f.weight}%）</span>
-                                </div>
-                                <span className="font-mono text-[13px] font-extrabold" style={{ color: toneColor(t) }}>
-                                    {f.score}
-                                </span>
-                            </div>
-                            <div className="mb-1 h-1.5 overflow-hidden" style={{ background: "rgba(28,20,16,0.08)", borderRadius: R.badge }}>
-                                <motion.div
-                                    className="h-full"
-                                    style={{ background: toneColor(t), borderRadius: R.badge }}
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${f.score}%` }}
-                                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                                />
-                            </div>
-                            <div className="text-[10px]" style={{ color: C.muted }}>{f.note}</div>
-                        </div>
-                    );
-                })}
-            </div>
+// ─── ヒーローカード：Pattern C ───────────────────────────────────────────
+function PatternCHero() {
+  const annualTarget = 1500000
+  const progressPct = Math.min(100, Math.round((annualSavingsPace / annualTarget) * 100))
+  return (
+    <motion.div
+      className="flex flex-col items-center text-center"
+      variants={heroVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>このペースで年間</div>
+      <div className="text-[44px] font-extrabold leading-none tabular-nums mb-1" style={{ color: D.heroText }}>
+        ¥<SpringNumber value={annualSavingsPace} />
+      </div>
+      <div className="text-sm mb-5" style={{ color: D.heroMuted }}>貯蓄できます</div>
 
-            <Meta
-                data={[
-                    "複数の財政指標を統合した総合スコア（0〜100）",
-                    "内訳: 予算遵守率・貯蓄率・支出トレンドの加重平均",
-                    "各指標の個別スコアと改善ポイント",
-                ]}
-                pros={["単一の数値でわかりやすい", "改善すべき要因が内訳で確認できる", "ゲーム感覚でモチベーション維持"]}
-                cons={["スコアの根拠が不透明に感じられる", "重みの設定が恣意的で説明責任が難しい", "実装コストが高く、指標の調整が必要"]}
-                warning="スコアの算出ロジックを開示しないとブラックボックス感が強い。「なぜ55点なのか」を説明できる設計が必要。"
-            />
+      {/* 目標進捗バー */}
+      <div className="w-full max-w-xs">
+        <div className="flex justify-between text-xs mb-2">
+          <span style={{ color: D.heroMuted }}>年間目標 {yen(annualTarget)}</span>
+          <span className="font-bold" style={{ color: PATTERN_META.C.accent }}>{progressPct}%</span>
         </div>
-    );
+        <ProgressBar pct={progressPct} color={PATTERN_META.C.accent} height={8} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2 w-full max-w-xs">
+        {[
+          { label: '今月の貯蓄', value: yen(thisMonthSavings) },
+          { label: '貯蓄率', value: `${savingsRate}%` },
+          { label: '目標達成率', value: `${progressPct}%` },
+        ].map((item, i) => (
+          <motion.div
+            key={item.label}
+            className="rounded-2xl p-2.5 text-center"
+            style={{
+              background: 'rgba(255,255,255,0.09)',
+              border: '1px solid rgba(255,255,255,0.14)',
+            }}
+            variants={itemVariants(0.2 + i * 0.06)}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="text-[9px] mb-0.5" style={{ color: D.heroMuted }}>{item.label}</div>
+            <div className="text-xs font-extrabold tabular-nums" style={{ color: D.heroText }}>{item.value}</div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── ヒーローカード：Pattern D ───────────────────────────────────────────
+type ScoreTone = 'good' | 'ok' | 'bad'
+
+function scoreTone(s: number): ScoreTone {
+  return s >= 70 ? 'good' : s >= 40 ? 'ok' : 'bad'
+}
+function toneColor(t: ScoreTone) {
+  return t === 'good' ? D.accentGreen : t === 'ok' ? '#fbbf24' : '#f87171'
+}
+const TONE_LABELS: Record<ScoreTone, string> = { good: '良好', ok: '普通', bad: '要注意' }
+
+function PatternDHero() {
+  const tone = scoreTone(TOTAL_SCORE)
+  const color = toneColor(tone)
+  const ToneIcon = tone === 'good' ? Shield : tone === 'ok' ? Target : AlertTriangle
+
+  return (
+    <motion.div
+      className="flex flex-col items-center text-center"
+      variants={heroVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>財政健全スコア</div>
+      <div className="flex items-end gap-2 mb-2">
+        <div className="text-[64px] font-extrabold leading-none tabular-nums" style={{ color }}>
+          <SpringNumber value={TOTAL_SCORE} />
+        </div>
+        <div className="text-xl font-semibold mb-2" style={{ color: D.heroMuted }}>/100</div>
+      </div>
+      <div
+        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold mb-5"
+        style={{ background: `${color}20`, color }}
+      >
+        <ToneIcon size={14} />
+        {TONE_LABELS[tone]}
+      </div>
+
+      {/* スコア内訳バー */}
+      <div className="w-full max-w-xs space-y-3">
+        {SCORE_FACTORS.map((f, i) => {
+          const t = scoreTone(f.score)
+          const c = toneColor(t)
+          return (
+            <motion.div
+              key={f.label}
+              variants={itemVariants(0.12 + i * 0.07)}
+              initial="hidden"
+              animate="visible"
+            >
+              <div className="flex justify-between text-xs mb-1.5">
+                <span style={{ color: D.heroMuted }}>{f.label}</span>
+                <span className="font-bold tabular-nums" style={{ color: c }}>{f.score}</span>
+              </div>
+              <ProgressBar pct={f.score} color={c} height={5} delay={0.18 + i * 0.07} />
+            </motion.div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── Meta アコーディオン ──────────────────────────────────────────────────
+function MetaAccordion({
+  pros,
+  cons,
+  data,
+  warning,
+}: {
+  pros: string[]
+  cons: string[]
+  data: string[]
+  warning?: string
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div>
+      <motion.button
+        className="w-full flex items-center justify-between py-3 text-sm font-semibold"
+        style={{ color: D.muted }}
+        onClick={() => setOpen((v) => !v)}
+        whileTap={{ scale: 0.98 }}
+        transition={SPRING.SNAP}
+      >
+        <span>詳細情報・比較メモ</span>
+        {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </motion.button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={SPRING.QUICK}
+            className="overflow-hidden"
+          >
+            <div
+              className="pb-4 pt-3 space-y-3 border-t"
+              style={{ borderColor: D.border }}
+            >
+              {warning && (
+                <div
+                  className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
+                  style={{
+                    background: '#fff8f0',
+                    border: `1px solid ${D.brand}30`,
+                    color: D.text + 'cc',
+                  }}
+                >
+                  <AlertTriangle
+                    size={12}
+                    style={{ color: D.brand, flexShrink: 0, marginTop: 1 }}
+                  />
+                  {warning}
+                </div>
+              )}
+              <div>
+                <div
+                  className="mb-1.5 text-[10px] font-bold uppercase tracking-wider"
+                  style={{ color: D.muted }}
+                >
+                  得られる情報
+                </div>
+                <ul className="space-y-1">
+                  {data.map((d, i) => (
+                    <li key={i} className="flex items-start gap-1.5 text-xs" style={{ color: D.text + 'cc' }}>
+                      <span style={{ color: D.income, flexShrink: 0 }}>•</span>{d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="mb-1 text-[10px] font-bold" style={{ color: D.income }}>メリット</div>
+                  <ul className="space-y-0.5">
+                    {pros.map((p, i) => (
+                      <li key={i} className="text-xs" style={{ color: D.text + 'bb' }}>✓ {p}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="mb-1 text-[10px] font-bold" style={{ color: D.danger }}>デメリット</div>
+                  <ul className="space-y-0.5">
+                    {cons.map((c, i) => (
+                      <li key={i} className="text-xs" style={{ color: D.text + 'bb' }}>✗ {c}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── パターンメタデータ ────────────────────────────────────────────────────
+const PATTERN_DETAILS: Record<
+  PatternId,
+  { pros: string[]; cons: string[]; data: string[]; warning?: string }
+> = {
+  A: {
+    data: [
+      '今の純支出ペースが続いた場合の資産枯渇時期',
+      '総資産 ÷ (平均日次支出 − 月収÷30) で算出',
+      '資産が「減っているか」の長期サイン',
+    ],
+    pros: ['長期的な危機感を持てる', '資産と支出の関係が可視化される'],
+    cons: ['定収入があると ∞ になりやすい', '「尽きる」という表現がネガティブ', '月収変動で大きくブレる'],
+    warning: '定収入がある人は純日次支出がほぼ 0 になり「∞」表示になりやすい。その場合この指標は無意味。',
+  },
+  B: {
+    data: ['今月の貯蓄額（収入 − 支出）', '先月比の貯蓄差額', '貯蓄率（手取りの何%を貯めているか）'],
+    pros: ['誰にでも直感的に理解できる', '毎月更新される達成感がある', '定収入の人にも有意義'],
+    cons: ['月中だと確定値ではなく予測', '長期的な視点がない', '先月データが必要'],
+  },
+  C: {
+    data: ['今月のペースで年換算した貯蓄額', '年間目標との達成率', '貯蓄率（手取りに対する比率）'],
+    pros: ['前向きな目標感が生まれる', '「年間○○万貯める」という計画に使える'],
+    cons: [
+      '1 ヶ月データで年換算するのは精度が低い',
+      '目標設定が必要（オンボーディング負荷）',
+      'ボーナス月などで大きくブレる',
+    ],
+    warning:
+      '今月の貯蓄が少ない月に見ると不安になりやすい。直近 3〜6 ヶ月平均の方が安定する。',
+  },
+  D: {
+    data: [
+      '複数の財政指標を統合した総合スコア（0〜100）',
+      '内訳: 予算遵守率・貯蓄率・支出トレンドの加重平均',
+      '各指標の個別スコアと改善ポイント',
+    ],
+    pros: ['単一の数値でわかりやすい', '改善すべき要因が内訳で確認できる', 'ゲーム感覚でモチベーション維持'],
+    cons: ['スコアの根拠が不透明に感じられる', '重みの設定が恣意的', '実装コストが高い'],
+    warning: 'スコアの算出ロジックを開示しないとブラックボックス感が強い。「なぜ 55 点か」を説明できる設計が必要。',
+  },
+}
+
+const HERO_COMPONENTS: Record<PatternId, () => React.JSX.Element> = {
+  A: PatternAHero,
+  B: PatternBHero,
+  C: PatternCHero,
+  D: PatternDHero,
 }
 
 // ─── メインページ ────────────────────────────────────────────────────────
-
 export function AssetOutlookABPrototype() {
-    return (
-        <div className="min-h-screen pb-16" style={{ background: C.bg }}>
-            {/* ヘッダー */}
-            <div
-                className="sticky top-0 z-10 flex h-12 items-center gap-3 border-b px-4"
-                style={{ background: `${C.bg}ee`, backdropFilter: "blur(10px)", borderColor: "rgba(28,20,16,0.10)" }}
+  const [active, setActive] = useState<PatternId>('B')
+  const accent = PATTERN_META[active].accent
+  const HeroContent = HERO_COMPONENTS[active]
+
+  return (
+    <div className="min-h-screen pb-16" style={{ background: D.bg }}>
+      {/* ヘッダー */}
+      <div
+        className="sticky top-0 z-10 flex h-12 items-center gap-3 border-b px-4"
+        style={{
+          background: `${D.bg}ee`,
+          backdropFilter: 'blur(12px)',
+          borderColor: 'rgba(28,20,16,0.10)',
+        }}
+      >
+        <Link
+          to="/"
+          className="flex items-center gap-1 text-xs font-semibold"
+          style={{ color: D.brand }}
+        >
+          <ChevronLeft size={14} />ギャラリー
+        </Link>
+        <span className="text-sm font-extrabold" style={{ color: D.text }}>
+          長期指標 — A/B 比較
+        </span>
+      </div>
+
+      <div className="mx-auto max-w-md px-4 py-4">
+
+        {/* ヒーローカード */}
+        <motion.div
+          className="relative rounded-3xl overflow-hidden mb-4"
+          style={{
+            background: D.heroBg,
+            boxShadow: '0 8px 40px rgba(30,26,58,0.35)',
+          }}
+          initial={{ opacity: 0, y: 24, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={SPRING.SMOOTH}
+        >
+          {/* グローオーブ */}
+          <motion.div
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              width: 240,
+              height: 240,
+              top: -80,
+              right: -80,
+              background: `radial-gradient(circle, ${accent}28 0%, transparent 70%)`,
+            }}
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+
+          {/* タブスイッチャー */}
+          <div className="flex gap-1 p-3 pb-0">
+            {(['A', 'B', 'C', 'D'] as PatternId[]).map((id) => (
+              <motion.button
+                key={id}
+                className="relative flex-1 py-1.5 text-xs font-bold rounded-xl"
+                style={{ color: active === id ? D.heroText : D.heroMuted }}
+                onClick={() => setActive(id)}
+                whileTap={{ scale: 0.92 }}
+                transition={SPRING.SNAP}
+              >
+                {active === id && (
+                  <motion.div
+                    layoutId="tab-hero-bg"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.16)' }}
+                    transition={SPRING.QUICK}
+                  />
+                )}
+                <span className="relative z-10">{id}</span>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* パターン名 */}
+          <div className="px-5 pt-3 pb-1">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`name-${active}`}
+                className="text-[10px] font-bold uppercase tracking-wider"
+                style={{ color: accent }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                Pattern {active} — {PATTERN_META[active].name}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* ヒーローコンテンツ */}
+          <div className="px-5 pt-3 pb-7">
+            <AnimatePresence mode="wait">
+              <HeroContent key={active} />
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* 詳細カード */}
+        <motion.div
+          className="rounded-2xl border px-4"
+          style={{
+            background: D.card,
+            borderColor: D.border,
+            boxShadow: D.shadow,
+          }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING.SMOOTH, delay: 0.08 }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`meta-${active}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
             >
-                <Link to="/" className="flex items-center gap-1 text-xs font-semibold" style={{ color: C.brand }}>
-                    <ChevronLeft size={14} />ギャラリー
-                </Link>
-                <span className="text-sm font-extrabold" style={{ color: C.text }}>
-                    長期指標 — A/B 比較
-                </span>
-            </div>
+              <MetaAccordion {...PATTERN_DETAILS[active]} />
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
 
-            <div className="mx-auto max-w-7xl px-4 py-4 md:px-6">
-                <div
-                    className="mb-5 rounded-lg border px-4 py-3 text-xs"
-                    style={{ borderColor: C.border, background: C.card, color: C.muted }}
-                >
-                    「長期的な財政の状況」をどう伝えるか、4パターンを比較します。
-                    同じ財務データ（総資産・月収支・貯蓄率）を異なる切り口で表現しています。
-                    <br />
-                    <span className="mt-1 block font-semibold" style={{ color: C.text }}>
-                        モック値: 総資産 ¥999,853 / 月収 ¥252,600 / 今月支出 ¥148,700 / 貯蓄 ¥103,900
-                    </span>
-                </div>
-
-                {/* 4パターン 2×2 グリッド */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    {[PatternA, PatternB, PatternC, PatternD].map((Pattern, i) => (
-                        <div
-                            key={i}
-                            className="border p-5"
-                            style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
-                        >
-                            <Pattern />
-                        </div>
+        {/* 比較サマリー */}
+        <motion.div
+          className="mt-4 rounded-2xl border overflow-hidden"
+          style={{ background: D.card, borderColor: D.border, boxShadow: D.shadow }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING.SMOOTH, delay: 0.14 }}
+        >
+          <div className="px-4 pt-4 pb-2">
+            <div className="text-sm font-extrabold" style={{ color: D.text }}>パターン比較</div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${D.border}` }}>
+                  {['', 'A: ランウェイ', 'B: 貯蓄額', 'C: 年間ペース', 'D: スコア'].map((h) => (
+                    <th
+                      key={h}
+                      className="py-2 px-3 text-left font-bold whitespace-nowrap"
+                      style={{ color: D.muted }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { label: '対象', vals: ['資産取り崩し中', '定収入・貯蓄', '年間目標あり', '総合管理'] },
+                  { label: '直感的さ', vals: ['△', '◎', '○', '○'] },
+                  { label: '実装コスト', vals: ['中', '低', '低〜中', '高'] },
+                ].map((row) => (
+                  <tr key={row.label} style={{ borderBottom: `1px solid ${D.border}` }}>
+                    <td
+                      className="py-2 px-3 font-semibold whitespace-nowrap"
+                      style={{ color: D.muted }}
+                    >
+                      {row.label}
+                    </td>
+                    {row.vals.map((v, i) => (
+                      <td
+                        key={i}
+                        className="py-2 px-3 whitespace-nowrap"
+                        style={{
+                          color: D.text,
+                          fontWeight: (['A', 'B', 'C', 'D'] as PatternId[])[i] === active ? 700 : 400,
+                        }}
+                      >
+                        {v}
+                      </td>
                     ))}
-                </div>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
 
-                {/* 比較サマリー */}
-                <div
-                    className="mt-6 border p-4"
-                    style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
-                >
-                    <div className="mb-3 text-sm font-extrabold" style={{ color: C.text }}>
-                        パターン比較サマリー
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-[11px]" style={{ borderCollapse: "collapse" }}>
-                            <thead>
-                                <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                                    {["", "A: ランウェイ", "B: 貯蓄額", "C: 年間ペース", "D: スコア"].map((h) => (
-                                        <th key={h} className="py-2 pr-3 text-left font-bold" style={{ color: C.muted }}>{h}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {[
-                                    {
-                                        label: "対象ユーザー",
-                                        vals: ["資産取り崩し中の人", "定収入で貯蓄したい人", "年間目標がある人", "総合管理したい人"],
-                                    },
-                                    {
-                                        label: "必要データ",
-                                        vals: ["総資産・平均支出", "月収支のみ", "月収支・目標", "複数指標"],
-                                    },
-                                    {
-                                        label: "更新頻度",
-                                        vals: ["リアルタイム", "月次", "月次", "月次"],
-                                    },
-                                    {
-                                        label: "直感的さ",
-                                        vals: ["△（抽象的）", "◎（誰でも）", "○", "○（スコアは直感）"],
-                                    },
-                                    {
-                                        label: "実装コスト",
-                                        vals: ["中", "低", "低〜中", "高"],
-                                    },
-                                ].map((row) => (
-                                    <tr key={row.label} style={{ borderBottom: `1px solid ${C.border}` }}>
-                                        <td className="py-2 pr-3 font-semibold" style={{ color: C.muted }}>{row.label}</td>
-                                        {row.vals.map((v, i) => (
-                                            <td key={i} className="py-2 pr-3" style={{ color: C.text }}>{v}</td>
-                                        ))}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* ナビ */}
-                <div className="mt-6 flex items-center justify-between text-xs" style={{ color: C.muted }}>
-                    <Link to="/category-ab" style={{ color: C.brand }} className="font-semibold hover:underline">
-                        ← カテゴリ TOP A/B
-                    </Link>
-                    <Link to="/home-v4" style={{ color: C.brand }} className="font-semibold hover:underline">
-                        V4 ダッシュボードへ →
-                    </Link>
-                </div>
-            </div>
+        {/* ナビ */}
+        <div className="mt-6 flex items-center justify-between text-xs" style={{ color: D.muted }}>
+          <Link
+            to="/category-ab"
+            style={{ color: D.brand }}
+            className="font-semibold hover:underline"
+          >
+            ← カテゴリ TOP A/B
+          </Link>
+          <Link
+            to="/home-v4"
+            style={{ color: D.brand }}
+            className="font-semibold hover:underline"
+          >
+            V4 ダッシュボードへ →
+          </Link>
         </div>
-    );
+      </div>
+    </div>
+  )
 }
