@@ -681,7 +681,7 @@
     {
       "sprint_number": 18,
       "date": "2026-05-15",
-      "total_points": 3,
+      "total_points": 5,
       "pbis": [
         {
           "issue": 288,
@@ -689,9 +689,21 @@
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
+          "pr": 290,
+          "pbi_type": "feature"
+        },
+        {
+          "issue": 289,
+          "title": "fix: HomeV4ドロワーのテンキーサイズ縮小・submit常時表示・iOS zoom抑制",
+          "pbi_type": "fix",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": 0.1,
           "pr": 290
         }
-      ]
+      ],
+      "goal": "asset-outlook-ab のインタラクションをスワイプ対応にし、ブランドカラーと整合させ、テンキー・入力UXの問題点を修正する",
+      "hypothesis": "スワイプジェスチャーとブランドカラー統一により操作直感性が向上し、テンキー縮小で登録ボタンが常時見えることで記録完了率が改善される"
     }
   ]
 }
