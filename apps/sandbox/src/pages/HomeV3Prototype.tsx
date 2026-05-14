@@ -15,7 +15,7 @@ import { Drawer } from "vaul";
 import {
     Home,
     Calendar,
-    FileBarChart,
+    BarChart2,
     Settings,
     Bell,
     Plus,
@@ -26,6 +26,7 @@ import {
     ShoppingBasket,
     ShoppingBag,
     CircleDollarSign,
+    PenLine,
     Info,
     Flame,
     AlertTriangle,
@@ -33,34 +34,42 @@ import {
     X,
 } from "lucide-react";
 
-// ─── テーマ定数（変更ポイント）────────────────────────────────────────────
+// ─── デザイントークン（本実装 globals.css / figma-tokens に準拠）────────
 
-const T = {
-    /** ページ全体の背景 */
-    pageBg: "#f0ebe3",
-    /** カード背景（白） */
-    cardBg: "#ffffff",
-    /** TODAY'S BUDGET カード背景（常に暖色ベージュ） */
-    budgetCardBg: "#e8ddd3",
-    /** メインテキスト */
-    text: "#1c1410",
-    /** ミュートテキスト */
+/** カードの角丸 (= --radius-card 相当を rounded-xl に抑制) */
+const R = {
+    card: "12px",      // rounded-xl — カード外枠
+    inner: "8px",      // rounded-lg  — カード内タイル
+    badge: "9999px",   // rounded-full — バッジ・ドット
+    input: "10px",     // 入力欄
+} as const;
+
+const C = {
+    /* ── ベース ── */
+    bg: "#fffdf5",          // --background (= --color-surface-subtle)
+    card: "#ffffff",         // --color-surface-default
+    text: "#1c1410",         // --foreground
     muted: "rgba(28,20,16,0.45)",
-    /** ブランドオレンジ */
-    brand: "#f18840",
-    /** 収入グリーン */
-    income: "#35b5a2",
-    /** 支出オレンジ（brand と同色） */
-    expense: "#f18840",
-    /** 危機レッド */
-    danger: "#e84040",
-    /** 警戒アンバー */
-    caution: "#f5a623",
-    /** ボーダー */
-    border: "rgba(28,20,16,0.10)",
-    /** カードシャドウ */
-    shadow: "0 1px 4px rgba(28,20,16,0.07)",
-};
+    border: "#e8c8b0",       // --border-default
+    shadow: "0 1px 4px 0 rgba(28,20,16,0.07), 0 0 0 1px rgba(28,20,16,0.06)", // --shadow-card
+    shadowPop: "1px 1px 0 0 #1c1410",  // --shadow-pop-sm
+
+    /* ── ブランド ── */
+    brand: "#f18840",        // --color-brand-primary
+    brandLight: "#fff6ee",   // --color-expense-light
+    brandSecondary: "#e07030",
+
+    /* ── 収支 ── */
+    income: "#35b5a2",       // --color-income
+    incomeLight: "#ecfaf8",  // --color-income-light
+    expense: "#f18840",      // --color-expense
+    expenseLight: "#fff6ee",
+
+    /* ── ピンチ度（本実装 DailyBudgetCard Pattern D 準拠）── */
+    safe:        { bg: "#fafaf8", border: "#c4b5a5", hero: "#6b5b52", badge: "#c4b5a5", label: "余裕" },
+    caution:     { bg: "#fef2f2", border: "#f87171", hero: "#b91c1c", badge: "#f87171", label: "注意" },
+    danger:      { bg: "#fff1f2", border: "#f43f5e", hero: "#9f1239", badge: "#f43f5e", label: "ピンチ" },
+} as const;
 
 // ─── モックデータ（ここを変えるとプレビューが変わる）────────────────────
 
@@ -82,44 +91,15 @@ const MOCK = {
         income: 252600,
     },
     recentExpenses: [
-        { id: "1", date: "2026-05-12", amount: 1280, balanceType: 0, categoryName: "食費", content: "スーパー" },
+        { id: "1", date: "2026-05-12", amount: 1280,  balanceType: 0, categoryName: "食費",   content: "スーパー" },
         { id: "2", date: "2026-05-11", amount: 20000, balanceType: 0, categoryName: "日用品", content: "生活用品" },
-        { id: "3", date: "2026-05-10", amount: 50000, balanceType: 1, categoryName: "給料", content: "5月給与" },
+        { id: "3", date: "2026-05-10", amount: 50000, balanceType: 1, categoryName: "給料",   content: "5月給与" },
     ],
     alerts: [
         { id: "a1", type: "caution" as const, message: "今月の食費が先月比 +23% です" },
-        { id: "a2", type: "danger" as const, message: "固定費の引き落とし予定日まで3日" },
+        { id: "a2", type: "danger"  as const, message: "固定費の引き落とし予定日まで3日" },
     ],
 };
-
-// ─── 計算ユーティリティ ───────────────────────────────────────────────────
-
-function calcDaysRemaining(assets: number, netDailyExpense: number): number | null {
-    if (netDailyExpense <= 0) return null;
-    return Math.floor(assets / netDailyExpense);
-}
-
-function formatLifespan(daysRemaining: number | null) {
-    if (daysRemaining === null) {
-        return { infinite: true, months: 0, days: 0, subLabel: "収入が支出をカバーしています" };
-    }
-    if (daysRemaining <= 0) {
-        return { infinite: false, months: 0, days: 0, subLabel: "資産の状況を確認しましょう" };
-    }
-    const d = Math.floor(daysRemaining);
-    return {
-        infinite: false,
-        months: Math.floor(d / 30),
-        days: d % 30,
-        subLabel: `${d.toLocaleString("ja-JP")} 日後にゼロ — 今のペースを続けた場合`,
-    };
-}
-
-function lifespanAccentColor(monthsApprox: number) {
-    if (monthsApprox > 12) return T.income;
-    if (monthsApprox > 4) return T.brand;
-    return T.danger;
-}
 
 // ─── カテゴリ定義 ─────────────────────────────────────────────────────────
 
@@ -133,15 +113,38 @@ const EXPENSE_CATEGORIES = [
     { id: 7, name: "その他" },
 ];
 
-// ─── ヘルパー ─────────────────────────────────────────────────────────────
+// ─── 計算ユーティリティ ───────────────────────────────────────────────────
 
-function formatYen(n: number) {
-    return `¥${Math.round(n).toLocaleString("ja-JP")}`;
+function calcDaysRemaining(assets: number, netDailyExpense: number): number | null {
+    if (netDailyExpense <= 0) return null;
+    return Math.floor(assets / netDailyExpense);
 }
 
+function formatLifespan(daysRemaining: number | null) {
+    if (daysRemaining === null)
+        return { infinite: true,  months: 0, days: 0, subLabel: "収入が支出をカバーしています" };
+    if (daysRemaining <= 0)
+        return { infinite: false, months: 0, days: 0, subLabel: "資産の状況を確認しましょう" };
+    const d = Math.floor(daysRemaining);
+    return {
+        infinite: false,
+        months: Math.floor(d / 30),
+        days: d % 30,
+        subLabel: `${d.toLocaleString("ja-JP")} 日後にゼロ — 今のペースを続けた場合`,
+    };
+}
+
+function lifespanAccent(monthsApprox: number): string {
+    if (monthsApprox > 12) return C.income;
+    if (monthsApprox > 4)  return C.brand;
+    return C.danger.badge;
+}
+
+// ─── ヘルパー ─────────────────────────────────────────────────────────────
+
+function formatYen(n: number)       { return `¥${Math.round(n).toLocaleString("ja-JP")}` }
 function formatYenSigned(n: number) {
-    const sign = n >= 0 ? "+" : "−";
-    return `${sign}¥${Math.abs(Math.round(n)).toLocaleString("ja-JP")}`;
+    return `${n >= 0 ? "+" : "−"}¥${Math.abs(Math.round(n)).toLocaleString("ja-JP")}`;
 }
 
 type Tone = "safe" | "caution" | "danger";
@@ -152,38 +155,21 @@ function budgetTone(ratio: number): Tone {
     return "danger";
 }
 
-function toneLabel(tone: Tone) {
-    return tone === "safe" ? "余裕" : tone === "caution" ? "注意" : "危機";
-}
-
-function toneMessage(tone: Tone) {
-    if (tone === "safe") return "今日は支出をコントロールできています";
-    if (tone === "caution") return "予算の大半を使いました。支出を見直しましょう";
-    return "本日の予算が底をつきそうです。一度立ち止まりましょう";
-}
-
-/** トーンに応じた強調色（バッジドット・インフォテキストのみ） */
-function toneAccent(tone: Tone) {
-    if (tone === "safe") return T.income;
-    if (tone === "caution") return T.caution;
-    return T.danger;
-}
-
 function categoryIcon(name: string) {
-    if (name.includes("食")) return ShoppingBasket;
+    if (name.includes("食"))                            return ShoppingBasket;
     if (name.includes("日用品") || name.includes("生活")) return ShoppingBag;
-    if (name.includes("給") || name.includes("収")) return CircleDollarSign;
+    if (name.includes("給") || name.includes("収"))      return CircleDollarSign;
     return ShoppingBasket;
 }
 
 function categoryAccent(name: string) {
     if (name.includes("食"))
-        return { bg: `color-mix(in srgb, ${T.expense} 14%, white)`, fg: T.expense };
+        return { bg: C.expenseLight,  fg: C.expense };
     if (name.includes("日用品") || name.includes("生活"))
-        return { bg: "color-mix(in srgb, #a855f7 14%, white)", fg: "#a855f7" };
+        return { bg: "color-mix(in srgb, #a855f7 12%, white)", fg: "#a855f7" };
     if (name.includes("給") || name.includes("収"))
-        return { bg: `color-mix(in srgb, ${T.income} 14%, white)`, fg: T.income };
-    return { bg: "rgba(28,20,16,0.07)", fg: T.muted };
+        return { bg: C.incomeLight, fg: C.income };
+    return { bg: "rgba(28,20,16,0.07)", fg: C.muted };
 }
 
 // ─── アニメーション付き数値 ───────────────────────────────────────────────
@@ -193,13 +179,13 @@ function useAnimatedNumber(value: number, format: (n: number) => string): string
     const prev = useRef(value);
     useEffect(() => {
         const from = prev.current;
-        const controls = animate(from, value, {
+        const ctrl = animate(from, value, {
             duration: 0.55,
             ease: [0.16, 1, 0.3, 1],
             onUpdate: (v) => setDisplay(v),
         });
         prev.current = value;
-        return () => controls.stop();
+        return () => ctrl.stop();
     }, [value]);
     return format(display);
 }
@@ -207,10 +193,8 @@ function useAnimatedNumber(value: number, format: (n: number) => string): string
 // ─── SetupModal ───────────────────────────────────────────────────────────
 
 function SetupModal({
-    defaultAssets,
-    defaultIncome,
-    onSave,
-    onClose,
+    defaultAssets, defaultIncome,
+    onSave, onClose,
 }: {
     defaultAssets?: number;
     defaultIncome: number;
@@ -221,61 +205,66 @@ function SetupModal({
     const [income, setIncome] = useState(String(defaultIncome || ""));
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(28,20,16,0.50)" }}>
-            <div className="relative mx-4 w-full max-w-sm rounded-2xl p-6" style={{ background: T.cardBg }}>
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(28,20,16,0.50)" }}
+        >
+            <div
+                className="relative mx-4 w-full max-w-sm p-6"
+                style={{ background: C.card, borderRadius: R.card, border: `1px solid ${C.border}` }}
+            >
                 {onClose && (
                     <button
                         type="button"
                         onClick={onClose}
-                        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/5"
-                        style={{ color: T.muted }}
+                        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center transition-colors hover:bg-black/5"
+                        style={{ color: C.muted, borderRadius: R.inner }}
                         aria-label="閉じる"
                     >
                         <X size={16} />
                     </button>
                 )}
-                <h2 className="mb-1 text-lg font-extrabold" style={{ color: T.text }}>初期設定</h2>
-                <p className="mb-5 text-sm" style={{ color: T.muted }}>現在の資産と月収を入力してください</p>
+                <h2 className="mb-1 text-base font-extrabold" style={{ color: C.text }}>初期設定</h2>
+                <p className="mb-5 text-sm" style={{ color: C.muted }}>現在の資産と月収を入力してください</p>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
-                        const a = Number(assets);
-                        const i = Number(income);
+                        const a = Number(assets), i = Number(income);
                         if (!a || !i) return;
                         onSave(a, i);
                     }}
                     className="space-y-4"
                 >
                     {[
-                        { id: "setup-assets", label: "現在の総資産（円）", val: assets, set: setAssets, ph: "例: 500000" },
-                        { id: "setup-income", label: "月収（手取り、円）", val: income, set: setIncome, ph: "例: 280000" },
+                        { id: "s-assets", label: "現在の総資産（円）", val: assets, set: setAssets, ph: "例: 500000" },
+                        { id: "s-income", label: "月収（手取り、円）",  val: income, set: setIncome, ph: "例: 280000" },
                     ].map((f) => (
                         <div key={f.id} className="space-y-1.5">
                             <label
-                                className="text-xs font-bold uppercase tracking-wide"
-                                style={{ color: T.muted }}
+                                className="text-xs font-semibold"
+                                style={{ color: C.muted }}
                                 htmlFor={f.id}
-                            >
-                                {f.label}
-                            </label>
+                            >{f.label}</label>
                             <input
                                 id={f.id}
-                                type="number"
-                                inputMode="numeric"
-                                min={0}
-                                required
+                                type="number" inputMode="numeric" min={0} required
                                 value={f.val}
                                 onChange={(e) => f.set(e.target.value)}
-                                className="flex h-11 w-full rounded-xl px-3 text-base font-bold tabular-nums outline-none"
-                                style={{ border: `2px solid ${T.border}`, background: T.pageBg }}
+                                className="flex h-10 w-full px-3 text-sm font-bold tabular-nums outline-none"
+                                style={{
+                                    border: `2px solid ${C.border}`,
+                                    borderRadius: R.input,
+                                    background: C.bg,
+                                    color: C.text,
+                                }}
                                 placeholder={f.ph}
                             />
                         </div>
                     ))}
                     <button
                         type="submit"
-                        className="w-full rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-                        style={{ background: T.brand }}
+                        className="w-full py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ background: C.brand, borderRadius: R.input }}
                     >
                         設定する
                     </button>
@@ -290,27 +279,31 @@ function SetupModal({
 export function HomeV3Prototype() {
     const [totalAssets, setTotalAssets] = useState<number | null>(MOCK.totalAssets);
     const [monthlyIncome, setMonthlyIncome] = useState(MOCK.monthlyIncome);
-    const [showSetup, setShowSetup] = useState(false);
+    const [showSetup, setShowSetup]   = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [amountStr, setAmountStr] = useState("");
+    const [amountStr, setAmountStr]   = useState("");
     const [categoryId, setCategoryId] = useState("1");
-    const [noteText, setNoteText] = useState("");
-    const [submitted, setSubmitted] = useState(false);
-    const [alerts, setAlerts] = useState(MOCK.alerts);
+    const [noteText, setNoteText]     = useState("");
+    const [submitted, setSubmitted]   = useState(false);
+    const [alerts, setAlerts]         = useState(MOCK.alerts);
 
     const netDailyExpense = Math.max(0, MOCK.avgDailyExpense - monthlyIncome / 30);
-    const daysRemaining = totalAssets !== null ? calcDaysRemaining(totalAssets, netDailyExpense) : null;
+    const daysRemaining   = totalAssets !== null
+        ? calcDaysRemaining(totalAssets, netDailyExpense)
+        : null;
 
+    // 今日使えるお金
     const remaining = Math.max(0, MOCK.dailyBudget - MOCK.todayExpense);
     const animatedRemaining = useAnimatedNumber(remaining, formatYen);
-    const ratio = MOCK.dailyBudget > 0 ? remaining / MOCK.dailyBudget : 1;
-    const tone = budgetTone(ratio);
+    const ratio   = MOCK.dailyBudget > 0 ? remaining / MOCK.dailyBudget : 1;
+    const tone    = budgetTone(ratio);
     const fillPct = Math.round(Math.max(0, Math.min(100, ratio * 100)));
-    const accent = toneAccent(tone);
+    const ps      = C[tone]; // PINCH_STYLES
 
-    const lm = useMemo(() => formatLifespan(daysRemaining), [daysRemaining]);
-    const monthsApprox = daysRemaining !== null ? daysRemaining / 30 : 999;
-    const lifespanAccent = lifespanAccentColor(monthsApprox);
+    // 家計の寿命
+    const lm            = useMemo(() => formatLifespan(daysRemaining), [daysRemaining]);
+    const monthsApprox  = daysRemaining !== null ? daysRemaining / 30 : 999;
+    const lsAccent      = lifespanAccent(monthsApprox);
 
     const netMonth = MOCK.monthSummary.income - MOCK.monthSummary.expense;
 
@@ -329,7 +322,10 @@ export function HomeV3Prototype() {
     }
 
     return (
-        <div className="min-h-screen pb-28" style={{ background: T.pageBg, color: T.text }}>
+        <div
+            className="min-h-screen pb-28"
+            style={{ background: C.bg, color: C.text }}
+        >
             {showSetup && (
                 <SetupModal
                     defaultAssets={totalAssets ?? undefined}
@@ -339,191 +335,183 @@ export function HomeV3Prototype() {
                 />
             )}
 
-            {/* ─── ヘッダー ────────────────────────────────────────────────── */}
+            {/* ─── ヘッダー ─────────────────────────────────────────────── */}
             <header
-                className="sticky top-0 z-20 border-b"
+                className="sticky top-0 z-20 flex h-14 items-center border-b px-4 md:px-6"
                 style={{
-                    background: `color-mix(in srgb, ${T.pageBg} 92%, transparent)`,
-                    backdropFilter: "blur(12px)",
-                    borderColor: T.border,
+                    background: `${C.bg}ee`,
+                    backdropFilter: "blur(10px)",
+                    borderColor: "rgba(28,20,16,0.10)",
                 }}
             >
-                <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-5 md:h-16 md:px-8">
-                    {/* ロゴ */}
-                    <div className="flex shrink-0 items-center gap-2.5">
-                        <div
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[15px] font-black text-white"
-                            style={{ background: T.text }}
-                        >
-                            L
-                        </div>
-                        <div className="leading-tight">
-                            <div className="text-[15px] font-bold tracking-tight" style={{ color: T.text }}>
-                                Lifespan
-                            </div>
-                            <div
-                                className="text-[9px] font-bold uppercase tracking-[0.18em]"
-                                style={{ color: T.muted }}
-                            >
-                                Financial Manager
-                            </div>
-                        </div>
+                {/* ロゴ */}
+                <div className="flex items-center gap-2 shrink-0">
+                    <div
+                        className="flex h-8 w-8 shrink-0 items-center justify-center"
+                        style={{
+                            background: C.brand,
+                            borderRadius: "10px",
+                            boxShadow: C.shadowPop,
+                        }}
+                    >
+                        <PenLine size={15} className="text-white" strokeWidth={2.5} />
                     </div>
+                    <span className="text-sm font-extrabold" style={{ color: C.text }}>
+                        家計かんり
+                    </span>
+                </div>
 
-                    {/* センターナビ */}
-                    <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
-                        {[
-                            { to: "/home-v3", label: "ダッシュボード", icon: Home, active: true },
-                            { to: "#", label: "カレンダー", icon: Calendar, active: false },
-                            { to: "#", label: "レポート", icon: FileBarChart, active: false },
-                            { to: "#", label: "設定", icon: Settings, active: false },
-                        ].map((item) => (
-                            <Link
-                                key={item.to}
-                                to={item.to}
-                                className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-colors"
-                                style={
-                                    item.active
-                                        ? {
-                                            background: T.cardBg,
-                                            color: T.text,
-                                            boxShadow: "0 1px 3px rgba(28,20,16,0.12)",
-                                        }
-                                        : { color: T.muted }
-                                }
-                            >
-                                <item.icon size={14} aria-hidden />
-                                {item.label}
-                            </Link>
-                        ))}
-                    </nav>
+                {/* センターナビ（PC のみ） */}
+                <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
+                    {[
+                        { to: "/home-v3",   label: "ホーム",       icon: Home,     active: true },
+                        { to: "#",          label: "カレンダー",   icon: Calendar,  active: false },
+                        { to: "#",          label: "レポート",     icon: BarChart2, active: false },
+                        { to: "#",          label: "設定",         icon: Settings,  active: false },
+                    ].map((item) => (
+                        <Link
+                            key={item.to}
+                            to={item.to}
+                            className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold transition-colors"
+                            style={{
+                                borderRadius: "10px",
+                                background: item.active ? C.brandLight : "transparent",
+                                color:      item.active ? C.brand      : "rgba(28,20,16,0.60)",
+                            }}
+                        >
+                            <item.icon size={14} aria-hidden />
+                            {item.label}
+                        </Link>
+                    ))}
+                </nav>
 
-                    {/* 右側アクション */}
-                    <div className="ml-auto flex shrink-0 items-center gap-2">
-                        <button
-                            type="button"
-                            className="relative flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-black/5"
-                            style={{ color: T.muted }}
-                            aria-label="通知"
-                        >
-                            <Bell size={18} />
-                            {alerts.length > 0 && (
-                                <span
-                                    className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full ring-2"
-                                    style={{ background: T.brand, ringColor: T.pageBg }}
-                                />
-                            )}
-                        </button>
-                        <div
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-[13px] font-extrabold text-white"
-                            style={{ background: T.brand }}
-                        >
-                            {MOCK.userId}
-                        </div>
+                {/* 右アクション */}
+                <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                    <button
+                        type="button"
+                        className="relative flex h-8 w-8 items-center justify-center transition-colors hover:bg-black/5"
+                        style={{ color: "rgba(28,20,16,0.50)", borderRadius: "8px" }}
+                        aria-label="通知"
+                    >
+                        <Bell size={17} />
+                        {alerts.length > 0 && (
+                            <span
+                                className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full"
+                                style={{ background: C.brand }}
+                            />
+                        )}
+                    </button>
+                    <div
+                        className="flex h-8 w-8 items-center justify-center text-[12px] font-extrabold text-white"
+                        style={{
+                            background: C.brand,
+                            borderRadius: R.badge,
+                        }}
+                    >
+                        {MOCK.userId}
                     </div>
                 </div>
             </header>
 
-            <main className="mx-auto max-w-6xl space-y-4 px-4 py-5 md:px-8 md:py-6">
+            <main className="mx-auto max-w-6xl space-y-3 px-4 py-4 md:px-6 md:py-5">
 
                 {/* ─── アラートバナー ──────────────────────────────────────── */}
                 {alerts.length > 0 && (
                     <div className="space-y-2">
-                        {alerts.map((alert) => (
-                            <motion.div
-                                key={alert.id}
-                                initial={{ opacity: 0, y: -6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-3 rounded-xl border px-4 py-2.5"
-                                style={{
-                                    borderColor: `color-mix(in srgb, ${alert.type === "danger" ? T.danger : T.caution} 28%, transparent)`,
-                                    background: `color-mix(in srgb, ${alert.type === "danger" ? T.danger : T.caution} 6%, white)`,
-                                }}
-                            >
-                                {alert.type === "danger"
-                                    ? <TrendingDown size={14} style={{ color: T.danger, flexShrink: 0 }} />
-                                    : <AlertTriangle size={14} style={{ color: T.caution, flexShrink: 0 }} />
-                                }
-                                <span className="flex-1 text-[12.5px] font-medium" style={{ color: T.text + "cc" }}>
-                                    {alert.message}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => setAlerts((prev) => prev.filter((a) => a.id !== alert.id))}
-                                    className="shrink-0 transition-opacity hover:opacity-60"
-                                    style={{ color: T.muted }}
-                                    aria-label="閉じる"
+                        {alerts.map((alert) => {
+                            const aColor = alert.type === "danger" ? C.danger.badge : C.caution.badge;
+                            return (
+                                <motion.div
+                                    key={alert.id}
+                                    initial={{ opacity: 0, y: -4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-center gap-2.5 border px-3.5 py-2.5"
+                                    style={{
+                                        borderRadius: R.inner,
+                                        borderColor: `color-mix(in srgb, ${aColor} 30%, transparent)`,
+                                        background: `color-mix(in srgb, ${aColor} 6%, white)`,
+                                    }}
                                 >
-                                    <X size={13} />
-                                </button>
-                            </motion.div>
-                        ))}
+                                    {alert.type === "danger"
+                                        ? <TrendingDown size={13} style={{ color: aColor, flexShrink: 0 }} />
+                                        : <AlertTriangle size={13} style={{ color: aColor, flexShrink: 0 }} />
+                                    }
+                                    <span className="flex-1 text-xs font-medium" style={{ color: C.text + "cc" }}>
+                                        {alert.message}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAlerts((prev) => prev.filter((a) => a.id !== alert.id))}
+                                        className="shrink-0 transition-opacity hover:opacity-60"
+                                        style={{ color: C.muted }}
+                                        aria-label="閉じる"
+                                    >
+                                        <X size={13} />
+                                    </button>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 )}
 
                 {/* ─── メイングリッド ──────────────────────────────────────── */}
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px] lg:items-start">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_288px] lg:items-start">
 
                     {/* 左カラム */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
 
-                        {/* TODAY'S BUDGET */}
+                        {/* ── 今日使えるお金 ───────────────────────────────── */}
                         <div
-                            className="relative overflow-hidden rounded-2xl p-6 md:p-8"
-                            style={{ background: T.budgetCardBg, boxShadow: T.shadow }}
+                            className="border-2 p-5"
+                            style={{
+                                borderRadius: R.card,
+                                background: ps.bg,
+                                borderColor: ps.border,
+                                boxShadow: C.shadow,
+                            }}
                         >
-                            <div className="mb-5 flex items-start justify-between gap-2">
-                                <div>
-                                    <div
-                                        className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em]"
-                                        style={{ color: T.muted }}
-                                    >
-                                        Today's Budget
-                                    </div>
-                                    <div className="text-[14px] font-semibold" style={{ color: `${T.text}bb` }}>
-                                        今日使えるお金
-                                    </div>
-                                </div>
-                                {/* ステータスバッジ — 常にニュートラルグレー、ドットのみ色付き */}
+                            {/* ヘッダー行 */}
+                            <div className="mb-3 flex items-center justify-between">
                                 <span
-                                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold"
-                                    style={{
-                                        background: "rgba(28,20,16,0.09)",
-                                        color: `${T.text}99`,
-                                    }}
+                                    className="text-xs font-bold uppercase tracking-wide"
+                                    style={{ color: "rgba(28,20,16,0.60)" }}
                                 >
-                                    <span
-                                        className="h-1.5 w-1.5 rounded-full"
-                                        style={{ background: accent }}
-                                    />
-                                    {toneLabel(tone)}
+                                    今日使えるお金
+                                </span>
+                                <span
+                                    className="px-2.5 py-0.5 text-xs font-bold text-white"
+                                    style={{ background: ps.badge, borderRadius: R.badge }}
+                                >
+                                    {ps.label}
                                 </span>
                             </div>
 
                             {/* ヒーローナンバー */}
-                            <div
-                                className="mb-5 font-mono text-5xl font-extrabold tracking-tight tabular-nums md:text-6xl"
-                                style={{ color: T.text }}
-                            >
-                                {animatedRemaining}
+                            <div className="mb-4">
+                                <p
+                                    className="text-4xl font-extrabold leading-none tabular-nums md:text-5xl"
+                                    style={{ color: ps.hero }}
+                                >
+                                    {animatedRemaining}
+                                </p>
                             </div>
 
                             {/* プログレスバー */}
-                            <div className="mb-4">
+                            <div className="mb-3.5">
                                 <div
-                                    className="mb-1.5 flex justify-between text-[11px] font-medium"
-                                    style={{ color: T.muted }}
+                                    className="mb-1 flex justify-between text-[11px] font-medium"
+                                    style={{ color: "rgba(28,20,16,0.50)" }}
                                 >
                                     <span>残り</span>
                                     <span className="tabular-nums">{fillPct}%</span>
                                 </div>
                                 <div
-                                    className="h-1.5 overflow-hidden rounded-full"
-                                    style={{ background: "rgba(28,20,16,0.12)" }}
+                                    className="h-1.5 overflow-hidden"
+                                    style={{ background: `color-mix(in srgb, ${ps.border} 30%, transparent)`, borderRadius: R.badge }}
                                 >
                                     <motion.div
-                                        className="h-full rounded-full"
-                                        style={{ background: T.text }}
+                                        className="h-full"
+                                        style={{ background: ps.hero, borderRadius: R.badge }}
                                         initial={{ width: 0 }}
                                         animate={{ width: `${fillPct}%` }}
                                         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
@@ -533,30 +521,36 @@ export function HomeV3Prototype() {
 
                             {/* メタ行 */}
                             <div
-                                className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-medium"
-                                style={{ color: `${T.text}99` }}
+                                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+                                style={{ color: "rgba(28,20,16,0.60)" }}
                             >
                                 <span>
                                     1日予算{" "}
-                                    <span className="font-semibold tabular-nums" style={{ color: T.text }}>
+                                    <span className="font-bold tabular-nums" style={{ color: "rgba(28,20,16,0.80)" }}>
                                         {formatYen(MOCK.dailyBudget)}
                                     </span>
                                 </span>
-                                <span className="h-3 w-px" style={{ background: "rgba(28,20,16,0.15)" }} />
+                                <span style={{ color: "rgba(28,20,16,0.25)" }}>|</span>
                                 <span>
                                     本日支出{" "}
-                                    <span className="font-semibold tabular-nums" style={{ color: T.text }}>
+                                    <span className="font-bold tabular-nums" style={{ color: "rgba(28,20,16,0.80)" }}>
                                         {formatYen(MOCK.todayExpense)}
                                     </span>
                                 </span>
-                                <span className="h-3 w-px" style={{ background: "rgba(28,20,16,0.15)" }} />
-                                <span className="flex items-center gap-1.5">
-                                    <span
-                                        className="h-1.5 w-1.5 rounded-full"
-                                        style={{ background: T.brand }}
-                                    />
+                            </div>
+
+                            {/* 給料日カウントダウン */}
+                            <div
+                                className="mt-3 flex items-center gap-1.5 border-t pt-3"
+                                style={{ borderColor: `${ps.border}40` }}
+                            >
+                                <span
+                                    className="inline-block h-1.5 w-1.5 rounded-full"
+                                    style={{ background: ps.hero }}
+                                />
+                                <span className="text-xs" style={{ color: "rgba(28,20,16,0.60)" }}>
                                     給料日まで{" "}
-                                    <span className="font-bold tabular-nums" style={{ color: T.text }}>
+                                    <span className="font-bold" style={{ color: "rgba(28,20,16,0.80)" }}>
                                         あと {MOCK.daysUntilPayday} 日
                                     </span>
                                 </span>
@@ -564,90 +558,100 @@ export function HomeV3Prototype() {
 
                             {/* ステータスメッセージ */}
                             <div
-                                className="flex items-center gap-2 text-[12px] font-medium"
-                                style={{ color: T.muted }}
+                                className="mt-2.5 flex items-center gap-1.5 text-xs font-medium"
+                                style={{ color: "rgba(28,20,16,0.50)" }}
                             >
-                                <Info size={13} className="shrink-0" />
-                                <span>{toneMessage(tone)}</span>
+                                <Info size={12} className="shrink-0" />
+                                {tone === "safe"
+                                    ? "今日は支出をコントロールできています"
+                                    : tone === "caution"
+                                        ? "予算の大半を使いました。支出を見直しましょう"
+                                        : "本日の予算が底をつきそうです。一度立ち止まりましょう"
+                                }
                             </div>
                         </div>
 
-                        {/* 家計の寿命 */}
+                        {/* ── 家計の寿命 ───────────────────────────────────── */}
                         {totalAssets === null ? (
                             <div
-                                className="rounded-2xl border-2 border-dashed p-6 text-center"
-                                style={{ borderColor: T.border, background: T.cardBg }}
+                                className="border-2 border-dashed p-5 text-center"
+                                style={{ borderRadius: R.card, borderColor: C.border, background: C.card }}
                             >
-                                <p className="mb-3 text-sm font-medium" style={{ color: T.muted }}>
+                                <p className="mb-3 text-sm font-medium" style={{ color: C.muted }}>
                                     設定を完了すると「家計の寿命」が表示されます
                                 </p>
                                 <button
                                     type="button"
                                     onClick={() => setShowSetup(true)}
-                                    className="rounded-xl px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
-                                    style={{ background: T.brand }}
+                                    className="px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                                    style={{ background: C.brand, borderRadius: R.input }}
                                 >
                                     設定する
                                 </button>
                             </div>
                         ) : (
                             <div
-                                className="relative overflow-hidden rounded-2xl p-6 md:p-8"
-                                style={{ background: T.cardBg, boxShadow: T.shadow }}
+                                className="border p-5"
+                                style={{
+                                    borderRadius: R.card,
+                                    background: C.card,
+                                    borderColor: C.border,
+                                    boxShadow: C.shadow,
+                                }}
                             >
                                 {/* ヘッダー行 */}
                                 <div className="mb-1 flex items-center justify-between">
-                                    <span className="text-[11px] font-bold uppercase tracking-[0.12em]" style={{ color: T.muted }}>
+                                    <span
+                                        className="text-xs font-bold uppercase tracking-wide"
+                                        style={{ color: "rgba(28,20,16,0.50)" }}
+                                    >
                                         家計の寿命
                                     </span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-[11px]" style={{ color: T.muted }}>LIFESPAN</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowSetup(true)}
-                                            className="rounded-lg px-2 py-0.5 text-[10px] font-bold transition-colors hover:bg-black/5"
-                                            style={{ color: T.brand }}
-                                        >
-                                            設定変更
-                                        </button>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSetup(true)}
+                                        className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+                                        style={{ color: C.brand }}
+                                    >
+                                        設定変更
+                                    </button>
                                 </div>
 
-                                {/* 寿命メイン表示 */}
-                                <div className="py-6 text-center md:py-8">
+                                {/* 寿命メイン */}
+                                <div className="py-5 text-center md:py-7">
                                     {lm.infinite ? (
                                         <>
-                                            <div className="font-mono text-6xl font-extrabold" style={{ color: T.income }}>∞</div>
-                                            <div className="mt-2 text-[12.5px] font-medium" style={{ color: T.muted }}>{lm.subLabel}</div>
+                                            <div className="text-5xl font-extrabold" style={{ color: C.income }}>∞</div>
+                                            <div className="mt-2 text-xs font-medium" style={{ color: C.muted }}>{lm.subLabel}</div>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="flex flex-wrap items-baseline justify-center gap-1.5">
-                                                <span className="text-lg font-semibold" style={{ color: `${T.text}88` }}>あと</span>
+                                            <div className="flex flex-wrap items-baseline justify-center gap-1">
+                                                <span className="text-base font-semibold" style={{ color: "rgba(28,20,16,0.55)" }}>あと</span>
                                                 <motion.span
                                                     key={`m-${lm.months}`}
-                                                    className="font-mono text-6xl font-black tabular-nums tracking-tight"
-                                                    style={{ color: lifespanAccent }}
-                                                    initial={{ opacity: 0.5, y: -5 }}
+                                                    className="font-mono text-5xl font-black tabular-nums tracking-tight md:text-6xl"
+                                                    style={{ color: lsAccent }}
+                                                    initial={{ opacity: 0.5, y: -4 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ duration: 0.3 }}
                                                 >
                                                     {lm.months}
                                                 </motion.span>
-                                                <span className="text-2xl font-bold" style={{ color: lifespanAccent }}>ヶ月</span>
+                                                <span className="text-xl font-bold md:text-2xl" style={{ color: lsAccent }}>ヶ月</span>
                                                 <motion.span
                                                     key={`d-${lm.days}`}
-                                                    className="font-mono text-5xl font-black tabular-nums tracking-tight"
-                                                    style={{ color: lifespanAccent }}
-                                                    initial={{ opacity: 0.5, y: -5 }}
+                                                    className="font-mono text-4xl font-black tabular-nums tracking-tight md:text-5xl"
+                                                    style={{ color: lsAccent }}
+                                                    initial={{ opacity: 0.5, y: -4 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ duration: 0.3 }}
                                                 >
                                                     {lm.days}
                                                 </motion.span>
-                                                <span className="text-2xl font-bold" style={{ color: lifespanAccent }}>日</span>
+                                                <span className="text-xl font-bold md:text-2xl" style={{ color: lsAccent }}>日</span>
                                             </div>
-                                            <div className="mt-2 text-[12.5px] font-medium" style={{ color: T.muted }}>
+                                            <div className="mt-2 text-xs font-medium" style={{ color: C.muted }}>
                                                 {lm.subLabel}
                                             </div>
                                         </>
@@ -655,62 +659,63 @@ export function HomeV3Prototype() {
                                 </div>
 
                                 {/* スタットグリッド */}
-                                <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-                                    <div className="rounded-xl p-3.5" style={{ background: T.pageBg }}>
-                                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: T.muted }}>残存資産</div>
-                                        <div className="font-mono text-[17px] font-extrabold tabular-nums" style={{ color: T.text }}>
-                                            {formatYen(totalAssets)}
-                                        </div>
-                                    </div>
-                                    <div className="rounded-xl p-3.5" style={{ background: T.pageBg }}>
-                                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: T.muted }}>1日あたり</div>
-                                        <div className="font-mono text-[17px] font-extrabold tabular-nums" style={{ color: T.text }}>
-                                            {formatYen(Math.round(netDailyExpense))}
-                                        </div>
-                                        <div className="mt-0.5 text-[10px] tabular-nums" style={{ color: T.muted }}>
-                                            {Math.round(netDailyExpense / 1000 * 60 * 24 / 60)}分 / 1,000円
-                                        </div>
-                                    </div>
-                                    <div
-                                        className="rounded-xl p-3.5"
-                                        style={{
-                                            background: MOCK.todayExpense === 0
-                                                ? `color-mix(in srgb, ${T.income} 10%, white)`
-                                                : T.pageBg,
-                                        }}
-                                    >
-                                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: T.muted }}>今日</div>
+                                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                                    {[
+                                        { label: "残存資産", value: formatYen(totalAssets), highlight: "" },
+                                        { label: "1日あたり", value: formatYen(Math.round(netDailyExpense)), sub: `${Math.round(netDailyExpense / 1000 * 60 * 24 / 60)}分 / 1,000円` },
+                                        {
+                                            label: "今日",
+                                            value: formatYen(MOCK.todayExpense),
+                                            highlight: MOCK.todayExpense === 0 ? C.income : C.expense,
+                                            tileBg: MOCK.todayExpense === 0 ? C.incomeLight : undefined,
+                                        },
+                                        { label: "昨日", value: formatYen(MOCK.yesterdayExpense), highlight: "" },
+                                    ].map((item) => (
                                         <div
-                                            className="font-mono text-[17px] font-extrabold tabular-nums"
-                                            style={{ color: MOCK.todayExpense === 0 ? T.income : T.expense }}
+                                            key={item.label}
+                                            className="px-3 py-3"
+                                            style={{
+                                                background: item.tileBg ?? C.bg,
+                                                borderRadius: R.inner,
+                                            }}
                                         >
-                                            {formatYen(MOCK.todayExpense)}
+                                            <div
+                                                className="mb-1 text-[10px] font-bold uppercase tracking-wide"
+                                                style={{ color: C.muted }}
+                                            >
+                                                {item.label}
+                                            </div>
+                                            <div
+                                                className="font-mono text-[16px] font-extrabold tabular-nums"
+                                                style={{ color: item.highlight || C.text }}
+                                            >
+                                                {item.value}
+                                            </div>
+                                            {"sub" in item && item.sub && (
+                                                <div className="mt-0.5 text-[10px]" style={{ color: C.muted }}>
+                                                    {item.sub}
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                    <div className="rounded-xl p-3.5" style={{ background: T.pageBg }}>
-                                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: T.muted }}>昨日</div>
-                                        <div className="font-mono text-[17px] font-extrabold tabular-nums" style={{ color: T.text }}>
-                                            {formatYen(MOCK.yesterdayExpense)}
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
 
                                 {/* 予測精度バー */}
-                                <div className="mt-5 border-t pt-4" style={{ borderColor: T.border }}>
+                                <div className="mt-4 border-t pt-3.5" style={{ borderColor: C.border }}>
                                     <div
-                                        className="mb-2 flex justify-between text-[10.5px] font-bold uppercase tracking-[0.12em]"
-                                        style={{ color: T.muted }}
+                                        className="mb-2 flex justify-between text-[10.5px] font-bold uppercase tracking-wide"
+                                        style={{ color: C.muted }}
                                     >
                                         <span>予測の精度</span>
                                         <span>{MOCK.recordedDays}日分の実績</span>
                                     </div>
                                     <div
-                                        className="h-1 overflow-hidden rounded-full"
-                                        style={{ background: "rgba(28,20,16,0.10)" }}
+                                        className="h-1 overflow-hidden"
+                                        style={{ background: C.bg, borderRadius: R.badge }}
                                     >
                                         <motion.div
-                                            className="h-full rounded-full"
-                                            style={{ background: T.brand }}
+                                            className="h-full"
+                                            style={{ background: C.brand, borderRadius: R.badge }}
                                             initial={{ width: 0 }}
                                             animate={{ width: `${Math.min(100, (MOCK.recordedDays / 90) * 100)}%` }}
                                             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -721,33 +726,39 @@ export function HomeV3Prototype() {
                                 {/* ゼロ連続ストリーク */}
                                 {MOCK.zeroStreakDays >= 2 && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 6 }}
+                                        initial={{ opacity: 0, y: 5 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.1 }}
-                                        className="mt-3 flex items-center gap-2.5 rounded-xl p-3"
-                                        style={{ background: `color-mix(in srgb, ${T.income} 10%, white)` }}
+                                        className="mt-3 flex items-center gap-2 p-3"
+                                        style={{
+                                            background: C.incomeLight,
+                                            borderRadius: R.inner,
+                                        }}
                                     >
                                         <span
                                             className="h-2 w-2 shrink-0 rounded-full"
-                                            style={{ background: T.income }}
+                                            style={{ background: C.income }}
                                         />
-                                        <span className="text-[12.5px] font-semibold" style={{ color: T.income }}>
+                                        <span className="text-xs font-semibold" style={{ color: C.income }}>
                                             {MOCK.zeroStreakDays}日連続で支出ゼロ — 着実に余裕が積み上がっています
                                         </span>
                                     </motion.div>
                                 )}
 
-                                {/* 連続記録 */}
+                                {/* 記録ストリーク（ゼロ連続がない場合） */}
                                 {MOCK.recordingStreak >= 2 && MOCK.zeroStreakDays < 2 && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 6 }}
+                                        initial={{ opacity: 0, y: 5 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.1 }}
-                                        className="mt-3 flex items-center gap-2.5 rounded-xl px-3 py-2"
-                                        style={{ background: `color-mix(in srgb, ${T.brand} 10%, white)` }}
+                                        className="mt-3 flex items-center gap-2 px-3 py-2"
+                                        style={{
+                                            background: C.brandLight,
+                                            borderRadius: R.inner,
+                                        }}
                                     >
-                                        <Flame size={15} style={{ color: T.brand }} />
-                                        <span className="text-[12.5px] font-semibold" style={{ color: T.brand }}>
+                                        <Flame size={14} style={{ color: C.brand }} />
+                                        <span className="text-xs font-semibold" style={{ color: C.brand }}>
                                             {MOCK.recordingStreak}日連続記録中
                                         </span>
                                     </motion.div>
@@ -757,55 +768,60 @@ export function HomeV3Prototype() {
                     </div>
 
                     {/* 右カラム */}
-                    <div className="space-y-4">
+                    <div className="space-y-3">
 
-                        {/* 月の収支 */}
+                        {/* ── 月の収支 ─────────────────────────────────────── */}
                         <div
-                            className="rounded-2xl p-5"
-                            style={{ background: T.cardBg, boxShadow: T.shadow }}
+                            className="border p-4"
+                            style={{
+                                borderRadius: R.card,
+                                background: C.card,
+                                borderColor: C.border,
+                                boxShadow: C.shadow,
+                            }}
                         >
-                            <div className="mb-4 flex items-center justify-between">
-                                <span className="text-[13px] font-bold" style={{ color: T.text }}>月の収支</span>
-                                <span className="font-mono text-[12px]" style={{ color: T.muted }}>
+                            <div className="mb-3 flex items-center justify-between">
+                                <span className="text-xs font-bold" style={{ color: C.text }}>月の収支</span>
+                                <span className="font-mono text-[11px]" style={{ color: C.muted }}>
                                     {MOCK.monthSummary.label}
                                 </span>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
                                 {/* 支出 */}
                                 <div
-                                    className="rounded-xl p-3"
-                                    style={{ background: `color-mix(in srgb, ${T.expense} 10%, white)` }}
+                                    className="p-3"
+                                    style={{ background: C.expenseLight, borderRadius: R.inner }}
                                 >
-                                    <div className="mb-2 flex items-center gap-1">
-                                        <Receipt size={10} style={{ color: T.expense }} />
-                                        <span className="text-[9.5px] font-bold uppercase tracking-wide" style={{ color: T.expense }}>支出</span>
+                                    <div className="mb-1.5 flex items-center gap-1">
+                                        <Receipt size={10} style={{ color: C.expense }} />
+                                        <span className="text-[9.5px] font-bold uppercase tracking-wide" style={{ color: C.expense }}>支出</span>
                                     </div>
-                                    <div className="font-mono text-[15px] font-extrabold tabular-nums" style={{ color: T.expense }}>
+                                    <div className="font-mono text-[14px] font-extrabold tabular-nums" style={{ color: C.expense }}>
                                         {formatYen(MOCK.monthSummary.expense)}
                                     </div>
                                 </div>
                                 {/* 収入 */}
                                 <div
-                                    className="rounded-xl p-3"
-                                    style={{ background: `color-mix(in srgb, ${T.income} 12%, white)` }}
+                                    className="p-3"
+                                    style={{ background: C.incomeLight, borderRadius: R.inner }}
                                 >
-                                    <div className="mb-2 flex items-center gap-1">
-                                        <Banknote size={10} style={{ color: T.income }} />
-                                        <span className="text-[9.5px] font-bold uppercase tracking-wide" style={{ color: T.income }}>収入</span>
+                                    <div className="mb-1.5 flex items-center gap-1">
+                                        <Banknote size={10} style={{ color: C.income }} />
+                                        <span className="text-[9.5px] font-bold uppercase tracking-wide" style={{ color: C.income }}>収入</span>
                                     </div>
-                                    <div className="font-mono text-[15px] font-extrabold tabular-nums" style={{ color: T.income }}>
+                                    <div className="font-mono text-[14px] font-extrabold tabular-nums" style={{ color: C.income }}>
                                         {formatYen(MOCK.monthSummary.income)}
                                     </div>
                                 </div>
                                 {/* 残り */}
-                                <div className="rounded-xl p-3" style={{ background: T.pageBg }}>
-                                    <div className="mb-2 flex items-center gap-1">
-                                        <Wallet size={10} style={{ color: T.muted }} />
-                                        <span className="text-[9.5px] font-bold uppercase tracking-wide" style={{ color: T.muted }}>残り</span>
+                                <div className="p-3" style={{ background: C.bg, borderRadius: R.inner }}>
+                                    <div className="mb-1.5 flex items-center gap-1">
+                                        <Wallet size={10} style={{ color: C.muted }} />
+                                        <span className="text-[9.5px] font-bold uppercase tracking-wide" style={{ color: C.muted }}>残り</span>
                                     </div>
                                     <div
-                                        className="font-mono text-[15px] font-extrabold tabular-nums"
-                                        style={{ color: netMonth >= 0 ? T.income : T.danger }}
+                                        className="font-mono text-[14px] font-extrabold tabular-nums"
+                                        style={{ color: netMonth >= 0 ? C.income : C.danger.badge }}
                                     >
                                         {formatYenSigned(netMonth)}
                                     </div>
@@ -813,60 +829,64 @@ export function HomeV3Prototype() {
                             </div>
                         </div>
 
-                        {/* 最近の記録 */}
+                        {/* ── 最近の記録 ───────────────────────────────────── */}
                         <div
-                            className="rounded-2xl p-5"
-                            style={{ background: T.cardBg, boxShadow: T.shadow }}
+                            className="border p-4"
+                            style={{
+                                borderRadius: R.card,
+                                background: C.card,
+                                borderColor: C.border,
+                                boxShadow: C.shadow,
+                            }}
                         >
-                            <div className="mb-4 flex items-center justify-between">
-                                <span className="text-[13px] font-bold" style={{ color: T.text }}>最近の記録</span>
+                            <div className="mb-3 flex items-center justify-between">
+                                <span className="text-xs font-bold" style={{ color: C.text }}>最近の記録</span>
                                 <span
-                                    className="cursor-pointer text-[11px] font-bold transition-opacity hover:opacity-70"
-                                    style={{ color: T.brand }}
+                                    className="cursor-pointer text-[11px] font-semibold transition-opacity hover:opacity-70"
+                                    style={{ color: C.brand }}
                                 >
                                     すべて見る ›
                                 </span>
                             </div>
-                            <ul className="space-y-0">
+                            <ul>
                                 {MOCK.recentExpenses.map((it, i) => {
-                                    const catName = it.categoryName;
-                                    const Icon = categoryIcon(catName);
-                                    const acc = categoryAccent(catName);
+                                    const acc = categoryAccent(it.categoryName);
+                                    const Icon = categoryIcon(it.categoryName);
                                     const isIncome = it.balanceType === 1;
-                                    const title = it.content?.trim() || catName;
+                                    const title = it.content?.trim() || it.categoryName;
                                     return (
                                         <motion.li
                                             key={it.id}
-                                            initial={{ opacity: 0, x: -6 }}
+                                            initial={{ opacity: 0, x: -5 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.06 }}
-                                            className="flex items-center gap-3 py-3"
+                                            className="flex items-center gap-3 py-2.5"
                                             style={{
                                                 borderBottom: i < MOCK.recentExpenses.length - 1
-                                                    ? `1px solid ${T.border}`
+                                                    ? `1px solid ${C.border}`
                                                     : "none",
                                             }}
                                         >
                                             <div
-                                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                                style={{ background: acc.bg, color: acc.fg }}
+                                                className="flex h-8 w-8 shrink-0 items-center justify-center"
+                                                style={{ background: acc.bg, color: acc.fg, borderRadius: R.inner }}
                                             >
-                                                <Icon size={16} aria-hidden />
+                                                <Icon size={15} aria-hidden />
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <div
                                                     className="truncate text-[13px] font-semibold"
-                                                    style={{ color: T.text }}
+                                                    style={{ color: C.text }}
                                                 >
                                                     {title}
                                                 </div>
-                                                <div className="text-[11px] tabular-nums" style={{ color: T.muted }}>
-                                                    {it.date} · {catName}
+                                                <div className="text-[11px] tabular-nums" style={{ color: C.muted }}>
+                                                    {it.date} · {it.categoryName}
                                                 </div>
                                             </div>
                                             <div
-                                                className="shrink-0 font-mono text-[13.5px] font-extrabold tabular-nums"
-                                                style={{ color: isIncome ? T.income : T.text }}
+                                                className="shrink-0 font-mono text-[13px] font-extrabold tabular-nums"
+                                                style={{ color: isIncome ? C.income : C.text }}
                                             >
                                                 {isIncome ? "+" : "−"}¥{it.amount.toLocaleString("ja-JP")}
                                             </div>
@@ -883,112 +903,108 @@ export function HomeV3Prototype() {
             <motion.button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: 0.15, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 whileTap={{ scale: 0.97 }}
-                className="fixed right-5 z-40 flex h-14 items-center gap-2 rounded-full px-5 text-[14px] font-bold text-white shadow-xl md:right-8"
+                className="fixed right-4 z-40 flex h-13 items-center gap-2 px-5 text-sm font-bold text-white md:right-6"
                 style={{
                     bottom: "calc(2rem + env(safe-area-inset-bottom, 0px))",
-                    background: T.brand,
-                    boxShadow: `0 8px 24px color-mix(in srgb, ${T.brand} 40%, transparent)`,
+                    background: C.brand,
+                    borderRadius: R.badge,
+                    boxShadow: `0 4px 16px rgba(240,128,48,0.40)`,
                 }}
                 aria-label="記録する"
             >
-                <Plus size={18} strokeWidth={2.5} />
+                <Plus size={17} strokeWidth={2.5} />
                 記録する
             </motion.button>
 
             {/* ─── 支出記録 Drawer ───────────────────────────────────────────── */}
             <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
                 <Drawer.Portal>
-                    <Drawer.Overlay className="fixed inset-0 z-40" style={{ background: "rgba(28,20,16,0.4)" }} />
+                    <Drawer.Overlay className="fixed inset-0 z-40" style={{ background: "rgba(28,20,16,0.35)" }} />
                     <Drawer.Content
-                        className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-2xl pb-8 outline-none"
-                        style={{ background: T.cardBg, borderTop: `2px solid ${T.border}` }}
+                        className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] pb-8 outline-none"
+                        style={{
+                            background: C.card,
+                            borderTop: `1px solid ${C.border}`,
+                            borderRadius: "12px 12px 0 0",
+                        }}
                     >
                         <div
                             className="mx-auto mt-3 mb-1 h-1 w-10 rounded-full"
-                            style={{ background: "rgba(28,20,16,0.15)" }}
+                            style={{ background: "rgba(28,20,16,0.12)" }}
                         />
-                        <div className="border-b px-5 pb-4 pt-3" style={{ borderColor: T.border }}>
-                            <Drawer.Title className="text-[17px] font-extrabold" style={{ color: T.text }}>
+                        <div
+                            className="border-b px-5 pb-3.5 pt-2.5"
+                            style={{ borderColor: C.border }}
+                        >
+                            <Drawer.Title
+                                className="text-base font-extrabold"
+                                style={{ color: C.text }}
+                            >
                                 支出を記録
                             </Drawer.Title>
-                            <p className="text-sm" style={{ color: T.muted }}>金額を入力してカテゴリを選択してください。</p>
+                            <p className="text-xs" style={{ color: C.muted }}>
+                                金額を入力してカテゴリを選択してください。
+                            </p>
                         </div>
-                        <div className="overflow-y-auto px-5 pt-5">
-                            <form onSubmit={handleExpenseSubmit} className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label
-                                        className="text-[11px] font-bold uppercase tracking-wide"
-                                        style={{ color: T.muted }}
-                                        htmlFor="drawer-amount"
-                                    >
+                        <div className="overflow-y-auto px-5 pt-4">
+                            <form onSubmit={handleExpenseSubmit} className="space-y-3.5">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold" style={{ color: C.muted }} htmlFor="d-amount">
                                         金額
                                     </label>
                                     <input
-                                        id="drawer-amount"
-                                        type="number"
-                                        inputMode="numeric"
-                                        min={1}
-                                        required
+                                        id="d-amount"
+                                        type="number" inputMode="numeric" min={1} required
                                         value={amountStr}
                                         onChange={(e) => setAmountStr(e.target.value)}
-                                        className="flex h-13 w-full rounded-xl px-4 text-xl font-bold tabular-nums outline-none"
-                                        style={{
-                                            border: `2px solid ${T.border}`,
-                                            background: T.pageBg,
-                                        }}
+                                        className="flex h-11 w-full px-3 text-lg font-bold tabular-nums outline-none"
+                                        style={{ border: `2px solid ${C.border}`, borderRadius: R.input, background: C.bg, color: C.text }}
                                         placeholder="0"
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label
-                                        className="text-[11px] font-bold uppercase tracking-wide"
-                                        style={{ color: T.muted }}
-                                        htmlFor="drawer-cat"
-                                    >
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold" style={{ color: C.muted }} htmlFor="d-cat">
                                         カテゴリ
                                     </label>
                                     <select
-                                        id="drawer-cat"
+                                        id="d-cat"
                                         value={categoryId}
                                         onChange={(e) => setCategoryId(e.target.value)}
-                                        className="flex h-11 w-full rounded-xl px-3 text-sm font-medium outline-none"
-                                        style={{ border: `2px solid ${T.border}`, background: T.pageBg }}
+                                        className="flex h-10 w-full px-3 text-sm font-medium outline-none"
+                                        style={{ border: `2px solid ${C.border}`, borderRadius: R.input, background: C.bg, color: C.text }}
                                     >
                                         {EXPENSE_CATEGORIES.map((c) => (
                                             <option key={c.id} value={c.id}>{c.name}</option>
                                         ))}
                                     </select>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label
-                                        className="text-[11px] font-bold uppercase tracking-wide"
-                                        style={{ color: T.muted }}
-                                        htmlFor="drawer-note"
-                                    >
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold" style={{ color: C.muted }} htmlFor="d-note">
                                         メモ（任意）
                                     </label>
                                     <input
-                                        id="drawer-note"
+                                        id="d-note"
                                         value={noteText}
                                         onChange={(e) => setNoteText(e.target.value)}
-                                        className="flex h-10 w-full rounded-xl px-3 text-sm outline-none"
-                                        style={{ border: `2px solid ${T.border}`, background: T.pageBg }}
+                                        className="flex h-9 w-full px-3 text-sm outline-none"
+                                        style={{ border: `2px solid ${C.border}`, borderRadius: R.input, background: C.bg, color: C.text }}
                                         placeholder="店名・用途など"
                                     />
                                 </div>
-                                <div className="flex gap-2.5 pb-2 pt-2">
+                                <div className="flex gap-2 pb-2 pt-1">
                                     <button
                                         type="button"
                                         onClick={() => setDrawerOpen(false)}
-                                        className="flex-1 rounded-xl py-3 text-sm font-bold transition-colors hover:opacity-80"
+                                        className="flex-1 py-2.5 text-sm font-semibold transition-colors hover:opacity-80"
                                         style={{
-                                            border: `2px solid ${T.border}`,
-                                            background: T.pageBg,
-                                            color: `${T.text}99`,
+                                            border: `1px solid ${C.border}`,
+                                            borderRadius: R.input,
+                                            background: C.bg,
+                                            color: "rgba(28,20,16,0.65)",
                                         }}
                                     >
                                         キャンセル
@@ -996,10 +1012,10 @@ export function HomeV3Prototype() {
                                     <button
                                         type="submit"
                                         disabled={submitted}
-                                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                        style={{ background: T.brand }}
+                                        className="btn-candy flex flex-1 items-center justify-center gap-1.5 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+                                        style={{ background: C.brand, borderRadius: R.input }}
                                     >
-                                        {submitted ? "送信中…" : <><Check size={15} />記録する</>}
+                                        {submitted ? "送信中…" : <><Check size={14} />記録する</>}
                                     </button>
                                 </div>
                             </form>
