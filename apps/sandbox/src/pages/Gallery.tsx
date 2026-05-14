@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List, Settings } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -114,6 +114,14 @@ const prototypes: PrototypeCard[] = [
     icon: List,
     issue: 'sandbox',
     status: 'wip',
+  },
+  {
+    path: '/personal-settings',
+    title: '個人設定画面',
+    description: '給料日・月収・固定費・残高を設定。変更が1日予算にリアルタイム反映されるプレビュー付き。',
+    icon: Settings,
+    issue: '#283',
+    status: 'ready',
   },
 ]
 
