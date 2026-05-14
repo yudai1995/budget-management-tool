@@ -839,8 +839,17 @@
       "goal": "計測メトリクス強化とワークフロー自動化でスプリント可視性を高める",
       "hypothesis": "planned_points 記録とサイクルタイム計測の修正により、スプリント計画精度と振り返り品質が向上する",
       "planned_points": 9,
-      "total_points": 0,
-      "pbis": []
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 215,
+          "title": "chore: スプリント計画適切性メトリクス（planned_points・達成率・推奨キャパシティ調整）を設計・実装する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 304
+        }
+      ]
     }
   ]
 }
