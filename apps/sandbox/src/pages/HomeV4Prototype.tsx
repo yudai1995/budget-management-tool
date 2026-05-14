@@ -1,17 +1,33 @@
 /**
- * HomeV4Prototype — ホーム画面 V4（プレミアム品質版）
+ * HomeV4Prototype — ホーム画面 V4（framer-motion 本格活用版）
  *
- * ─ デザイン方針 ─
- * - PayPay ライクなスプリングアニメーション
- * - iOS ライクなフロストグラス / 深度表現
- * - 数値アニメーション / スタガー入場
- * - グラデーションプログレスバー + ソフトグロー
- * - テンキーパッド + カテゴリグリッド入力
+ * Animation philosophy:
+ *   SNAP   (stiffness 600): numpad キー・アイコンボタン — 即時フィードバック < 150ms
+ *   QUICK  (stiffness 400): バッジ・セグメント・サブアクション — 200ms
+ *   BASE   (stiffness 300): カード・ドロワータブ — 300ms
+ *   SMOOTH (stiffness 200): ページ入場カード — 400ms
+ *   BAR    (stiffness 70):  プログレスバー — 800ms（先行視感）
+ *
+ * Rules:
+ *   - すべて spring。ease カーブは使わない
+ *   - staggerChildren でウォーターフォール入場
+ *   - filter: blur でエントランスに奥行き
+ *   - 装飾ループアニメーションはゼロ（デバイスイベント起因のみ）
+ *   - useReducedMotion を尊重
  */
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { animate, motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import {
+    animate,
+    motion,
+    AnimatePresence,
+    useMotionValue,
+    useSpring,
+    useScroll,
+    useTransform,
+    useReducedMotion,
+} from "framer-motion";
 import { Drawer } from "vaul";
 import {
     Home, Calendar, BarChart2, Settings,
@@ -25,53 +41,92 @@ import {
 // ─── デザイントークン ─────────────────────────────────────────────────────
 
 const R = {
-    card: "16px",
+    card:  "16px",
     inner: "10px",
     badge: "9999px",
     input: "12px",
 } as const;
 
 const C = {
-    bg: "#fffdf5",
-    card: "#ffffff",
-    text: "#1c1410",
-    muted: "rgba(28,20,16,0.42)",
-    border: "rgba(28,20,16,0.08)",
-    borderStrong: "rgba(28,20,16,0.14)",
-    shadow: "0 1px 3px rgba(28,20,16,0.06), 0 0 0 1px rgba(28,20,16,0.06)",
-    shadowElevated: "0 4px 20px rgba(28,20,16,0.10), 0 0 0 1px rgba(28,20,16,0.06)",
-    brand: "#f18840",
-    brandDeep: "#e8622a",
-    brandLight: "#fff6ee",
-    income: "#35b5a2",
-    incomeDeep: "#22a090",
-    incomeLight: "#ecfaf8",
-    expense: "#f18840",
-    expenseLight: "#fff6ee",
-    safe:    { bg: "#f8faf8", border: "rgba(196,181,165,0.5)", hero: "#6b5b52", badge: "#c4b5a5", label: "余裕", glow: "rgba(107,91,82,0.15)" },
-    caution: { bg: "#fef4f4", border: "rgba(248,113,113,0.4)", hero: "#b91c1c", badge: "#f87171", label: "注意", glow: "rgba(248,113,113,0.20)" },
-    danger:  { bg: "#fff1f2", border: "rgba(244,63,94,0.4)",  hero: "#9f1239", badge: "#f43f5e", label: "ピンチ", glow: "rgba(244,63,94,0.22)" },
+    bg:            "#fffdf5",
+    card:          "#ffffff",
+    text:          "#1c1410",
+    muted:         "rgba(28,20,16,0.42)",
+    border:        "rgba(28,20,16,0.08)",
+    borderStrong:  "rgba(28,20,16,0.14)",
+    shadow:        "0 1px 3px rgba(28,20,16,0.06), 0 0 0 1px rgba(28,20,16,0.06)",
+    shadowMd:      "0 4px 16px rgba(28,20,16,0.09), 0 0 0 1px rgba(28,20,16,0.06)",
+    brand:         "#f18840",
+    brandDeep:     "#e8622a",
+    brandLight:    "#fff6ee",
+    income:        "#35b5a2",
+    incomeDeep:    "#22a090",
+    incomeLight:   "#ecfaf8",
+    safe:    { bg: "#f8faf8", border: "rgba(196,181,165,0.5)",  hero: "#6b5b52", badge: "#c4b5a5", label: "余裕",  glow: "rgba(107,91,82,0.12)"  },
+    caution: { bg: "#fef4f4", border: "rgba(248,113,113,0.35)", hero: "#b91c1c", badge: "#f87171", label: "注意",  glow: "rgba(248,113,113,0.16)" },
+    danger:  { bg: "#fff1f2", border: "rgba(244,63,94,0.35)",   hero: "#9f1239", badge: "#f43f5e", label: "ピンチ", glow: "rgba(244,63,94,0.18)"  },
 } as const;
 
-// スプリングプリセット
-const spring = { type: "spring", stiffness: 380, damping: 28 } as const;
-const springBouncy = { type: "spring", stiffness: 500, damping: 22 } as const;
-const springGentle = { type: "spring", stiffness: 180, damping: 26 } as const;
+// ─── Spring プリセット ──────────────────────────────────────────────────────
+
+const SPRING = {
+    snap:   { type: "spring", stiffness: 600, damping: 35 } as const, // < 150ms
+    quick:  { type: "spring", stiffness: 400, damping: 30 } as const, // 200ms
+    base:   { type: "spring", stiffness: 300, damping: 28 } as const, // 300ms
+    smooth: { type: "spring", stiffness: 200, damping: 26 } as const, // 400ms
+    bar:    { type: "spring", stiffness: 70,  damping: 18 } as const, // 800ms+
+} as const;
+
+// ─── Animation Variants ────────────────────────────────────────────────────
+
+/** ページ入場: カード群のウォーターフォール */
+const PAGE = {
+    container: {
+        hidden:  {},
+        visible: { transition: { staggerChildren: 0.09, delayChildren: 0.04 } },
+    },
+    item: {
+        hidden:  { opacity: 0, y: 22, filter: "blur(8px)" },
+        visible: { opacity: 1, y: 0,  filter: "blur(0px)", transition: SPRING.smooth },
+    },
+};
+
+/** リスト行: 左から blur + x スライド */
+const LIST = {
+    container: {
+        hidden:  {},
+        visible: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } },
+    },
+    item: {
+        hidden:  { opacity: 0, x: -10, filter: "blur(4px)" },
+        visible: { opacity: 1, x: 0,   filter: "blur(0px)", transition: SPRING.base },
+    },
+};
+
+/** Drawer 内セクション: 上から */
+const DRAWER_ANIM = {
+    container: {
+        hidden:  {},
+        visible: { transition: { staggerChildren: 0.07, delayChildren: 0.08 } },
+    },
+    item: {
+        hidden:  { opacity: 0, y: 14 },
+        visible: { opacity: 1, y: 0, transition: SPRING.quick },
+    },
+};
 
 // ─── モックデータ ────────────────────────────────────────────────────────────
 
 const MOCK = {
-    userId: "Y",
-    todayExpense: 1280,
-    yesterdayExpense: 3200,
+    userId:         "Y",
+    todayExpense:   1280,
     recordingStreak: 6,
     avgDailyExpense: 9800,
-    recordedDays: 6,
-    totalAssets: 999853,
-    monthlyIncome: 252600,
-    dailyBudget: 7692,
+    totalAssets:    999853,
+    monthlyIncome:  252600,
+    dailyBudget:    7692,
     daysUntilPayday: 13,
-    monthSummary: { label: "2026 / 05", expense: 148700, income: 252600 },
+    monthSummary:   { label: "2026 / 05", expense: 148700, income: 252600 },
     recentExpenses: [
         { id: "1", date: "2026-05-15", amount: 1280,  balanceType: 0, categoryName: "食費",   content: "スーパー" },
         { id: "2", date: "2026-05-15", amount: 550,   balanceType: 0, categoryName: "交通費", content: "電車" },
@@ -87,18 +142,18 @@ const MOCK = {
 };
 
 const EXPENSE_CATEGORIES = [
-    { id: 1,  name: "食費",   icon: ShoppingBasket, color: C.brand },
-    { id: 2,  name: "日用品", icon: ShoppingBag,    color: "#a855f7" },
-    { id: 3,  name: "交通費", icon: Car,            color: "#3b82f6" },
-    { id: 4,  name: "光熱費", icon: Zap,            color: "#ca8a04" },
-    { id: 5,  name: "娯楽費", icon: Tag,            color: "#ec4899" },
-    { id: 6,  name: "医療費", icon: Heart,          color: "#ef4444" },
-    { id: 7,  name: "その他", icon: Tag,            color: C.muted },
+    { id: 1,  name: "食費",   icon: ShoppingBasket, color: C.brand     },
+    { id: 2,  name: "日用品", icon: ShoppingBag,    color: "#a855f7"   },
+    { id: 3,  name: "交通費", icon: Car,            color: "#3b82f6"   },
+    { id: 4,  name: "光熱費", icon: Zap,            color: "#ca8a04"   },
+    { id: 5,  name: "娯楽費", icon: Tag,            color: "#ec4899"   },
+    { id: 6,  name: "医療費", icon: Heart,          color: "#ef4444"   },
+    { id: 7,  name: "その他", icon: Tag,            color: C.muted     },
 ];
 const INCOME_CATEGORIES = [
-    { id: 10, name: "給料",   icon: Banknote,       color: C.income },
-    { id: 11, name: "副収入", icon: ArrowUpRight,   color: "#6366f1" },
-    { id: 12, name: "その他", icon: Tag,            color: C.muted },
+    { id: 10, name: "給料",   icon: Banknote,       color: C.income    },
+    { id: 11, name: "副収入", icon: ArrowUpRight,   color: "#6366f1"   },
+    { id: 12, name: "その他", icon: Tag,            color: C.muted     },
 ];
 
 // ─── ユーティリティ ────────────────────────────────────────────────────────
@@ -121,7 +176,7 @@ function calcEndDate(assets: number, netDaily: number): string | null {
     return `${d.getFullYear()}年${d.getMonth() + 1}月`;
 }
 function categoryAccent(name: string) {
-    if (name.includes("食"))                              return { bg: "#fff6ee", fg: C.brand };
+    if (name.includes("食"))                              return { bg: "#fff6ee", fg: C.brand   };
     if (name.includes("日用品") || name.includes("生活")) return { bg: "#faf5ff", fg: "#a855f7" };
     if (name.includes("交通"))                            return { bg: "#eff6ff", fg: "#3b82f6" };
     if (name.includes("給") || name.includes("収"))       return { bg: C.incomeLight, fg: C.income };
@@ -136,17 +191,25 @@ function categoryIconComp(name: string) {
     return Tag;
 }
 
-// ─── スプリングカウンター（PayPay 風数値アニメーション）─────────────────
+// ─── SpringNumber — マウント時 0 からカウントアップ ──────────────────────
 
-function SpringNumber({ value, format }: { value: number; format: (n: number) => string }) {
-    const mv = useMotionValue(value);
+function SpringNumber({
+    value,
+    format,
+}: {
+    value: number;
+    format: (n: number) => string;
+}) {
+    const shouldReduce = useReducedMotion();
+    const mv      = useMotionValue(0);
     const spring_ = useSpring(mv, { stiffness: 350, damping: 30 });
-    const [display, setDisplay] = useState(format(value));
-    const prev = useRef(value);
+    const [display, setDisplay] = useState(shouldReduce ? format(value) : format(0));
+    const prev = useRef(0); // 0 からスタートしてカウントアップ
 
     useEffect(() => {
+        if (shouldReduce) { setDisplay(format(value)); return; }
         const ctrl = animate(prev.current, value, {
-            duration: 0.7,
+            duration: 0.9,
             ease: [0.16, 1, 0.3, 1],
             onUpdate: (v) => setDisplay(format(v)),
         });
@@ -157,6 +220,66 @@ function SpringNumber({ value, format }: { value: number; format: (n: number) =>
 
     void spring_;
     return <>{display}</>;
+}
+
+// ─── ProgressBar — spring fill ──────────────────────────────────────────────
+
+function ProgressBar({
+    pct,
+    gradient,
+    delay = 0,
+    height = "h-2",
+    trackColor = "rgba(28,20,16,0.07)",
+}: {
+    pct: number;
+    gradient: string;
+    delay?: number;
+    height?: string;
+    trackColor?: string;
+}) {
+    return (
+        <div
+            className={`${height} overflow-hidden`}
+            style={{ background: trackColor, borderRadius: R.badge }}
+        >
+            <motion.div
+                className="h-full"
+                style={{ background: gradient, borderRadius: R.badge }}
+                initial={{ width: "0%" }}
+                animate={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+                transition={{ ...SPRING.bar, delay }}
+            />
+        </div>
+    );
+}
+
+// ─── テンキーパッド ────────────────────────────────────────────────────────
+
+function Numpad({ onKey }: { onKey: (k: string) => void }) {
+    const keys = ["1","2","3","4","5","6","7","8","9","000","0","⌫"];
+    return (
+        <div className="grid grid-cols-3 gap-2">
+            {keys.map((k) => (
+                <motion.button
+                    key={k}
+                    type="button"
+                    onClick={() => onKey(k)}
+                    whileTap={{ scale: 0.84 }}
+                    transition={SPRING.snap}
+                    className="flex h-14 items-center justify-center text-[18px] font-semibold tap-highlight select-none"
+                    style={{
+                        borderRadius: R.inner,
+                        background:   k === "⌫" ? "#fff0ea" : C.card,
+                        color:        k === "⌫" ? C.brand   : C.text,
+                        border:       `1px solid ${C.border}`,
+                        boxShadow:    "0 1px 3px rgba(28,20,16,0.06)",
+                    }}
+                >
+                    {k === "⌫" ? <Delete size={19} /> : k}
+                </motion.button>
+            ))}
+        </div>
+    );
 }
 
 // ─── 日付グルーピング ──────────────────────────────────────────────────────
@@ -176,53 +299,33 @@ function groupByDate(list: Expense[]) {
     }));
 }
 
-// ─── テンキーパッド ────────────────────────────────────────────────────────
-
-function Numpad({ onKey }: { onKey: (k: string) => void }) {
-    const keys = ["1","2","3","4","5","6","7","8","9","000","0","⌫"];
-    return (
-        <div className="grid grid-cols-3 gap-2">
-            {keys.map((k) => (
-                <motion.button
-                    key={k}
-                    type="button"
-                    onClick={() => onKey(k)}
-                    whileTap={{ scale: 0.90, opacity: 0.7 }}
-                    transition={springBouncy}
-                    className="flex h-13 items-center justify-center text-[17px] font-semibold tap-highlight"
-                    style={{
-                        borderRadius: R.input,
-                        background: k === "⌫" ? "#fff0ea" : C.card,
-                        color: k === "⌫" ? C.brand : C.text,
-                        border: `1px solid ${C.border}`,
-                        boxShadow: "0 1px 2px rgba(28,20,16,0.06)",
-                    }}
-                >
-                    {k === "⌫" ? <Delete size={18} /> : k}
-                </motion.button>
-            ))}
-        </div>
-    );
-}
-
 // ─── メインコンポーネント ────────────────────────────────────────────────────
 
 export function HomeV4Prototype() {
+    const shouldReduce = useReducedMotion();
+
     const [totalAssets]   = useState(MOCK.totalAssets);
     const [monthlyIncome] = useState(MOCK.monthlyIncome);
-    const [drawerOpen, setDrawerOpen]     = useState(false);
-    const [amountStr, setAmountStr]       = useState("");
-    const [categoryId, setCategoryId]     = useState(1);
-    const [noteText, setNoteText]         = useState("");
-    const [submitted, setSubmitted]       = useState(false);
-    const [balanceType, setBalanceType]   = useState<0 | 1>(0);
-    const [alerts, setAlerts]             = useState(MOCK.alerts);
+    const [drawerOpen, setDrawerOpen]   = useState(false);
+    const [amountStr, setAmountStr]     = useState("");
+    const [categoryId, setCategoryId]   = useState(1);
+    const [noteText, setNoteText]       = useState("");
+    const [submitted, setSubmitted]     = useState(false);
+    const [balanceType, setBalanceType] = useState<0 | 1>(0);
+    const [alerts, setAlerts]           = useState(MOCK.alerts);
+
+    // ヘッダーのスクロール shadow
+    const { scrollY } = useScroll();
+    const headerShadow = useTransform(
+        scrollY, [0, 32],
+        ["0 0 0 0 transparent", "0 2px 12px rgba(28,20,16,0.09)"],
+    );
+    const headerBorderOpacity = useTransform(scrollY, [0, 32], [0.08, 0.18]);
 
     const netDailyExpense = Math.max(0, MOCK.avgDailyExpense - monthlyIncome / 30);
     const endDateLabel    = useMemo(() => calcEndDate(totalAssets, netDailyExpense), [totalAssets, netDailyExpense]);
     const netMonth        = MOCK.monthSummary.income - MOCK.monthSummary.expense;
-    const thisMonthSavings = netMonth;
-    const savingsRate     = Math.round((thisMonthSavings / MOCK.monthSummary.income) * 100);
+    const savingsRate     = Math.round((netMonth / MOCK.monthSummary.income) * 100);
 
     const remaining  = Math.max(0, MOCK.dailyBudget - MOCK.todayExpense);
     const ratio      = MOCK.dailyBudget > 0 ? remaining / MOCK.dailyBudget : 1;
@@ -236,7 +339,7 @@ export function HomeV4Prototype() {
     const spendProgress = MOCK.monthSummary.expense / MOCK.monthSummary.income;
     const isOverPace    = spendProgress > monthProgress;
 
-    const grouped = useMemo(() => groupByDate(MOCK.recentExpenses), []);
+    const grouped    = useMemo(() => groupByDate(MOCK.recentExpenses), []);
     const categories = balanceType === 0 ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
     const previewRemaining = balanceType === 0
@@ -244,8 +347,8 @@ export function HomeV4Prototype() {
         : null;
 
     function handleNumKey(k: string) {
-        if (k === "⌫") { setAmountStr((p) => p.slice(0, -1)); return; }
-        if (k === "000") { setAmountStr((p) => p === "" ? p : p + "000"); return; }
+        if (k === "⌫")   { setAmountStr((p) => p.slice(0, -1)); return; }
+        if (k === "000")  { setAmountStr((p) => p === "" ? p : p + "000"); return; }
         setAmountStr((p) => {
             const next = p + k;
             return Number(next) > 9_999_999 ? p : next;
@@ -260,25 +363,33 @@ export function HomeV4Prototype() {
     function handleSubmit() {
         if (!Number(amountStr)) return;
         setSubmitted(true);
-        setTimeout(() => { setDrawerOpen(false); setSubmitted(false); }, 700);
+        setTimeout(() => { setDrawerOpen(false); setSubmitted(false); }, 800);
     }
 
-    // カード入場アニメーション
-    const cardVariants = {
-        hidden: { opacity: 0, y: 18 },
-        visible: (i: number) => ({
-            opacity: 1, y: 0,
-            transition: { ...spring, delay: i * 0.07 },
-        }),
-    };
+    // reduceMotion 対応: アニメーション無効化
+    const pageVariants = shouldReduce
+        ? { hidden: {}, visible: {} }
+        : PAGE;
+    const itemVariants = shouldReduce
+        ? { hidden: {}, visible: {} }
+        : PAGE.item;
+    const listVariants = shouldReduce
+        ? { hidden: {}, visible: {} }
+        : LIST;
+    const listItemVariants = shouldReduce
+        ? { hidden: {}, visible: {} }
+        : LIST.item;
 
     return (
         <div className="min-h-screen pb-28 tap-highlight" style={{ background: C.bg, color: C.text }}>
 
-            {/* ─── ヘッダー（フロストグラス）────────────────────────────── */}
-            <header
+            {/* ─── ヘッダー ────────────────────────────────────────────── */}
+            <motion.header
                 className="glass sticky top-0 z-20 flex h-14 items-center border-b px-4 md:px-6"
-                style={{ borderColor: C.border }}
+                style={{
+                    borderColor: `rgba(28,20,16,${headerBorderOpacity})`,
+                    boxShadow: headerShadow,
+                }}
             >
                 <div className="flex items-center gap-2.5 shrink-0">
                     <img src="/logo192.png" alt="家計かんり" className="h-8 w-8 shrink-0" style={{ borderRadius: "10px" }} />
@@ -287,7 +398,7 @@ export function HomeV4Prototype() {
 
                 <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
                     {[
-                        { label: "ホーム",     icon: Home,     active: true },
+                        { label: "ホーム",     icon: Home,     active: true  },
                         { label: "カレンダー", icon: Calendar,  active: false },
                         { label: "レポート",   icon: BarChart2, active: false },
                         { label: "設定",       icon: Settings,  active: false },
@@ -296,11 +407,12 @@ export function HomeV4Prototype() {
                             key={item.label}
                             type="button"
                             whileTap={{ scale: 0.95 }}
+                            transition={SPRING.snap}
                             className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold tap-highlight"
                             style={{
                                 borderRadius: "10px",
                                 background: item.active ? C.brandLight : "transparent",
-                                color: item.active ? C.brand : "rgba(28,20,16,0.55)",
+                                color:      item.active ? C.brand : "rgba(28,20,16,0.50)",
                             }}
                         >
                             <item.icon size={14} aria-hidden />
@@ -311,186 +423,186 @@ export function HomeV4Prototype() {
 
                 <div className="ml-auto flex shrink-0 items-center gap-2">
                     <motion.button
-                        type="button" whileTap={{ scale: 0.90 }}
-                        className="relative flex h-8 w-8 items-center justify-center"
+                        type="button"
+                        whileTap={{ scale: 0.82 }}
+                        transition={SPRING.snap}
+                        className="relative flex h-8 w-8 items-center justify-center tap-highlight"
                         style={{ color: "rgba(28,20,16,0.45)", borderRadius: "8px" }}
                         aria-label="通知"
                     >
                         <Bell size={17} />
-                        {alerts.length > 0 && (
-                            <motion.span
-                                initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                transition={springBouncy}
-                                className="absolute right-1 top-1 h-2 w-2 rounded-full border-2 border-white"
-                                style={{ background: "#f43f5e" }}
-                            />
-                        )}
+                        <AnimatePresence>
+                            {alerts.length > 0 && (
+                                <motion.span
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    transition={SPRING.quick}
+                                    className="absolute right-1 top-1 h-2 w-2 rounded-full border-2 border-white"
+                                    style={{ background: "#f43f5e" }}
+                                />
+                            )}
+                        </AnimatePresence>
                     </motion.button>
                     <motion.div
-                        whileTap={{ scale: 0.92 }}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center text-[12px] font-extrabold text-white"
-                        style={{ background: `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})`, borderRadius: R.badge, boxShadow: "0 2px 8px rgba(241,136,64,0.35)" }}
+                        whileTap={{ scale: 0.90 }}
+                        transition={SPRING.snap}
+                        className="flex h-8 w-8 cursor-pointer items-center justify-center text-[12px] font-extrabold text-white tap-highlight"
+                        style={{
+                            background:   `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})`,
+                            borderRadius: R.badge,
+                            boxShadow:    "0 2px 8px rgba(241,136,64,0.30)",
+                        }}
                     >
                         {MOCK.userId}
                     </motion.div>
                 </div>
-            </header>
+            </motion.header>
 
             <main className="mx-auto max-w-7xl px-4 py-4 md:px-6 md:py-5">
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_320px] lg:items-start">
 
                     {/* ── 左カラム ─────────────────────────────────────── */}
-                    <div className="space-y-3">
+                    <motion.div
+                        className="space-y-3"
+                        variants={pageVariants.container ?? PAGE.container}
+                        initial="hidden"
+                        animate="visible"
+                    >
 
-                        {/* 今日使えるお金（ヒーローカード）*/}
+                        {/* 今日使えるお金 */}
                         <motion.div
-                            custom={0} variants={cardVariants}
-                            initial="hidden" animate="visible"
-                            className="border-2 p-5 overflow-hidden relative"
+                            variants={itemVariants}
+                            className="border-2 p-5 overflow-hidden"
                             style={{
                                 borderRadius: R.card,
-                                background: ps.bg,
-                                borderColor: ps.border,
-                                boxShadow: `${C.shadow}, 0 0 0 0 ${ps.glow}`,
+                                background:   ps.bg,
+                                borderColor:  ps.border,
+                                boxShadow:    C.shadow,
                             }}
                         >
-                            {/* 背景グロー */}
-                            <div
-                                className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-30"
-                                style={{ background: `radial-gradient(circle, ${ps.badge}, transparent 70%)` }}
-                            />
+                            <div className="mb-3 flex items-center justify-between">
+                                <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: "rgba(28,20,16,0.40)" }}>
+                                    今日使えるお金
+                                </span>
+                                <motion.span
+                                    initial={{ scale: 0.7, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ ...SPRING.quick, delay: 0.35 }}
+                                    className="px-3 py-0.5 text-xs font-bold text-white"
+                                    style={{ background: ps.badge, borderRadius: R.badge }}
+                                >
+                                    {ps.label}
+                                </motion.span>
+                            </div>
 
-                            <div className="relative">
-                                <div className="mb-3 flex items-center justify-between">
-                                    <span className="text-xs font-bold tracking-wide" style={{ color: "rgba(28,20,16,0.55)" }}>
-                                        今日使えるお金
-                                    </span>
-                                    <motion.span
-                                        initial={{ scale: 0.8, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ ...springBouncy, delay: 0.2 }}
-                                        className="px-3 py-0.5 text-xs font-bold text-white"
-                                        style={{ background: ps.badge, borderRadius: R.badge }}
-                                    >
-                                        {ps.label}
-                                    </motion.span>
+                            {/* ヒーロー数値 */}
+                            <p
+                                className="mb-1 hero-number leading-none"
+                                style={{ color: ps.hero, letterSpacing: "-0.03em", fontSize: "clamp(2.8rem, 8vw, 4rem)", fontWeight: 900 }}
+                            >
+                                <SpringNumber value={remaining} format={formatYen} />
+                            </p>
+                            <p className="mb-4 text-xs" style={{ color: "rgba(28,20,16,0.46)" }}>
+                                1日予算 <span className="font-bold tabular-nums">{formatYen(MOCK.dailyBudget)}</span>
+                                <span className="mx-1.5 opacity-30">·</span>
+                                本日支出 <span className="font-bold tabular-nums">{formatYen(MOCK.todayExpense)}</span>
+                            </p>
+
+                            {/* 残りバー */}
+                            <div className="mb-4">
+                                <div className="mb-1.5 flex justify-between text-[11px]" style={{ color: "rgba(28,20,16,0.40)" }}>
+                                    <span>本日残り</span>
+                                    <span className="font-semibold tabular-nums">{fillPct}%</span>
                                 </div>
+                                <ProgressBar
+                                    pct={fillPct}
+                                    delay={0.5}
+                                    height="h-2.5"
+                                    trackColor={`color-mix(in srgb, ${ps.border} 50%, transparent)`}
+                                    gradient={
+                                        tone === "safe"
+                                            ? `linear-gradient(90deg, #a8a09a, ${ps.hero})`
+                                            : tone === "caution"
+                                                ? "linear-gradient(90deg, #fca5a5, #f87171)"
+                                                : "linear-gradient(90deg, #fb7185, #f43f5e)"
+                                    }
+                                />
+                            </div>
 
-                                {/* ヒーロー数値 */}
-                                <p className="mb-1 hero-number text-5xl font-black leading-none md:text-6xl" style={{ color: ps.hero, letterSpacing: "-0.03em" }}>
-                                    <SpringNumber value={remaining} format={formatYen} />
-                                </p>
-                                <p className="mb-4 text-xs" style={{ color: "rgba(28,20,16,0.50)" }}>
-                                    1日予算 <span className="font-bold tabular-nums">{formatYen(MOCK.dailyBudget)}</span>
-                                    <span className="mx-1.5 opacity-30">·</span>
-                                    本日支出 <span className="font-bold tabular-nums">{formatYen(MOCK.todayExpense)}</span>
-                                </p>
-
-                                {/* グラデーション残りバー */}
-                                <div className="mb-4">
-                                    <div className="mb-1.5 flex justify-between text-[11px]" style={{ color: "rgba(28,20,16,0.45)" }}>
-                                        <span>本日残り</span>
-                                        <span className="font-semibold tabular-nums">{fillPct}%</span>
-                                    </div>
-                                    <div className="h-2.5 overflow-hidden" style={{ background: `color-mix(in srgb, ${ps.border} 40%, transparent)`, borderRadius: R.badge }}>
-                                        <motion.div
-                                            className="h-full relative overflow-hidden"
-                                            style={{ borderRadius: R.badge }}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${fillPct}%` }}
-                                            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-                                        >
+                            {/* 今月のペース */}
+                            <div
+                                className="rounded-xl p-3.5"
+                                style={{
+                                    background: C.card,
+                                    border:     `1px solid ${C.border}`,
+                                    boxShadow:  "0 1px 4px rgba(28,20,16,0.04)",
+                                }}
+                            >
+                                <div className="mb-2 flex items-center justify-between text-[11px] font-semibold" style={{ color: C.muted }}>
+                                    <span>今月のペース</span>
+                                    <span
+                                        className="px-2 py-0.5 text-[10px] font-bold"
+                                        style={{
+                                            borderRadius: R.badge,
+                                            background: isOverPace ? "rgba(244,63,94,0.09)" : "rgba(53,181,162,0.09)",
+                                            color:      isOverPace ? "#f43f5e" : C.income,
+                                        }}
+                                    >
+                                        {isOverPace ? "ペース超過" : "順調"}
+                                    </span>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <div>
+                                        <div className="mb-1.5 flex justify-between text-[10px]" style={{ color: C.muted }}>
+                                            <span>支出の進み</span>
+                                            <span className="font-semibold tabular-nums" style={{ color: isOverPace ? "#f43f5e" : C.income }}>
+                                                {formatYen(MOCK.monthSummary.expense)} / {formatYen(MOCK.monthSummary.income)}
+                                            </span>
+                                        </div>
+                                        <div className="relative">
+                                            <ProgressBar
+                                                pct={Math.min(100, Math.round(spendProgress * 100))}
+                                                delay={0.65}
+                                                gradient={
+                                                    isOverPace
+                                                        ? "linear-gradient(90deg, #fb7185, #f43f5e)"
+                                                        : "linear-gradient(90deg, #34d399, #35b5a2)"
+                                                }
+                                            />
+                                            {/* 日数マーカー */}
                                             <div
-                                                className="absolute inset-0"
+                                                className="absolute top-0 h-full w-0.5"
                                                 style={{
-                                                    background: tone === "safe"
-                                                        ? `linear-gradient(90deg, #a8a09a, ${ps.hero})`
-                                                        : tone === "caution"
-                                                            ? "linear-gradient(90deg, #fca5a5, #f87171)"
-                                                            : "linear-gradient(90deg, #fb7185, #f43f5e)",
+                                                    left:       `${Math.round(monthProgress * 100)}%`,
+                                                    background: "rgba(28,20,16,0.25)",
                                                 }}
                                             />
-                                        </motion.div>
-                                    </div>
-                                </div>
-
-                                {/* 今月のペース */}
-                                <div
-                                    className="rounded-xl p-3.5"
-                                    style={{
-                                        background: C.card,
-                                        border: `1px solid ${C.border}`,
-                                        boxShadow: "0 1px 4px rgba(28,20,16,0.04)",
-                                    }}
-                                >
-                                    <div className="mb-2.5 flex items-center justify-between text-[11px] font-semibold" style={{ color: C.muted }}>
-                                        <span>今月のペース</span>
-                                        <span className="tabular-nums">{dayOfMonth}日 / {daysInMonth}日経過</span>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {/* 日数 */}
-                                        <div>
-                                            <div className="mb-1 text-[10px]" style={{ color: C.muted }}>日数の経過</div>
-                                            <div className="h-1.5 overflow-hidden" style={{ background: "rgba(28,20,16,0.07)", borderRadius: R.badge }}>
-                                                <motion.div
-                                                    className="h-full"
-                                                    style={{ background: "rgba(28,20,16,0.22)", borderRadius: R.badge }}
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${Math.round(monthProgress * 100)}%` }}
-                                                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                                                />
-                                            </div>
-                                        </div>
-                                        {/* 支出 */}
-                                        <div>
-                                            <div className="mb-1 flex justify-between text-[10px]" style={{ color: C.muted }}>
-                                                <span>支出の進み</span>
-                                                <span
-                                                    className="font-semibold tabular-nums"
-                                                    style={{ color: isOverPace ? "#f43f5e" : C.income }}
-                                                >
-                                                    {formatYen(MOCK.monthSummary.expense)} / {formatYen(MOCK.monthSummary.income)}
-                                                </span>
-                                            </div>
-                                            <div className="h-1.5 overflow-hidden" style={{ background: "rgba(28,20,16,0.07)", borderRadius: R.badge }}>
-                                                <motion.div
-                                                    className="h-full relative overflow-hidden"
-                                                    style={{ borderRadius: R.badge }}
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${Math.min(100, Math.round(spendProgress * 100))}%` }}
-                                                    transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-                                                >
-                                                    <div
-                                                        className="absolute inset-0"
-                                                        style={{
-                                                            background: isOverPace
-                                                                ? "linear-gradient(90deg, #fb7185, #f43f5e)"
-                                                                : "linear-gradient(90deg, #34d399, #35b5a2)",
-                                                        }}
-                                                    />
-                                                </motion.div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* フッター行 */}
-                                <div className="mt-3.5 flex items-center justify-between">
-                                    <span className="text-xs" style={{ color: "rgba(28,20,16,0.55)" }}>
-                                        給料日まで <span className="font-bold">あと {MOCK.daysUntilPayday} 日</span>
-                                    </span>
-                                    {MOCK.recordingStreak >= 2 && (
-                                        <motion.span
-                                            initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }}
-                                            transition={{ ...spring, delay: 0.4 }}
-                                            className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold"
-                                            style={{ background: C.brandLight, color: C.brand, borderRadius: R.badge }}
-                                        >
-                                            <Flame size={11} />
-                                            {MOCK.recordingStreak}日連続記録中
-                                        </motion.span>
-                                    )}
+                                <div className="mt-2 text-right text-[10px]" style={{ color: C.muted }}>
+                                    {dayOfMonth}日経過 / {daysInMonth}日
                                 </div>
+                            </div>
+
+                            {/* フッター */}
+                            <div className="mt-3.5 flex items-center justify-between">
+                                <span className="text-xs" style={{ color: "rgba(28,20,16,0.50)" }}>
+                                    給料日まで <span className="font-bold">あと {MOCK.daysUntilPayday} 日</span>
+                                </span>
+                                {MOCK.recordingStreak >= 2 && (
+                                    <motion.span
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ ...SPRING.base, delay: 0.5 }}
+                                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold"
+                                        style={{ background: C.brandLight, color: C.brand, borderRadius: R.badge }}
+                                    >
+                                        <Flame size={11} />
+                                        {MOCK.recordingStreak}日連続記録中
+                                    </motion.span>
+                                )}
                             </div>
                         </motion.div>
 
@@ -501,32 +613,36 @@ export function HomeV4Prototype() {
                                 return (
                                     <motion.div
                                         key={alert.id}
-                                        initial={{ opacity: 0, height: 0, scale: 0.97 }}
-                                        animate={{ opacity: 1, height: "auto", scale: 1 }}
-                                        exit={{ opacity: 0, height: 0, scale: 0.97 }}
-                                        transition={{ ...spring, duration: 0.22 }}
+                                        initial={{ opacity: 0, x: -12, height: 0 }}
+                                        animate={{ opacity: 1, x: 0, height: "auto" }}
+                                        exit={{ opacity: 0, x: 20, height: 0 }}
+                                        transition={SPRING.base}
+                                        style={{ overflow: "hidden" }}
                                     >
                                         <div
-                                            className="flex items-center gap-2.5 px-3.5 py-2.5 border"
+                                            className="flex items-center gap-2.5 px-3.5 py-2.5 border mb-0"
                                             style={{
                                                 borderRadius: R.inner,
-                                                borderColor: `color-mix(in srgb, ${aColor} 25%, transparent)`,
-                                                background: `color-mix(in srgb, ${aColor} 5%, white)`,
+                                                borderColor:  `color-mix(in srgb, ${aColor} 22%, transparent)`,
+                                                background:   `color-mix(in srgb, ${aColor} 5%, white)`,
                                             }}
                                         >
                                             {alert.type === "danger"
-                                                ? <TrendingDown size={12} style={{ color: aColor, flexShrink: 0 }} />
+                                                ? <TrendingDown  size={12} style={{ color: aColor, flexShrink: 0 }} />
                                                 : <AlertTriangle size={12} style={{ color: aColor, flexShrink: 0 }} />
                                             }
                                             <span className="flex-1 text-xs font-medium" style={{ color: C.text + "cc" }}>
                                                 {alert.message}
                                             </span>
                                             <motion.button
-                                                type="button" whileTap={{ scale: 0.85 }}
+                                                type="button"
+                                                whileTap={{ scale: 0.78 }}
+                                                transition={SPRING.snap}
                                                 onClick={() => setAlerts((p) => p.filter((a) => a.id !== alert.id))}
-                                                style={{ color: C.muted }} aria-label="閉じる"
+                                                style={{ color: C.muted }}
+                                                aria-label="閉じる"
                                             >
-                                                <X size={12} />
+                                                <X size={13} />
                                             </motion.button>
                                         </div>
                                     </motion.div>
@@ -536,15 +652,17 @@ export function HomeV4Prototype() {
 
                         {/* 最近の記録 */}
                         <motion.div
-                            custom={2} variants={cardVariants} initial="hidden" animate="visible"
+                            variants={itemVariants}
                             className="overflow-hidden border"
                             style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
                         >
-                            <div className="flex items-center justify-between border-b px-4 py-3.5" style={{ borderColor: C.border }}>
+                            <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: C.border }}>
                                 <span className="text-sm font-bold" style={{ color: C.text }}>最近の記録</span>
                                 <motion.button
-                                    type="button" whileTap={{ scale: 0.94 }}
-                                    className="flex items-center gap-0.5 text-[12px] font-semibold"
+                                    type="button"
+                                    whileTap={{ scale: 0.92 }}
+                                    transition={SPRING.snap}
+                                    className="flex items-center gap-0.5 text-[12px] font-semibold tap-highlight"
                                     style={{ color: C.brand }}
                                 >
                                     すべて見る <ChevronRight size={12} />
@@ -552,28 +670,36 @@ export function HomeV4Prototype() {
                             </div>
 
                             <div>
-                                {grouped.map((group, gi) => (
+                                {grouped.map((group) => (
                                     <div key={group.date}>
                                         <div
                                             className="px-4 py-1.5 text-[11px] font-bold"
-                                            style={{ background: C.bg, color: C.muted, borderBottom: `1px solid ${C.border}` }}
+                                            style={{
+                                                background: C.bg,
+                                                color: C.muted,
+                                                borderBottom: `1px solid ${C.border}`,
+                                            }}
                                         >
                                             {group.label}
                                         </div>
-                                        <ul>
+                                        <motion.ul
+                                            variants={listVariants.container ?? LIST.container}
+                                            initial="hidden"
+                                            animate="visible"
+                                        >
                                             {group.items.map((it, i) => {
-                                                const acc = categoryAccent(it.categoryName);
-                                                const Icon = categoryIconComp(it.categoryName);
+                                                const acc    = categoryAccent(it.categoryName);
+                                                const Icon   = categoryIconComp(it.categoryName);
                                                 const isIncome = it.balanceType === 1;
                                                 return (
                                                     <motion.li
                                                         key={it.id}
-                                                        initial={{ opacity: 0, x: -6 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        transition={{ ...spring, delay: gi * 0.05 + i * 0.04 }}
-                                                        className="flex items-center gap-3 px-4 py-3"
+                                                        variants={listItemVariants}
+                                                        className="flex items-center gap-3 px-4 py-3 tap-highlight"
                                                         style={{
-                                                            borderBottom: i < group.items.length - 1 ? `1px solid ${C.border}` : "none",
+                                                            borderBottom: i < group.items.length - 1
+                                                                ? `1px solid ${C.border}`
+                                                                : "none",
                                                         }}
                                                     >
                                                         <div
@@ -599,131 +725,123 @@ export function HomeV4Prototype() {
                                                     </motion.li>
                                                 );
                                             })}
-                                        </ul>
+                                        </motion.ul>
                                     </div>
                                 ))}
                             </div>
                         </motion.div>
-                    </div>
+                    </motion.div>
 
                     {/* ── 右カラム ─────────────────────────────────────── */}
-                    <div className="space-y-3">
-
+                    <motion.div
+                        className="space-y-3"
+                        variants={pageVariants.container ?? PAGE.container}
+                        initial="hidden"
+                        animate="visible"
+                    >
                         {/* 今月の貯蓄 */}
                         <motion.div
-                            custom={1} variants={cardVariants} initial="hidden" animate="visible"
+                            variants={itemVariants}
                             className="border p-4 overflow-hidden relative"
                             style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
                         >
-                            <div
-                                className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-20"
-                                style={{ background: `radial-gradient(circle, ${C.income}, transparent 70%)` }}
-                            />
-                            <div className="relative">
-                                <div className="mb-1 flex items-center justify-between">
-                                    <span className="text-[13px] font-bold" style={{ color: C.text }}>今月の貯蓄</span>
-                                    <span className="font-mono text-[11px]" style={{ color: C.muted }}>{MOCK.monthSummary.label}</span>
-                                </div>
-                                <div className="mb-3 flex items-end gap-2">
-                                    <span className="hero-number text-3xl font-black" style={{ color: C.income, letterSpacing: "-0.02em" }}>
-                                        <SpringNumber value={thisMonthSavings} format={formatYen} />
+                            <div className="mb-1 flex items-center justify-between">
+                                <span className="text-[13px] font-bold" style={{ color: C.text }}>今月の貯蓄</span>
+                                <span className="font-mono text-[11px]" style={{ color: C.muted }}>{MOCK.monthSummary.label}</span>
+                            </div>
+                            <div className="mb-3 flex items-end gap-2">
+                                <span className="hero-number text-3xl font-black" style={{ color: C.income, letterSpacing: "-0.02em" }}>
+                                    <SpringNumber value={netMonth} format={formatYen} />
+                                </span>
+                                <motion.span
+                                    initial={{ opacity: 0, y: 4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ ...SPRING.base, delay: 0.6 }}
+                                    className="mb-0.5 flex items-center gap-0.5 text-xs font-semibold"
+                                    style={{ color: savingsRate >= 20 ? C.income : "#f59e0b" }}
+                                >
+                                    <ArrowUpRight size={12} />
+                                    {savingsRate}%
+                                </motion.span>
+                            </div>
+                            <div className="space-y-2">
+                                {[
+                                    { label: "収入", value: formatYen(MOCK.monthSummary.income), color: C.income, icon: ArrowUpRight },
+                                    { label: "支出", value: formatYen(MOCK.monthSummary.expense), color: C.brand, icon: ArrowDownRight },
+                                ].map((item) => (
+                                    <div key={item.label} className="flex items-center justify-between">
+                                        <span className="flex items-center gap-1 text-[11px]" style={{ color: item.color }}>
+                                            <item.icon size={11} />
+                                            {item.label}
+                                        </span>
+                                        <span className="hero-number text-[13px] font-bold tabular-nums" style={{ color: C.text }}>
+                                            {item.value}
+                                        </span>
+                                    </div>
+                                ))}
+                                <div className="border-t pt-2 flex items-center justify-between" style={{ borderColor: C.border }}>
+                                    <span className="flex items-center gap-1 text-[11px]" style={{ color: C.muted }}>
+                                        <Wallet size={10} />収支差
                                     </span>
                                     <span
-                                        className="mb-0.5 flex items-center gap-0.5 text-xs font-semibold"
-                                        style={{ color: savingsRate >= 20 ? C.income : "#f59e0b" }}
+                                        className="hero-number text-[13px] font-extrabold tabular-nums"
+                                        style={{ color: netMonth >= 0 ? C.income : "#f43f5e" }}
                                     >
-                                        <ArrowUpRight size={12} />
-                                        {savingsRate}%
+                                        {formatYenSigned(netMonth)}
                                     </span>
                                 </div>
-                                <div className="space-y-2">
-                                    {[
-                                        { label: "収入", value: formatYen(MOCK.monthSummary.income), color: C.income, icon: ArrowUpRight },
-                                        { label: "支出", value: formatYen(MOCK.monthSummary.expense), color: C.brand, icon: ArrowDownRight },
-                                    ].map((item) => (
-                                        <div key={item.label} className="flex items-center justify-between">
-                                            <span className="flex items-center gap-1 text-[11px]" style={{ color: item.color }}>
-                                                <item.icon size={11} />
-                                                {item.label}
-                                            </span>
-                                            <span className="hero-number text-[13px] font-bold tabular-nums" style={{ color: C.text }}>
-                                                {item.value}
-                                            </span>
-                                        </div>
-                                    ))}
-                                    <div className="border-t pt-2 flex items-center justify-between" style={{ borderColor: C.border }}>
-                                        <span className="flex items-center gap-1 text-[11px]" style={{ color: C.muted }}>
-                                            <Wallet size={10} />収支差
-                                        </span>
-                                        <span
-                                            className="hero-number text-[13px] font-extrabold tabular-nums"
-                                            style={{ color: netMonth >= 0 ? C.income : "#f43f5e" }}
-                                        >
-                                            {formatYenSigned(netMonth)}
-                                        </span>
-                                    </div>
-                                </div>
-                                {/* 貯蓄率バー */}
-                                <div className="mt-3">
-                                    <div className="h-1.5 overflow-hidden" style={{ background: C.incomeLight, borderRadius: R.badge }}>
-                                        <motion.div
-                                            className="h-full relative overflow-hidden"
-                                            style={{ borderRadius: R.badge }}
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${Math.min(100, Math.round((MOCK.monthSummary.expense / MOCK.monthSummary.income) * 100))}%` }}
-                                            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                                        >
-                                            <div
-                                                className="absolute inset-0"
-                                                style={{
-                                                    background: spendProgress > 0.85
-                                                        ? "linear-gradient(90deg, #fb7185, #f43f5e)"
-                                                        : "linear-gradient(90deg, #f18840, #e8622a)",
-                                                }}
-                                            />
-                                        </motion.div>
-                                    </div>
-                                    <div className="mt-1 text-right text-[10px] tabular-nums" style={{ color: C.muted }}>
-                                        {Math.round((MOCK.monthSummary.expense / MOCK.monthSummary.income) * 100)}% 消化
-                                    </div>
+                            </div>
+                            <div className="mt-3">
+                                <ProgressBar
+                                    pct={Math.min(100, Math.round((MOCK.monthSummary.expense / MOCK.monthSummary.income) * 100))}
+                                    delay={0.7}
+                                    trackColor={C.incomeLight}
+                                    gradient={
+                                        spendProgress > 0.85
+                                            ? "linear-gradient(90deg, #fb7185, #f43f5e)"
+                                            : "linear-gradient(90deg, #f18840, #e8622a)"
+                                    }
+                                />
+                                <div className="mt-1 text-right text-[10px] tabular-nums" style={{ color: C.muted }}>
+                                    {Math.round((MOCK.monthSummary.expense / MOCK.monthSummary.income) * 100)}% 消化
                                 </div>
                             </div>
                         </motion.div>
 
                         {/* 資産の見通し */}
                         <motion.div
-                            custom={3} variants={cardVariants} initial="hidden" animate="visible"
+                            variants={itemVariants}
                             className="border p-4"
                             style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
                         >
                             <div className="mb-3 text-[13px] font-bold" style={{ color: C.text }}>資産の見通し</div>
                             <div
-                                className="flex flex-col items-center justify-center py-4 rounded-xl"
+                                className="flex flex-col items-center justify-center py-5 rounded-xl"
                                 style={{ background: C.incomeLight }}
                             >
-                                <div className="text-[10px] font-semibold mb-1" style={{ color: C.muted }}>
+                                <div className="text-[10px] font-semibold mb-2" style={{ color: C.muted }}>
                                     今のペースで資産が尽きる時期
                                 </div>
                                 {endDateLabel ? (
                                     <motion.div
                                         className="hero-number text-2xl font-extrabold"
                                         style={{ color: C.income, letterSpacing: "-0.02em" }}
-                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        initial={{ opacity: 0, scale: 0.88 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        transition={spring}
+                                        transition={{ ...SPRING.base, delay: 0.5 }}
                                     >
                                         {endDateLabel}
                                     </motion.div>
                                 ) : (
                                     <div className="text-3xl font-extrabold" style={{ color: C.income }}>∞</div>
                                 )}
-                                <div className="mt-1 text-[10px] text-center" style={{ color: C.muted }}>
-                                    今のペースを継続した場合
+                                <div className="mt-1 text-[10px]" style={{ color: C.muted }}>
+                                    現ペースを継続した場合
                                 </div>
                             </div>
                             <div className="mt-3 grid grid-cols-2 gap-2">
                                 {[
-                                    { label: "総資産", value: formatYen(totalAssets) },
+                                    { label: "総資産",    value: formatYen(totalAssets) },
                                     { label: "純日次支出", value: formatYen(Math.round(netDailyExpense)) },
                                 ].map((item) => (
                                     <div key={item.label} className="px-3 py-2.5 text-center" style={{ background: C.bg, borderRadius: R.inner }}>
@@ -742,23 +860,25 @@ export function HomeV4Prototype() {
                             <span className="mx-2 opacity-30">·</span>
                             <Link to="/category-ab" style={{ color: C.brand }} className="font-semibold hover:underline">カテゴリ比較 →</Link>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </main>
 
-            {/* ─── FAB（グロー + スプリング）────────────────────────────── */}
+            {/* ─── FAB ─────────────────────────────────────────────────── */}
             <motion.button
                 type="button"
                 onClick={handleOpenDrawer}
-                initial={{ opacity: 0, scale: 0.7, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ ...springBouncy, delay: 0.3 }}
-                whileTap={{ scale: 0.92 }}
-                className="fab-glow fixed right-5 z-40 flex h-14 items-center gap-2 px-6 text-sm font-bold text-white tap-highlight"
+                initial={{ opacity: 0, scale: 0.6, y: 24 }}
+                animate={{ opacity: 1, scale: 1,   y: 0  }}
+                transition={{ ...SPRING.smooth, delay: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.91 }}
+                className="fixed right-5 z-40 flex h-14 items-center gap-2 px-6 text-sm font-bold text-white tap-highlight"
                 style={{
-                    bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
-                    background: `linear-gradient(135deg, ${C.brand} 0%, ${C.brandDeep} 100%)`,
+                    bottom:       "calc(1.5rem + env(safe-area-inset-bottom, 0px))",
+                    background:   `linear-gradient(135deg, ${C.brand} 0%, ${C.brandDeep} 100%)`,
                     borderRadius: R.badge,
+                    boxShadow:    "0 4px 20px rgba(241,136,64,0.32), 0 1px 4px rgba(241,136,64,0.20)",
                 }}
                 aria-label="記録する"
             >
@@ -766,21 +886,21 @@ export function HomeV4Prototype() {
                 記録する
             </motion.button>
 
-            {/* ─── 支出記録 Drawer ───────────────────────────────────────── */}
+            {/* ─── Drawer ──────────────────────────────────────────────── */}
             <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
                 <Drawer.Portal>
                     <Drawer.Overlay
                         className="fixed inset-0 z-40"
-                        style={{ background: "rgba(28,20,16,0.40)", backdropFilter: "blur(4px)" }}
+                        style={{ background: "rgba(28,20,16,0.36)", backdropFilter: "blur(4px)" }}
                     />
                     <Drawer.Content
                         className="fixed bottom-0 left-0 right-0 z-50 outline-none"
                         style={{
-                            background: C.card,
-                            borderTop: `1px solid ${C.border}`,
-                            borderRadius: "20px 20px 0 0",
-                            maxHeight: "94dvh",
-                            boxShadow: "0 -8px 40px rgba(28,20,16,0.15)",
+                            background:   C.card,
+                            borderTop:    `1px solid ${C.border}`,
+                            borderRadius: "22px 22px 0 0",
+                            maxHeight:    "94dvh",
+                            boxShadow:    "0 -8px 40px rgba(28,20,16,0.14)",
                         }}
                     >
                         {/* ドラッグハンドル */}
@@ -788,10 +908,16 @@ export function HomeV4Prototype() {
                             <div className="h-1 w-10 rounded-full" style={{ background: "rgba(28,20,16,0.12)" }} />
                         </div>
 
-                        <div className="overflow-y-auto" style={{ maxHeight: "calc(94dvh - 24px)" }}>
-
-                            {/* 収入 / 支出 セグメントコントロール（iOS スタイル）*/}
-                            <div className="px-4 pb-3">
+                        {/* Drawer 内コンテンツ: stagger 入場 */}
+                        <motion.div
+                            className="overflow-y-auto"
+                            style={{ maxHeight: "calc(94dvh - 28px)" }}
+                            variants={DRAWER_ANIM.container}
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            {/* 収入 / 支出 セグメントコントロール */}
+                            <motion.div className="px-4 pb-3" variants={DRAWER_ANIM.item}>
                                 <div className="flex p-1 rounded-xl" style={{ background: "rgba(28,20,16,0.06)" }}>
                                     {([0, 1] as const).map((t) => (
                                         <motion.button
@@ -799,6 +925,7 @@ export function HomeV4Prototype() {
                                             type="button"
                                             onClick={() => { setBalanceType(t); setCategoryId(t === 0 ? 1 : 10); }}
                                             whileTap={{ scale: 0.97 }}
+                                            transition={SPRING.snap}
                                             className="flex-1 py-2 text-sm font-bold relative tap-highlight"
                                             style={{ borderRadius: "10px", zIndex: 1 }}
                                         >
@@ -808,10 +935,14 @@ export function HomeV4Prototype() {
                                                     className="absolute inset-0"
                                                     style={{
                                                         borderRadius: "10px",
-                                                        background: t === 0 ? `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})` : `linear-gradient(135deg, ${C.income}, ${C.incomeDeep})`,
-                                                        boxShadow: t === 0 ? "var(--shadow-brand)" : "var(--shadow-income)",
+                                                        background:   t === 0
+                                                            ? `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})`
+                                                            : `linear-gradient(135deg, ${C.income}, ${C.incomeDeep})`,
+                                                        boxShadow:    t === 0
+                                                            ? "0 2px 10px rgba(241,136,64,0.28)"
+                                                            : "0 2px 10px rgba(53,181,162,0.25)",
                                                     }}
-                                                    transition={springGentle}
+                                                    transition={SPRING.base}
                                                 />
                                             )}
                                             <span
@@ -823,10 +954,10 @@ export function HomeV4Prototype() {
                                         </motion.button>
                                     ))}
                                 </div>
-                            </div>
+                            </motion.div>
 
-                            {/* 金額表示エリア */}
-                            <div className="mx-4 mb-3">
+                            {/* 金額表示 */}
+                            <motion.div className="mx-4 mb-3" variants={DRAWER_ANIM.item}>
                                 <motion.div
                                     layout
                                     className="relative overflow-hidden rounded-2xl px-5 py-4"
@@ -834,8 +965,9 @@ export function HomeV4Prototype() {
                                         background: balanceType === 0
                                             ? `linear-gradient(135deg, ${C.expenseLight}, #ffe8d6)`
                                             : `linear-gradient(135deg, ${C.incomeLight}, #d4f5ef)`,
-                                        border: `1.5px solid ${balanceType === 0 ? "rgba(241,136,64,0.25)" : "rgba(53,181,162,0.25)"}`,
+                                        border: `1.5px solid ${balanceType === 0 ? "rgba(241,136,64,0.22)" : "rgba(53,181,162,0.22)"}`,
                                     }}
+                                    transition={SPRING.base}
                                 >
                                     <Drawer.Title className="text-[10px] font-semibold" style={{ color: C.muted }}>
                                         {balanceType === 0 ? "支出金額" : "収入金額"}
@@ -843,17 +975,19 @@ export function HomeV4Prototype() {
                                     <div
                                         className="hero-number text-4xl font-black mt-1"
                                         style={{
-                                            color: balanceType === 0 ? C.brandDeep : C.incomeDeep,
-                                            letterSpacing: "-0.03em",
+                                            color:          balanceType === 0 ? C.brandDeep : C.incomeDeep,
+                                            letterSpacing:  "-0.03em",
                                         }}
                                     >
                                         ¥{amountStr === "" ? "0" : Number(amountStr).toLocaleString("ja-JP")}
                                     </div>
                                     {previewRemaining !== null && amountStr !== "" && Number(amountStr) > 0 && (
                                         <motion.div
-                                            initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                                            transition={spring}
-                                            className="mt-1.5 text-[11px]" style={{ color: C.muted }}
+                                            initial={{ opacity: 0, y: 6 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={SPRING.quick}
+                                            className="mt-1.5 text-[11px]"
+                                            style={{ color: C.muted }}
                                         >
                                             記録後の残り：
                                             <span
@@ -864,108 +998,121 @@ export function HomeV4Prototype() {
                                             </span>
                                         </motion.div>
                                     )}
-                                    {amountStr !== "" && (
-                                        <motion.button
-                                            type="button"
-                                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                            whileTap={{ scale: 0.85 }}
-                                            transition={springBouncy}
-                                            onClick={() => setAmountStr("")}
-                                            className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full"
-                                            style={{ background: "rgba(28,20,16,0.10)", color: C.muted }}
-                                            aria-label="クリア"
-                                        >
-                                            <X size={12} />
-                                        </motion.button>
-                                    )}
-                                </motion.div>
-                            </div>
-
-                            {/* カテゴリボタングリッド */}
-                            <div className="px-4 mb-3">
-                                <div className="text-[10px] font-semibold mb-2" style={{ color: C.muted }}>カテゴリ</div>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {categories.map((cat) => {
-                                        const Icon = cat.icon;
-                                        const isSelected = categoryId === cat.id;
-                                        return (
+                                    <AnimatePresence>
+                                        {amountStr !== "" && (
                                             <motion.button
-                                                key={cat.id}
                                                 type="button"
-                                                onClick={() => setCategoryId(cat.id)}
-                                                whileTap={{ scale: 0.90 }}
-                                                transition={springBouncy}
-                                                className="relative flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold tap-highlight overflow-hidden"
-                                                style={{ borderRadius: R.inner }}
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0, opacity: 0 }}
+                                                whileTap={{ scale: 0.80 }}
+                                                transition={SPRING.snap}
+                                                onClick={() => setAmountStr("")}
+                                                className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full"
+                                                style={{ background: "rgba(28,20,16,0.10)", color: C.muted }}
+                                                aria-label="クリア"
                                             >
-                                                {isSelected && (
-                                                    <motion.div
-                                                        layoutId="cat-bg"
-                                                        className="absolute inset-0"
-                                                        style={{
-                                                            borderRadius: R.inner,
-                                                            background: `color-mix(in srgb, ${cat.color} 15%, white)`,
-                                                            border: `1.5px solid color-mix(in srgb, ${cat.color} 40%, transparent)`,
-                                                        }}
-                                                        transition={springGentle}
-                                                    />
-                                                )}
-                                                {!isSelected && (
-                                                    <div
-                                                        className="absolute inset-0"
-                                                        style={{
-                                                            borderRadius: R.inner,
-                                                            background: C.bg,
-                                                            border: `1px solid ${C.border}`,
-                                                        }}
-                                                    />
-                                                )}
-                                                <span className="relative z-10">
-                                                    <Icon size={18} style={{ color: isSelected ? cat.color : C.muted }} aria-hidden />
-                                                </span>
-                                                <span className="relative z-10" style={{ color: isSelected ? cat.color : C.muted }}>
-                                                    {cat.name}
-                                                </span>
+                                                <X size={12} />
                                             </motion.button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
+                            </motion.div>
 
-                            {/* メモ */}
-                            <div className="px-4 mb-3">
+                            {/* カテゴリグリッド */}
+                            <motion.div className="px-4 mb-3" variants={DRAWER_ANIM.item}>
+                                <div className="text-[10px] font-semibold mb-2" style={{ color: C.muted }}>カテゴリ</div>
+                                {/* balanceType 切替でスライドイン */}
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={balanceType}
+                                        initial={{ opacity: 0, x: balanceType === 0 ? -14 : 14 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: balanceType === 0 ? 14 : -14 }}
+                                        transition={SPRING.base}
+                                        className="grid grid-cols-4 gap-2"
+                                    >
+                                        {categories.map((cat) => {
+                                            const Icon       = cat.icon;
+                                            const isSelected = categoryId === cat.id;
+                                            return (
+                                                <motion.button
+                                                    key={cat.id}
+                                                    type="button"
+                                                    onClick={() => setCategoryId(cat.id)}
+                                                    whileTap={{ scale: 0.88 }}
+                                                    transition={SPRING.snap}
+                                                    className="relative flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold tap-highlight overflow-hidden"
+                                                    style={{ borderRadius: R.inner }}
+                                                >
+                                                    {isSelected ? (
+                                                        <motion.div
+                                                            layoutId="cat-bg"
+                                                            className="absolute inset-0"
+                                                            style={{
+                                                                borderRadius: R.inner,
+                                                                background:   `color-mix(in srgb, ${cat.color} 13%, white)`,
+                                                                border:       `1.5px solid color-mix(in srgb, ${cat.color} 36%, transparent)`,
+                                                            }}
+                                                            transition={SPRING.base}
+                                                        />
+                                                    ) : (
+                                                        <div
+                                                            className="absolute inset-0"
+                                                            style={{
+                                                                borderRadius: R.inner,
+                                                                background:   C.bg,
+                                                                border:       `1px solid ${C.border}`,
+                                                            }}
+                                                        />
+                                                    )}
+                                                    <span className="relative z-10">
+                                                        <Icon size={18} style={{ color: isSelected ? cat.color : "rgba(28,20,16,0.35)" }} aria-hidden />
+                                                    </span>
+                                                    <span className="relative z-10" style={{ color: isSelected ? cat.color : C.muted }}>
+                                                        {cat.name}
+                                                    </span>
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </motion.div>
+                                </AnimatePresence>
+                            </motion.div>
+
+                            {/* メモ入力 */}
+                            <motion.div className="px-4 mb-3" variants={DRAWER_ANIM.item}>
                                 <input
                                     value={noteText}
                                     onChange={(e) => setNoteText(e.target.value)}
-                                    className="flex h-10 w-full px-3 text-sm outline-none transition-all"
+                                    className="flex h-10 w-full px-3 text-sm outline-none transition-colors"
                                     style={{
-                                        border: `1.5px solid ${noteText ? C.brand : C.border}`,
+                                        border:       `1.5px solid ${noteText ? C.brand : C.border}`,
                                         borderRadius: R.input,
-                                        background: noteText ? C.brandLight : C.bg,
-                                        color: C.text,
+                                        background:   noteText ? C.brandLight : C.bg,
+                                        color:        C.text,
                                     }}
                                     placeholder="メモ（店名・用途など、任意）"
                                 />
-                            </div>
+                            </motion.div>
 
                             {/* テンキー */}
-                            <div className="px-4 mb-3">
+                            <motion.div className="px-4 mb-3" variants={DRAWER_ANIM.item}>
                                 <Numpad onKey={handleNumKey} />
-                            </div>
+                            </motion.div>
 
                             {/* 確定ボタン */}
-                            <div className="px-4 pb-10">
+                            <motion.div className="px-4 pb-10" variants={DRAWER_ANIM.item}>
                                 <AnimatePresence mode="wait">
                                     {submitted ? (
                                         <motion.div
                                             key="success"
-                                            initial={{ scale: 0.8, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            exit={{ scale: 0.8, opacity: 0 }}
-                                            transition={springBouncy}
+                                            initial={{ scale: 0.85, opacity: 0 }}
+                                            animate={{ scale: 1,    opacity: 1 }}
+                                            exit={{ scale: 0.90, opacity: 0 }}
+                                            transition={SPRING.quick}
                                             className="flex w-full items-center justify-center gap-2 py-4 text-sm font-bold text-white"
                                             style={{
-                                                background: `linear-gradient(135deg, ${C.income}, ${C.incomeDeep})`,
+                                                background:   `linear-gradient(135deg, ${C.income}, ${C.incomeDeep})`,
                                                 borderRadius: R.input,
                                             }}
                                         >
@@ -979,18 +1126,21 @@ export function HomeV4Prototype() {
                                             onClick={handleSubmit}
                                             disabled={amountStr === "" || amountStr === "0"}
                                             whileTap={{ scale: 0.97 }}
-                                            transition={spring}
+                                            transition={SPRING.snap}
                                             className="flex w-full items-center justify-center gap-2 py-4 text-sm font-bold text-white tap-highlight disabled:opacity-40"
                                             style={{
                                                 background: amountStr && Number(amountStr) > 0
                                                     ? (balanceType === 0
                                                         ? `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})`
                                                         : `linear-gradient(135deg, ${C.income}, ${C.incomeDeep})`)
-                                                    : "rgba(28,20,16,0.15)",
+                                                    : "rgba(28,20,16,0.14)",
                                                 borderRadius: R.input,
                                                 boxShadow: amountStr && Number(amountStr) > 0
-                                                    ? (balanceType === 0 ? "var(--shadow-brand)" : "var(--shadow-income)")
+                                                    ? (balanceType === 0
+                                                        ? "0 4px 16px rgba(241,136,64,0.28)"
+                                                        : "0 4px 16px rgba(53,181,162,0.24)")
                                                     : "none",
+                                                transition: "background 0.2s, box-shadow 0.2s",
                                             }}
                                         >
                                             <Receipt size={16} />
@@ -998,8 +1148,8 @@ export function HomeV4Prototype() {
                                         </motion.button>
                                     )}
                                 </AnimatePresence>
-                            </div>
-                        </div>
+                            </motion.div>
+                        </motion.div>
                     </Drawer.Content>
                 </Drawer.Portal>
             </Drawer.Root>
