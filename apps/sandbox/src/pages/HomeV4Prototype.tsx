@@ -258,7 +258,7 @@ function ProgressBar({
 function Numpad({ onKey }: { onKey: (k: string) => void }) {
     const keys = ["1","2","3","4","5","6","7","8","9","000","0","⌫"];
     return (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5">
             {keys.map((k) => (
                 <motion.button
                     key={k}
@@ -266,7 +266,7 @@ function Numpad({ onKey }: { onKey: (k: string) => void }) {
                     onClick={() => onKey(k)}
                     whileTap={{ scale: 0.84 }}
                     transition={SPRING.snap}
-                    className="flex h-14 items-center justify-center text-[18px] font-semibold tap-highlight select-none"
+                    className="flex h-10 items-center justify-center text-[16px] font-semibold tap-highlight select-none"
                     style={{
                         borderRadius: R.inner,
                         background:   k === "⌫" ? "#fff0ea" : C.card,
@@ -1084,8 +1084,9 @@ export function HomeV4Prototype() {
                                 <input
                                     value={noteText}
                                     onChange={(e) => setNoteText(e.target.value)}
-                                    className="flex h-10 w-full px-3 text-sm outline-none transition-colors"
+                                    className="flex h-10 w-full px-3 outline-none transition-colors"
                                     style={{
+                                        fontSize:     '16px', // iOS Safari ズーム抑制（16px 未満でズーム発生）
                                         border:       `1.5px solid ${noteText ? C.brand : C.border}`,
                                         borderRadius: R.input,
                                         background:   noteText ? C.brandLight : C.bg,

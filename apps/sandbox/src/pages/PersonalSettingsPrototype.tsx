@@ -122,8 +122,8 @@ function NumberRow({
                 if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                 if (e.key === 'Escape') setEditing(false)
               }}
-              className="w-32 text-sm font-bold outline-none border-b-2 bg-transparent tabular-nums"
-              style={{ color: D.text, borderColor: D.brand }}
+              className="w-32 font-bold outline-none border-b-2 bg-transparent tabular-nums"
+              style={{ fontSize: '16px', color: D.text, borderColor: D.brand }}
               step={step}
               min={0}
             />
