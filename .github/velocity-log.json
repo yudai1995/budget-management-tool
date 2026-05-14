@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
-    "next_sprint_number": 15
+    "next_sprint_number": 16
   },
   "sprints": [
     {
@@ -618,11 +618,14 @@
     {
       "sprint_number": 15,
       "date": "2026-05-15",
+      "goal": "Sandbox A/B テスト基盤を整えダッシュボードの最適解を検証できる状態にする",
+      "hypothesis": "複数レイアウトパターンをサンドボックスで比較することで、本番実装前に最適なダッシュボード設計を意思決定できる",
       "total_points": 5,
       "pbis": [
         {
           "issue": 277,
           "title": "design: Sandbox ホーム V3/V4 ダッシュボード・A/B テストページ群を追加する",
+          "pbi_type": "feature",
           "size": "L",
           "points": 5,
           "cycle_time_hours": null,
