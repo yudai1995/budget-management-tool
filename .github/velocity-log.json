@@ -650,6 +650,21 @@
           "pr": 280
         }
       ]
+    },
+    {
+      "sprint_number": 17,
+      "date": "2026-05-15",
+      "total_points": 5,
+      "pbis": [
+        {
+          "issue": 282,
+          "title": "design: 長期指標ウィジェット（AssetOutlookAB）をリッチデザインにブラッシュアップする",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": 0.2,
+          "pr": 284
+        }
+      ]
     }
   ]
 }
