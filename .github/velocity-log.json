@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 6,
     "note": "initial_velocity_estimate は仮設定値（1作業日 ≈ 6pt）。実績を蓄積しながら調整する。",
-    "next_sprint_number": 16
+    "next_sprint_number": 17
   },
   "sprints": [
     {
@@ -636,11 +636,14 @@
     {
       "sprint_number": 16,
       "date": "2026-05-15",
+      "goal": "framer-motion の本格活用で HomeV4 を「ぬるぬる動く」premium な操作感に仕上げる",
+      "hypothesis": "spring physics + stagger + blur entrance + scroll 連動を組み合わせることで、CSS アニメーションとは段違いの自然な操作感が実現できる",
       "total_points": 3,
       "pbis": [
         {
           "issue": 279,
           "title": "design: HomeV4 を framer-motion 本格活用で premium アニメーションに刷新する",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 0.1,
