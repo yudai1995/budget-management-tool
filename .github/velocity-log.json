@@ -758,6 +758,21 @@
       ],
       "goal": "Sandbox ナビゲーションを整備しカテゴリ選択デザインパターンを追加、モバイルリロードバグを修正する",
       "hypothesis": "プロトタイプ間ナビと画面遷移の充実により UI 検討の効率が上がり、dvh 修正でモバイルの表示崩れが解消されユーザー体験が改善される"
+    },
+    {
+      "sprint_number": 20,
+      "date": "2026-05-15",
+      "total_points": 1,
+      "pbis": [
+        {
+          "issue": 235,
+          "title": "chore: 既存 GH Actions 自動生成 Issue（CVE 検知など）に priority ラベルを付与する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0.1,
+          "pr": 301
+        }
+      ]
     }
   ]
 }
