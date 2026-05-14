@@ -839,13 +839,45 @@
       "goal": "計測メトリクス強化とワークフロー自動化でスプリント可視性を高める",
       "hypothesis": "planned_points 記録とサイクルタイム計測の修正により、スプリント計画精度と振り返り品質が向上する",
       "planned_points": 9,
-      "total_points": 3,
+      "total_points": 9,
       "pbis": [
+        {
+          "issue": 212,
+          "title": "[Retro Action] XDayDisplay の完全廃止スケジュールを Issue 化して優先度を設定する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 304
+        },
         {
           "issue": 215,
           "title": "chore: スプリント計画適切性メトリクス（planned_points・達成率・推奨キャパシティ調整）を設計・実装する",
           "size": "M",
           "points": 3,
+          "cycle_time_hours": null,
+          "pr": 304
+        },
+        {
+          "issue": 221,
+          "title": "chore: Issue クローズ時にプロジェクトボードのステータスを Done へ自動更新する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 304
+        },
+        {
+          "issue": 230,
+          "title": "[Retro Action] velocity-log.json の Sprint エントリに goal/hypothesis を必ず記入するよう sprint-protocol.md に明記する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 304
+        },
+        {
+          "issue": 245,
+          "title": "[Retro Action] measure-cycle-time.yml の動作確認と修正",
+          "size": "S",
+          "points": 2,
           "cycle_time_hours": null,
           "pr": 304
         }
