@@ -13,7 +13,7 @@ type Props = {
  */
 export function AppShell({ userName, children }: Props) {
   return (
-    <div className="flex flex-col min-h-screen md:flex-row bg-[#fffdf5]">
+    <div className="flex flex-col min-h-dvh md:flex-row bg-[#fffdf5]">
       {/* PC: サイドバー / モバイル: ミニヘッダー */}
       <Header userName={userName} />
 

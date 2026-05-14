@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List, Settings } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List, Settings, Bell, SquareMenu } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -122,6 +122,22 @@ const prototypes: PrototypeCard[] = [
     icon: Settings,
     issue: '#283',
     status: 'ready',
+  },
+  {
+    path: '/notifications',
+    title: '通知一覧画面',
+    description: '予算超過アラート・給料日リマインダー・連続記録バッジなどの通知センタープロトタイプ。',
+    icon: Bell,
+    issue: '#295',
+    status: 'wip',
+  },
+  {
+    path: '/category-input-ab',
+    title: 'カテゴリ選択 A/B/C 比較',
+    description: 'グリッド / リスト / スクロールチップ の3パターン比較。メリット・デメリット付き。',
+    icon: SquareMenu,
+    issue: '#294',
+    status: 'wip',
   },
 ]
 
