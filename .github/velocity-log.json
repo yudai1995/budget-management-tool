@@ -758,6 +758,60 @@
       ],
       "goal": "Sandbox ナビゲーションを整備しカテゴリ選択デザインパターンを追加、モバイルリロードバグを修正する",
       "hypothesis": "プロトタイプ間ナビと画面遷移の充実により UI 検討の効率が上がり、dvh 修正でモバイルの表示崩れが解消されユーザー体験が改善される"
+    },
+    {
+      "sprint_number": 20,
+      "date": "2026-05-15",
+      "total_points": 8,
+      "pbis": [
+        {
+          "issue": 261,
+          "title": "[Retro Action] PR テンプレートに Closes #N のチェックリスト記入を必須化する",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 301
+        },
+        {
+          "issue": 235,
+          "title": "chore: 既存 GH Actions 自動生成 Issue（CVE 検知など）に priority ラベルを付与する",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 301
+        },
+        {
+          "issue": 286,
+          "title": "[Retro Action] sandbox の pre-existing TypeScript エラーを修正して pnpm build をグリーンにする",
+          "pbi_type": "chore",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 301
+        },
+        {
+          "issue": 287,
+          "title": "[Retro Action] Trivy CVE を .trivyignore または pnpm.overrides で抑制設定する",
+          "pbi_type": "chore",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 301
+        },
+        {
+          "issue": 239,
+          "title": "chore: Claude API（Haiku）統合基盤を整備する（SDK・使用制限・コスト管理）",
+          "pbi_type": "chore",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 301
+        }
+      ],
+      "goal": "技術負債解消と LLM 統合基盤整備で次の AI 機能実装サイクルへの土台を作る",
+      "hypothesis": "CVE 自動 priority 付与・PR テンプレート改善・LlmClient 基盤整備により、セキュリティ対応速度と AI 機能開発の開始コストが下がる"
     }
   ]
 }
