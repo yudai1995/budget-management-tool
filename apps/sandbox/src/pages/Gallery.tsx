@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -73,6 +73,14 @@ const prototypes: PrototypeCard[] = [
     description: 'SAFE/CAUTION/DANGER の3ステートを3パレットパターンで横並び比較。現行との対比も掲載。',
     icon: Palette,
     issue: '#133',
+    status: 'wip',
+  },
+  {
+    path: '/home-v3',
+    title: 'ホーム画面 V3 デザイン',
+    description: 'Claude Design v3 プレミアムダッシュボード。アラートバナー・寿命カード・ドロワー記録のモックアップ。',
+    icon: LayoutDashboard,
+    issue: 'sandbox',
     status: 'wip',
   },
 ]

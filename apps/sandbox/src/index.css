@@ -40,6 +40,15 @@
   --shadow-pop-sm: 1px 1px 0 #1c1410;
   --shadow-pop: 2px 2px 0 #1c1410;
   --shadow-pop-lg: 3px 3px 0 #1c1410;
+  --shadow-card: 0 1px 3px rgba(28, 20, 16, 0.08);
+
+  /* HomeV3 用追加トークン */
+  --color-surface-base: #fffdf5;
+  --color-surface-elevated: #ffffff;
+  --color-text-primary: #1c1410;
+  --color-text-muted: rgba(28, 20, 16, 0.45);
+  --color-caution: #f5a623;
+  --color-danger: #e84040;
 }
 
 body {
