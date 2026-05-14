@@ -73,6 +73,15 @@ Table password_reset_tokens {
   createdAt DateTime [default: `now()`, not null]
 }
 
+Table llm_usage {
+  id String [pk]
+  userId String [not null]
+  feature String [not null]
+  inputTokens Int [not null]
+  outputTokens Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+}
+
 Enum UserRole {
   ADMIN
   USER

@@ -304,11 +304,16 @@ jobs:
 
           _自動作成: pr-checks.yml security-scan — PR #{os.environ.get('GITHUB_REF', '').replace('refs/pull/', '').replace('/merge', '')}_"""
 
+              priority = 'priority: P0' if severity == 'CRITICAL' else \
+                         'priority: P1' if severity == 'HIGH' else \
+                         'priority: P2'
+
               subprocess.run([
                   'gh', 'issue', 'create',
                   '--title', f'[{severity}] {cve_id} が {pkg} で検出されました',
                   '--label', 'type: chore',
-                  '--label', 'priority: P1',
+                  '--label', priority,
+                  '--label', 'size: S',
                   '--label', 'backlog',
                   '--body', body,
               ], check=False)

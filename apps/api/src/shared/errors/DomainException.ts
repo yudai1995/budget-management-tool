@@ -33,3 +33,10 @@ export class ValidationError extends DomainException {
         super('VALIDATION_ERROR', message, 400);
     }
 }
+
+/** LLM 使用制限超過 */
+export class UsageLimitError extends DomainException {
+    constructor(message = 'LLM の使用制限を超過しています') {
+        super('USAGE_LIMIT_EXCEEDED', message, 429);
+    }
+}
