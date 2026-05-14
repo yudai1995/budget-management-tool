@@ -122,7 +122,8 @@ AI は以下を実際のデータで埋めて Issue 本文とすること。`{pl
 | スプリント番号 | #{N} |
 | 実施日 | {YYYY-MM-DD} |
 | 完了PBI | {PBI数}件 |
-| 合計ポイント | {X}pt |
+| 計画pt / 実績pt | {planned_points}pt / {total_points}pt |
+| 達成率 | {total_points / planned_points × 100}%（planned_points が null の場合は「計測データなし」） |
 | 平均サイクルタイム | {X}h（計測済みPBIのみ） |
 | 前スプリント比 | {+X / -X pt}（前スプリントとの比較） |
 

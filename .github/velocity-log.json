@@ -25,6 +25,7 @@
       "date": "2026-05-06",
       "goal": "計測基盤と入力バグ修正でプロダクトの土台を整える",
       "hypothesis": "ベロシティ計測を自動化することでスプリントの改善速度が上がる",
+      "planned_points": null,
       "total_points": 9,
       "pbis": [
         {
@@ -70,6 +71,7 @@
       "date": "2026-05-08",
       "goal": "コアフィーチャーを一気に実装しプロダクトを使える状態にする",
       "hypothesis": "ストリーク・比較レポート・PWA化でユーザーの継続利用動機が生まれる",
+      "planned_points": null,
       "total_points": 45,
       "pbis": [
         {
@@ -223,6 +225,7 @@
       "date": "2026-05-09",
       "goal": "バグ恒久対策とAI入力基盤を整え品質を安定させる",
       "hypothesis": "カテゴリ保存バグの恒久対策とマイグレーション問題の根治で再発を防止できる",
+      "planned_points": null,
       "total_points": 8,
       "pbis": [
         {
@@ -259,6 +262,7 @@
       "date": "2026-05-09",
       "goal": "ブランドアイデンティティをUIに反映し第一印象を整える",
       "hypothesis": "ログイン画面のリデザインとファビコン設定でブランド認知が高まる",
+      "planned_points": null,
       "total_points": 6,
       "pbis": [
         {
@@ -295,6 +299,7 @@
       "date": "2026-05-09",
       "goal": "初回起動時の体験を完結させ継続利用への入口を整える",
       "hypothesis": "オンボーディング完了とアカウント導線追加でユーザーの2回目起動率が上がる",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -322,6 +327,7 @@
       "date": "2026-05-10",
       "goal": "スマホ操作の主要動線を統合しワンタップで記録できる状態にする",
       "hypothesis": "カレンダーUI刷新とクイック入力ドロワーで記録操作のストレスが下がり継続率が上がる",
+      "planned_points": null,
       "total_points": 6,
       "pbis": [
         {
@@ -349,6 +355,7 @@
       "date": "2026-05-10",
       "goal": "スプリントの品質・仮説検証能力を計測可能にしAIエージェントの自律改善サイクルを確立する",
       "hypothesis": "ゴール・バグ率・バックログ鮮度を自動追跡することでスプリントの改善速度が上がる",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -394,6 +401,7 @@
       "date": "2026-05-10",
       "goal": "開発運用の継続的改善を定着させ、プロセス品質と安全基盤を整える",
       "hypothesis": "sizeラベル標準化・Retroバックフィル・CVE自動検出の整備で、ベロシティ計算精度と脆弱性対応速度が向上する",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -430,6 +438,7 @@
       "date": "2026-05-10",
       "goal": "家計の即時フィードバック軸を強化し、ユーザーが1日の予算を直感的に把握できるダッシュボードへ刷新する",
       "hypothesis": "「今日使えるお金」をヒーローナンバーとして表示することで、ユーザーの当日支出抑制行動と記録継続率が向上する",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -446,6 +455,7 @@
     {
       "sprint_number": 10,
       "date": "2026-05-10",
+      "planned_points": null,
       "total_points": 9,
       "pbis": [
         {
@@ -503,6 +513,7 @@
       "date": "2026-05-10",
       "goal": "P0バグを根治しPriority付与フローを自動化して開発プロセスの質を底上げする",
       "hypothesis": "categoryIdバグの恒久修正とpriority自動付与でバックログ管理の抜け漏れがゼロになる",
+      "planned_points": null,
       "total_points": 6,
       "pbis": [
         {
@@ -548,6 +559,7 @@
       "date": "2026-05-10",
       "goal": "shadcn/ui コンポーネントカタログを構築し、UI の一貫性・アクセシビリティ・デザインシステム基盤を整える",
       "hypothesis": "shadcn/ui プリミティブ化により今後の UI 実装速度が上がり、アクセシビリティ準拠が自動化される",
+      "planned_points": null,
       "total_points": 7,
       "pbis": [
         {
@@ -572,6 +584,7 @@
     {
       "sprint_number": 13,
       "date": "2026-05-11",
+      "planned_points": null,
       "total_points": 2,
       "pbis": [
         {
@@ -587,6 +600,7 @@
     {
       "sprint_number": 14,
       "date": "2026-05-11",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -620,6 +634,7 @@
       "date": "2026-05-15",
       "goal": "Sandbox A/B テスト基盤を整えダッシュボードの最適解を検証できる状態にする",
       "hypothesis": "複数レイアウトパターンをサンドボックスで比較することで、本番実装前に最適なダッシュボード設計を意思決定できる",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -638,6 +653,7 @@
       "date": "2026-05-15",
       "goal": "framer-motion の本格活用で HomeV4 を「ぬるぬる動く」premium な操作感に仕上げる",
       "hypothesis": "spring physics + stagger + blur entrance + scroll 連動を組み合わせることで、CSS アニメーションとは段違いの自然な操作感が実現できる",
+      "planned_points": null,
       "total_points": 3,
       "pbis": [
         {
@@ -654,6 +670,9 @@
     {
       "sprint_number": 17,
       "date": "2026-05-15",
+      "goal": "ダッシュボードの長期指標ウィジェットをリッチデザイン化し、通常ナビから常時アクセスできる個人設定画面を実装する",
+      "hypothesis": "PayPayライクな視覚的インパクトと設定変更の即時フィードバックにより、ユーザーが財政状況を直感的に把握しやすくなる",
+      "planned_points": null,
       "total_points": 8,
       "pbis": [
         {
@@ -674,13 +693,14 @@
           "cycle_time_hours": 0.2,
           "pr": 284
         }
-      ],
-      "goal": "ダッシュボードの長期指標ウィジェットをリッチデザイン化し、通常ナビから常時アクセスできる個人設定画面を実装する",
-      "hypothesis": "PayPayライクな視覚的インパクトと設定変更の即時フィードバックにより、ユーザーが財政状況を直感的に把握しやすくなる"
+      ]
     },
     {
       "sprint_number": 18,
       "date": "2026-05-15",
+      "goal": "asset-outlook-ab のインタラクションをスワイプ対応にし、ブランドカラーと整合させ、テンキー・入力UXの問題点を修正する",
+      "hypothesis": "スワイプジェスチャーとブランドカラー統一により操作直感性が向上し、テンキー縮小で登録ボタンが常時見えることで記録完了率が改善される",
+      "planned_points": null,
       "total_points": 5,
       "pbis": [
         {
@@ -701,13 +721,14 @@
           "cycle_time_hours": 0.1,
           "pr": 290
         }
-      ],
-      "goal": "asset-outlook-ab のインタラクションをスワイプ対応にし、ブランドカラーと整合させ、テンキー・入力UXの問題点を修正する",
-      "hypothesis": "スワイプジェスチャーとブランドカラー統一により操作直感性が向上し、テンキー縮小で登録ボタンが常時見えることで記録完了率が改善される"
+      ]
     },
     {
       "sprint_number": 19,
       "date": "2026-05-15",
+      "goal": "Sandbox ナビゲーションを整備しカテゴリ選択デザインパターンを追加、モバイルリロードバグを修正する",
+      "hypothesis": "プロトタイプ間ナビと画面遷移の充実により UI 検討の効率が上がり、dvh 修正でモバイルの表示崩れが解消されユーザー体験が改善される",
+      "planned_points": null,
       "total_points": 11,
       "pbis": [
         {
@@ -755,13 +776,14 @@
           "cycle_time_hours": null,
           "pr": 299
         }
-      ],
-      "goal": "Sandbox ナビゲーションを整備しカテゴリ選択デザインパターンを追加、モバイルリロードバグを修正する",
-      "hypothesis": "プロトタイプ間ナビと画面遷移の充実により UI 検討の効率が上がり、dvh 修正でモバイルの表示崩れが解消されユーザー体験が改善される"
+      ]
     },
     {
       "sprint_number": 20,
       "date": "2026-05-15",
+      "goal": "技術負債解消と LLM 統合基盤整備で次の AI 機能実装サイクルへの土台を作る",
+      "hypothesis": "CVE 自動 priority 付与・PR テンプレート改善・LlmClient 基盤整備により、セキュリティ対応速度と AI 機能開発の開始コストが下がる",
+      "planned_points": null,
       "total_points": 8,
       "pbis": [
         {
@@ -809,9 +831,16 @@
           "cycle_time_hours": 0.1,
           "pr": 301
         }
-      ],
-      "goal": "技術負債解消と LLM 統合基盤整備で次の AI 機能実装サイクルへの土台を作る",
-      "hypothesis": "CVE 自動 priority 付与・PR テンプレート改善・LlmClient 基盤整備により、セキュリティ対応速度と AI 機能開発の開始コストが下がる"
+      ]
+    },
+    {
+      "sprint_number": 21,
+      "date": "2026-05-15",
+      "goal": "計測メトリクス強化とワークフロー自動化でスプリント可視性を高める",
+      "hypothesis": "planned_points 記録とサイクルタイム計測の修正により、スプリント計画精度と振り返り品質が向上する",
+      "planned_points": 9,
+      "total_points": 0,
+      "pbis": []
     }
   ]
 }
