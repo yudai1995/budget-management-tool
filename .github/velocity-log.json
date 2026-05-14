@@ -614,6 +614,21 @@
           "pr": 269
         }
       ]
+    },
+    {
+      "sprint_number": 15,
+      "date": "2026-05-15",
+      "total_points": 5,
+      "pbis": [
+        {
+          "issue": 277,
+          "title": "design: Sandbox ホーム V3/V4 ダッシュボード・A/B テストページ群を追加する",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": null,
+          "pr": 276
+        }
+      ]
     }
   ]
 }
