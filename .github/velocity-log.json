@@ -708,7 +708,7 @@
     {
       "sprint_number": 19,
       "date": "2026-05-15",
-      "total_points": 3,
+      "total_points": 11,
       "pbis": [
         {
           "issue": 294,
@@ -716,9 +716,48 @@
           "size": "M",
           "points": 3,
           "cycle_time_hours": null,
+          "pr": 299,
+          "pbi_type": "feature"
+        },
+        {
+          "issue": 295,
+          "title": "design: HomeV4 プロトタイプの未接続ナビゲーション導線を有効化する",
+          "pbi_type": "feature",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 299
+        },
+        {
+          "issue": 296,
+          "title": "fix: モバイルリロード時のレイアウト崩れを修正する",
+          "pbi_type": "fix",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 299
+        },
+        {
+          "issue": 297,
+          "title": "chore: ベロシティ実績からスプリントキャパシティを見直す",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 299
+        },
+        {
+          "issue": 298,
+          "title": "design: Sandbox 内プロトタイプ間ナビゲーションメニューを追加する",
+          "pbi_type": "feature",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
           "pr": 299
         }
-      ]
+      ],
+      "goal": "Sandbox ナビゲーションを整備しカテゴリ選択デザインパターンを追加、モバイルリロードバグを修正する",
+      "hypothesis": "プロトタイプ間ナビと画面遷移の充実により UI 検討の効率が上がり、dvh 修正でモバイルの表示崩れが解消されユーザー体験が改善される"
     }
   ]
 }
