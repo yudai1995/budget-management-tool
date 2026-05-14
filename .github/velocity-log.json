@@ -632,6 +632,21 @@
           "pr": 276
         }
       ]
+    },
+    {
+      "sprint_number": 16,
+      "date": "2026-05-15",
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 279,
+          "title": "design: HomeV4 を framer-motion 本格活用で premium アニメーションに刷新する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.1,
+          "pr": 280
+        }
+      ]
     }
   ]
 }
