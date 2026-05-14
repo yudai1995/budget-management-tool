@@ -28,6 +28,9 @@ import {
     useTransform,
     useReducedMotion,
 } from "framer-motion";
+
+// motion() でラップした Link — framer-motion アニメーション + React Router ナビを両立
+const MotionLink = motion(Link);
 import { Drawer } from "vaul";
 import {
     Home, Calendar, BarChart2, Settings,
@@ -398,14 +401,14 @@ export function HomeV4Prototype() {
 
                 <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
                     {[
-                        { label: "ホーム",     icon: Home,     active: true  },
-                        { label: "カレンダー", icon: Calendar,  active: false },
-                        { label: "レポート",   icon: BarChart2, active: false },
-                        { label: "設定",       icon: Settings,  active: false },
+                        { label: "ホーム",     icon: Home,     to: "/home-v4",           active: true  },
+                        { label: "カレンダー", icon: Calendar,  to: "/calendar-page",     active: false },
+                        { label: "レポート",   icon: BarChart2, to: "/asset-outlook-ab",  active: false },
+                        { label: "設定",       icon: Settings,  to: "/personal-settings", active: false },
                     ].map((item) => (
-                        <motion.button
+                        <MotionLink
                             key={item.label}
-                            type="button"
+                            to={item.to}
                             whileTap={{ scale: 0.95 }}
                             transition={SPRING.snap}
                             className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold tap-highlight"
@@ -413,17 +416,18 @@ export function HomeV4Prototype() {
                                 borderRadius: "10px",
                                 background: item.active ? C.brandLight : "transparent",
                                 color:      item.active ? C.brand : "rgba(28,20,16,0.50)",
+                                textDecoration: "none",
                             }}
                         >
                             <item.icon size={14} aria-hidden />
                             {item.label}
-                        </motion.button>
+                        </MotionLink>
                     ))}
                 </nav>
 
                 <div className="ml-auto flex shrink-0 items-center gap-2">
-                    <motion.button
-                        type="button"
+                    <MotionLink
+                        to="/notifications"
                         whileTap={{ scale: 0.82 }}
                         transition={SPRING.snap}
                         className="relative flex h-8 w-8 items-center justify-center tap-highlight"
@@ -443,19 +447,22 @@ export function HomeV4Prototype() {
                                 />
                             )}
                         </AnimatePresence>
-                    </motion.button>
-                    <motion.div
+                    </MotionLink>
+                    <MotionLink
+                        to="/personal-settings"
                         whileTap={{ scale: 0.90 }}
                         transition={SPRING.snap}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center text-[12px] font-extrabold text-white tap-highlight"
+                        className="flex h-8 w-8 items-center justify-center text-[12px] font-extrabold text-white tap-highlight"
                         style={{
                             background:   `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})`,
                             borderRadius: R.badge,
                             boxShadow:    "0 2px 8px rgba(241,136,64,0.30)",
+                            textDecoration: "none",
                         }}
+                        aria-label="設定"
                     >
                         {MOCK.userId}
-                    </motion.div>
+                    </MotionLink>
                 </div>
             </motion.header>
 
@@ -658,15 +665,15 @@ export function HomeV4Prototype() {
                         >
                             <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: C.border }}>
                                 <span className="text-sm font-bold" style={{ color: C.text }}>最近の記録</span>
-                                <motion.button
-                                    type="button"
+                                <MotionLink
+                                    to="/recent-records-ab"
                                     whileTap={{ scale: 0.92 }}
                                     transition={SPRING.snap}
                                     className="flex items-center gap-0.5 text-[12px] font-semibold tap-highlight"
-                                    style={{ color: C.brand }}
+                                    style={{ color: C.brand, textDecoration: "none" }}
                                 >
                                     すべて見る <ChevronRight size={12} />
-                                </motion.button>
+                                </MotionLink>
                             </div>
 
                             <div>

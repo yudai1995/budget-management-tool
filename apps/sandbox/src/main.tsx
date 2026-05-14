@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import { Gallery } from './pages/Gallery'
+import { SandboxNav } from './components/SandboxNav'
 import { BottomNavPrototype } from './pages/BottomNavPrototype'
 import { QuickEntryPrototype } from './pages/QuickEntryPrototype'
 import { NavLayoutPrototype } from './pages/NavLayoutPrototype'
@@ -17,10 +18,13 @@ import { CategoryTopABPrototype } from './pages/CategoryTopABPrototype'
 import { AssetOutlookABPrototype } from './pages/AssetOutlookABPrototype'
 import { RecentRecordsABPrototype } from './pages/RecentRecordsABPrototype'
 import { PersonalSettingsPrototype } from './pages/PersonalSettingsPrototype'
+import { NotificationsPrototype } from './pages/NotificationsPrototype'
+import { CategoryInputABPrototype } from './pages/CategoryInputABPrototype'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <SandboxNav />
       <Routes>
         <Route path="/" element={<Gallery />} />
         <Route path="/bottom-nav" element={<BottomNavPrototype />} />
@@ -37,6 +41,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/asset-outlook-ab" element={<AssetOutlookABPrototype />} />
         <Route path="/recent-records-ab" element={<RecentRecordsABPrototype />} />
         <Route path="/personal-settings" element={<PersonalSettingsPrototype />} />
+        <Route path="/notifications" element={<NotificationsPrototype />} />
+        <Route path="/category-input-ab" element={<CategoryInputABPrototype />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
