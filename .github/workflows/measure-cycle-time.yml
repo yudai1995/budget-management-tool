@@ -78,18 +78,26 @@ jobs:
             const sprintNumber = sprintMatch ? parseInt(sprintMatch[1], 10) : null;
 
             async function findProjectItemId(issueNumber) {
-              const res = await github.graphql(`
-                query($projectId: ID!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100) {
-                        nodes { id content { ... on Issue { number } } }
+              let cursor = null;
+              while (true) {
+                const res = await github.graphql(`
+                  query($projectId: ID!, $cursor: String) {
+                    node(id: $projectId) {
+                      ... on ProjectV2 {
+                        items(first: 100, after: $cursor) {
+                          pageInfo { hasNextPage endCursor }
+                          nodes { id content { ... on Issue { number } } }
+                        }
                       }
                     }
-                  }
-                }`, { projectId: PROJECT_ID });
-              const item = res.node.items.nodes.find(n => n.content?.number === issueNumber);
-              return item?.id ?? null;
+                  }`, { projectId: PROJECT_ID, cursor });
+                const { items } = res.node;
+                const found = items.nodes.find(n => n.content?.number === issueNumber);
+                if (found) return found.id;
+                if (!items.pageInfo.hasNextPage) break;
+                cursor = items.pageInfo.endCursor;
+              }
+              return null;
             }
 
             async function updateNumberField(itemId, fieldId, value) {
