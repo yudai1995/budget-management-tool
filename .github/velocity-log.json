@@ -654,7 +654,7 @@
     {
       "sprint_number": 17,
       "date": "2026-05-15",
-      "total_points": 5,
+      "total_points": 8,
       "pbis": [
         {
           "issue": 282,
@@ -662,9 +662,21 @@
           "size": "L",
           "points": 5,
           "cycle_time_hours": 0.2,
+          "pr": 284,
+          "pbi_type": "feature"
+        },
+        {
+          "issue": 283,
+          "title": "design: 個人設定画面（設定ページ）プロトタイプを実装する",
+          "pbi_type": "feature",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 0.2,
           "pr": 284
         }
-      ]
+      ],
+      "goal": "ダッシュボードの長期指標ウィジェットをリッチデザイン化し、通常ナビから常時アクセスできる個人設定画面を実装する",
+      "hypothesis": "PayPayライクな視覚的インパクトと設定変更の即時フィードバックにより、ユーザーが財政状況を直感的に把握しやすくなる"
     }
   ]
 }
