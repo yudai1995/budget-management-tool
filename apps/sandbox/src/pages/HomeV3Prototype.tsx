@@ -26,7 +26,6 @@ import {
     ShoppingBasket,
     ShoppingBag,
     CircleDollarSign,
-    PenLine,
     Info,
     Flame,
     AlertTriangle,
@@ -75,19 +74,19 @@ const C = {
 
 const MOCK = {
     userId: "Y",
-    todayExpense: 0,
-    yesterdayExpense: 0,
+    todayExpense: 1280,
+    yesterdayExpense: 3200,
     zeroStreakDays: 2,
-    avgDailyExpense: 4559,
+    avgDailyExpense: 9800,   // 月約29.4万 (月収25.3万を上回るため純支出が発生)
     recordedDays: 6,
     recordingStreak: 6,
     totalAssets: 999853,
     monthlyIncome: 252600,
-    dailyBudget: 76923,
+    dailyBudget: 7692,       // 残予算10万円 ÷ 残13日
     daysUntilPayday: 13,
     monthSummary: {
         label: "2026 / 05",
-        expense: 68700,
+        expense: 148700,
         income: 252600,
     },
     recentExpenses: [
@@ -346,16 +345,12 @@ export function HomeV3Prototype() {
             >
                 {/* ロゴ */}
                 <div className="flex items-center gap-2 shrink-0">
-                    <div
-                        className="flex h-8 w-8 shrink-0 items-center justify-center"
-                        style={{
-                            background: C.brand,
-                            borderRadius: "10px",
-                            boxShadow: C.shadowPop,
-                        }}
-                    >
-                        <PenLine size={15} className="text-white" strokeWidth={2.5} />
-                    </div>
+                    <img
+                        src="/logo192.png"
+                        alt="家計かんり"
+                        className="h-8 w-8 shrink-0"
+                        style={{ borderRadius: "10px" }}
+                    />
                     <span className="text-sm font-extrabold" style={{ color: C.text }}>
                         家計かんり
                     </span>
@@ -413,7 +408,7 @@ export function HomeV3Prototype() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-6xl space-y-3 px-4 py-4 md:px-6 md:py-5">
+            <main className="mx-auto max-w-7xl space-y-3 px-4 py-4 md:px-6 md:py-5">
 
                 {/* ─── アラートバナー ──────────────────────────────────────── */}
                 {alerts.length > 0 && (
