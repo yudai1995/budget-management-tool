@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
-/* ── 家計管理ツール デザイントークン ────────────────────────── */
+/* ── 家計管理ツール デザイントークン ────────────────────────────────────── */
 :root {
   /* ブランドカラー */
   --color-brand-primary: #f18840;
   --color-brand-secondary: #e07030;
+  --color-brand-gradient: linear-gradient(135deg, #f18840 0%, #e8622a 100%);
   --color-surface-default: #ffffff;
   --color-surface-subtle: #fffdf5;
 
-  /* 収支カラー（figma-tokens.json SSOT に準拠） */
+  /* 収支カラー */
   --color-expense: #f18840;
   --color-expense-light: #fff6ee;
   --color-income: #35b5a2;
   --color-income-light: #ecfaf8;
+  --color-income-gradient: linear-gradient(135deg, #35b5a2 0%, #22a090 100%);
 
   /* テキスト */
   --color-text-base: #1c1410;
@@ -32,19 +34,196 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* ボーダー（フラット方針 — カード・入力欄はボーダーのみ） */
-  --border-default: rgba(28, 20, 16, 0.12);
-  --border-strong: rgba(28, 20, 16, 0.30);
+  /* ボーダー */
+  --border-default: rgba(28, 20, 16, 0.10);
+  --border-strong: rgba(28, 20, 16, 0.25);
 
-  /* シャドウ（浮遊要素のみ hard shadow を使用。--shadow-card は廃止） */
+  /* シャドウ */
   --shadow-pop-sm: 1px 1px 0 #1c1410;
   --shadow-pop: 2px 2px 0 #1c1410;
   --shadow-pop-lg: 3px 3px 0 #1c1410;
+  --shadow-card: 0 1px 3px rgba(28, 20, 16, 0.06), 0 0 0 1px rgba(28, 20, 16, 0.06);
+  --shadow-card-hover: 0 4px 16px rgba(28, 20, 16, 0.10), 0 0 0 1px rgba(28, 20, 16, 0.07);
+  --shadow-floating: 0 8px 32px rgba(28, 20, 16, 0.14), 0 2px 8px rgba(28, 20, 16, 0.08);
+  --shadow-brand: 0 4px 20px rgba(241, 136, 64, 0.38);
+  --shadow-income: 0 4px 20px rgba(53, 181, 162, 0.30);
+
+  /* グラス効果 */
+  --glass-bg: rgba(255, 253, 245, 0.82);
+  --glass-blur: blur(20px) saturate(180%);
+
+  /* トークン追加 */
+  --color-surface-base: #fffdf5;
+  --color-surface-elevated: #ffffff;
+  --color-text-primary: #1c1410;
+  --color-text-muted: rgba(28, 20, 16, 0.45);
+  --color-caution: #f59e0b;
+  --color-danger: #f43f5e;
+  --color-danger-light: #fff1f2;
+}
+
+/* ── ベーススタイル ───────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: var(--color-surface-default);
+  background-color: var(--color-surface-subtle);
   color: var(--color-text-base);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Noto Sans JP", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   margin: 0;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── カスタムスクロールバー ──────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(28, 20, 16, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(28, 20, 16, 0.28); }
+
+/* ── 選択色 ──────────────────────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(241, 136, 64, 0.20);
+  color: #1c1410;
+}
+
+/* ── キーフレームアニメーション ──────────────────────────────────────────── */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(241, 136, 64, 0.38); }
+  50%       { box-shadow: 0 4px 32px rgba(241, 136, 64, 0.60), 0 0 0 6px rgba(241, 136, 64, 0.12); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes bounceIn {
+  0%   { opacity: 0; transform: scale(0.80); }
+  60%  { opacity: 1; transform: scale(1.04); }
+  80%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+@keyframes progressFill {
+  from { width: 0%; }
+}
+
+@keyframes numberTick {
+  0%   { transform: translateY(4px); opacity: 0; }
+  100% { transform: translateY(0);   opacity: 1; }
+}
+
+/* ── ユーティリティ ──────────────────────────────────────────────────────── */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.shadow-brand { box-shadow: var(--shadow-brand); }
+.shadow-float { box-shadow: var(--shadow-floating); }
+
+/* tabular-numsを数値に一括適用 */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* iOS風のアクティブフィードバック */
+.tap-highlight { -webkit-tap-highlight-color: transparent; }
+
+/* ヒーロー数値スタイル */
+.hero-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  font-feature-settings: "tnum" 1;
+}
+
+/* グラデーションテキスト */
+.gradient-text-brand {
+  background: var(--color-brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* FAB グロー */
+.fab-glow { animation: pulseGlow 2.4s ease-in-out infinite; }
+
+/* シマーローディング */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(28, 20, 16, 0.06) 25%,
+    rgba(28, 20, 16, 0.10) 50%,
+    rgba(28, 20, 16, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+/* カードホバー */
+.card-interactive {
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+.card-interactive:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+.card-interactive:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+
+/* ボタンリップル基盤 */
+.btn-press {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.btn-press:active { transform: scale(0.96); opacity: 0.85; }
+
+/* グラデーションプログレスバー */
+.progress-brand {
+  background: linear-gradient(90deg, #f18840, #e8622a);
+}
+.progress-income {
+  background: linear-gradient(90deg, #35b5a2, #22a090);
+}
+.progress-danger {
+  background: linear-gradient(90deg, #f87171, #f43f5e);
 }

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette } from 'lucide-react'
+import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -73,6 +73,46 @@ const prototypes: PrototypeCard[] = [
     description: 'SAFE/CAUTION/DANGER の3ステートを3パレットパターンで横並び比較。現行との対比も掲載。',
     icon: Palette,
     issue: '#133',
+    status: 'wip',
+  },
+  {
+    path: '/home-v3',
+    title: 'ホーム画面 V3 デザイン',
+    description: 'Claude Design v3 プレミアムダッシュボード。アラートバナー・寿命カード・ドロワー記録のモックアップ。',
+    icon: LayoutDashboard,
+    issue: 'sandbox',
+    status: 'wip',
+  },
+  {
+    path: '/home-v4',
+    title: 'ホーム画面 V4 デザイン（A/B 検証）',
+    description: 'V3 改善版。テンキー入力・カテゴリグリッド・今月ペースバー・日付グループタイムライン。',
+    icon: LayoutGrid,
+    issue: 'sandbox',
+    status: 'wip',
+  },
+  {
+    path: '/category-ab',
+    title: '支出カテゴリ TOP — A/B 比較',
+    description: '棒グラフ / ランキングリスト / ドーナツ+TOP3 の3パターン。メリット・デメリット付き。',
+    icon: PieChart,
+    issue: 'sandbox',
+    status: 'wip',
+  },
+  {
+    path: '/asset-outlook-ab',
+    title: '長期指標 — A/B 比較',
+    description: '資産ランウェイ / 今月の貯蓄額 / 年間ペース / 財政スコア の4パターン比較。',
+    icon: TrendingUp,
+    issue: 'sandbox',
+    status: 'wip',
+  },
+  {
+    path: '/recent-records-ab',
+    title: '最近の記録 — レイアウト比較',
+    description: 'ミニマルリスト / カード型 / タイムライン / コンパクトテーブル の4パターン比較。',
+    icon: List,
+    issue: 'sandbox',
     status: 'wip',
   },
 ]
