@@ -131,3 +131,16 @@ model PasswordResetToken {
   @@index([userId], map: "IDX_password_reset_tokens_user_id")
   @@map("password_reset_tokens")
 }
+
+// LLM 使用ログ（使用制限チェック・コスト管理用）
+model LlmUsage {
+  id           String   @id @db.VarChar(26)
+  userId       String   @db.VarChar(255) @map("user_id")
+  feature      String   @db.VarChar(50)         // "report_analysis" | "expense_parse"
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  createdAt    DateTime @default(now()) @db.DateTime(6) @map("created_at")
+
+  @@index([userId, feature, createdAt], map: "IDX_llm_usage_user_feature_created")
+  @@map("llm_usage")
+}

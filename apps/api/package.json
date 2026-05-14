@@ -20,6 +20,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
     "@asteasolutions/zod-to-openapi": "^7.3.4",
     "@budget/common": "workspace:*",
     "@hono/node-server": "^1.14.4",
