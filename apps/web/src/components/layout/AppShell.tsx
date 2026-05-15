@@ -1,5 +1,6 @@
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
+import { IdleTimerWrapper } from "./IdleTimerWrapper";
 
 type Props = {
   userName?: string;
@@ -14,6 +15,7 @@ type Props = {
 export function AppShell({ userName, children }: Props) {
   return (
     <div className="flex flex-col min-h-dvh md:flex-row bg-[#fffdf5]">
+      <IdleTimerWrapper />
       {/* PC: サイドバー / モバイル: ミニヘッダー */}
       <Header userName={userName} />
 
