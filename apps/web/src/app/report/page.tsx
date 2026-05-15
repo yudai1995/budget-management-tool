@@ -7,6 +7,7 @@ import { deleteBudgetAction } from "@/lib/actions/budget";
 import { getCategoryById, OUTGO_CATEGORIES } from "@budget/common";
 import { PeriodSelector } from "@/components/report/PeriodSelector";
 import { MonthlyComparisonCard } from "@/components/report/MonthlyComparisonCard";
+import { CategoryDonutChart } from "@/components/report/CategoryDonutChart";
 import { AppShell } from "@/components/layout/AppShell";
 import { calcMonthlyComparison } from "@budget/common";
 import type { BudgetResponse } from "@budget/api-client";
@@ -136,38 +137,17 @@ async function ReportSection({ period }: { period: Period }) {
         <MonthlyComparisonCard data={comparisonData} />
       )}
 
-      {/* カテゴリ別バーチャート（支出） */}
+      {/* カテゴリ別ドーナツチャート（支出） */}
       {categoryBreakdown.length > 0 && (
         <section>
           <h2 className="mb-3 text-sm font-extrabold text-[#1c1410]">
             支出カテゴリ内訳
           </h2>
           <div
-            className="flex flex-col gap-3 rounded-2xl border border-[#1c1410]/12 bg-white p-4"
+            className="rounded-2xl border border-[#1c1410]/12 bg-white p-4"
             style={{ boxShadow: "var(--shadow-card)" }}
           >
-            {categoryBreakdown.map((cat) => (
-              <div key={cat.name} className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-sm">
-                  <span className="flex items-center gap-1.5">
-                    <span
-                      className="inline-block h-3 w-3 rounded-full border border-[#1c1410]/10"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <span className="font-bold text-[#1c1410]">{cat.name}</span>
-                  </span>
-                  <span className="font-bold text-[#1c1410]/60">
-                    ¥{cat.amount.toLocaleString()} ({cat.pct}%)
-                  </span>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full border border-[#e8c8b0] bg-[#fffdf5]">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${cat.pct}%`, backgroundColor: cat.color }}
-                  />
-                </div>
-              </div>
-            ))}
+            <CategoryDonutChart slices={categoryBreakdown} />
           </div>
         </section>
       )}
