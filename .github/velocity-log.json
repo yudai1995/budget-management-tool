@@ -889,11 +889,51 @@
       "goal": "スプリントプロセスを強化し、フロントエンドとワークフローの技術的負債を解消する",
       "hypothesis": "sprint-protocol 改善・コンポーネント廃止・GH Actions 整理により、開発可視性と保守性が向上する",
       "planned_points": 9,
-      "total_points": 1,
+      "total_points": 9,
       "pbis": [
+        {
+          "issue": 209,
+          "title": "[Retro Action] velocity-log.json SprintエントリをPRマージ後に手動補記する運用をprotocolに明記する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 309
+        },
+        {
+          "issue": 236,
+          "title": "chore: GH Actions の責務整理・重複解消・PAT 依存の解消",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 309
+        },
+        {
+          "issue": 275,
+          "title": "chore: ログイン画面の暗号化説明ツールチップとバッジを削除する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 309
+        },
+        {
+          "issue": 303,
+          "title": "tech-debt: XDayDisplay コンポーネントを完全廃止する",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 309
+        },
         {
           "issue": 307,
           "title": "[Retro Action] sprint agent フローで in-progress ラベル付与後に GH Actions 完了を待機する手順を追加する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 309
+        },
+        {
+          "issue": 308,
+          "title": "[Retro Action] スプリントクロージングチェックリストにレトロ Issue 作成を必須ステップとして明記する",
           "size": "XS",
           "points": 1,
           "cycle_time_hours": null,
