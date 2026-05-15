@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 9,
     "note": "Sprint #13-18 実績分析により 6pt → 9pt に改定（2026-05-15）。直近3スプリント平均 5.3pt・ピーク 8pt（Sprint #17）。AI 実装サイクルは推定の 1/10 以下で完了しており、M×3 + S×1 程度が 1 スプリントの適切な上限。上限超過時はユーザーに確認して分割する。",
-    "next_sprint_number": 26
+    "next_sprint_number": 27
   },
   "sprints": [
     {
@@ -714,7 +714,7 @@
         },
         {
           "issue": 289,
-          "title": "fix: HomeV4ドロワーのテンキーサイズ縮小・submit常時表示・iOS zoom抑制",
+          "title": "fix: HomeV4ドロワーのテンキーサイズ縮small・submit常時表示・iOS zoom抑制",
           "pbi_type": "fix",
           "size": "S",
           "points": 2,
@@ -1036,21 +1036,44 @@
     {
       "sprint_number": 25,
       "date": "2026-05-15",
-      "total_points": 0,
+      "goal": "onboarding→setup リネーム・初回設定フラグ DB 永続化・設定ページ家計基本設定を整備する",
+      "hypothesis": "設定フローの名称整理と DB 永続化により別端末でも継続利用できる基盤が整い、設定ページから家計基本情報を後から編集できるようになる",
+      "planned_points": 9,
+      "total_points": 9,
       "pbis": [
         {
           "issue": 334,
           "title": "refactor: 「onboarding」を「初回設定（/setup）」にリネームする",
-          "size": "unknown",
-          "points": null,
+          "pbi_type": "tech-debt",
+          "size": "S",
+          "points": 2,
           "cycle_time_hours": null,
           "pr": 338
         },
         {
+          "issue": 335,
+          "title": "refactor: ルート・実装を「onboarding」→「setup（初回設定）」にリネームする",
+          "pbi_type": "tech-debt",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": 338
+        },
+        {
+          "issue": 336,
+          "title": "feat: 初回設定完了フラグを DB で管理し、セッション間で引き継げるようにする（スキーマ・API）",
+          "pbi_type": "feature",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": null,
+          "pr": 339
+        },
+        {
           "issue": 333,
           "title": "feat: 設定ページに家計基本設定（給料日・月収・固定費・総資産）の編集セクションを追加する",
-          "size": "unknown",
-          "points": null,
+          "pbi_type": "feature",
+          "size": "S",
+          "points": 2,
           "cycle_time_hours": null,
           "pr": 340
         }
