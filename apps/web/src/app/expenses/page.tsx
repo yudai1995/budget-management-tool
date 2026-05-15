@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { getExpenses } from "@/lib/api/expense";
 import { ExpenseList } from "@/components/expense/ExpenseList";
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
   title: "支出一覧 | 家計管理",
 };
 
-async function ExpenseListSection() {
+const PAGE_SIZE = 20;
+
+async function ExpenseListSection({ limit }: { limit: number }) {
   let data;
   try {
     data = await getExpenses();
@@ -23,17 +26,20 @@ async function ExpenseListSection() {
     throw err;
   }
 
-  const expenses = data.expense ?? [];
-  const totalOutgo = expenses
+  const all = data.expense ?? [];
+  const totalOutgo = all
     .filter((e) => e.balanceType === 0)
     .reduce((sum, e) => sum + e.amount, 0);
-  const totalIncome = expenses
+  const totalIncome = all
     .filter((e) => e.balanceType === 1)
     .reduce((sum, e) => sum + e.amount, 0);
 
+  const visible = all.slice(0, limit);
+  const remaining = all.length - visible.length;
+
   return (
     <div className="flex flex-col gap-4">
-      {/* サマリー */}
+      {/* サマリー（全件集計） */}
       <div className="grid grid-cols-2 gap-3">
         <div
           className="rounded-2xl border border-[#1c1410]/12 bg-white p-4"
@@ -60,15 +66,32 @@ async function ExpenseListSection() {
         className="rounded-2xl border border-[#1c1410]/12 bg-white px-4"
         style={{ boxShadow: "var(--shadow-card)" }}
       >
-        <ExpenseList expenses={expenses} />
+        <ExpenseList expenses={visible} />
       </div>
+
+      {/* もっと見るボタン */}
+      {remaining > 0 && (
+        <Link
+          href={`/expenses?limit=${limit + PAGE_SIZE}`}
+          className="flex w-full items-center justify-center rounded-2xl border border-[#e8c8b0] bg-white py-3 text-sm font-bold text-[#f18840] transition-colors hover:bg-[#fff6ee]"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          もっと見る（残り{remaining}件）
+        </Link>
+      )}
     </div>
   );
 }
 
-export default async function ExpensesPage() {
+export default async function ExpensesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ limit?: string }>;
+}) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("user_id")?.value ?? "Guest";
+  const { limit: rawLimit } = await searchParams;
+  const limit = Math.max(PAGE_SIZE, parseInt(rawLimit ?? "", 10) || PAGE_SIZE);
 
   return (
     <AppShell userName={userId}>
@@ -78,18 +101,17 @@ export default async function ExpensesPage() {
         {/* 新規登録フォーム */}
         <ExpenseCreateForm userId={userId} />
 
-      {/* 支出一覧（Server Component + Suspense でストリーミング） */}
-      <Suspense
-        fallback={
-          <div className="py-12 text-center text-sm font-medium text-[#1c1410]/40">
-            読み込み中...
-          </div>
-        }
-      >
-        <ExpenseListSection />
-      </Suspense>
+        {/* 支出一覧（Server Component + Suspense でストリーミング） */}
+        <Suspense
+          fallback={
+            <div className="py-12 text-center text-sm font-medium text-[#1c1410]/40">
+              読み込み中...
+            </div>
+          }
+        >
+          <ExpenseListSection limit={limit} />
+        </Suspense>
       </div>
     </AppShell>
   );
-
 }
