@@ -26,7 +26,7 @@ function formatAmount(amount: number): string {
     return `¥${amount.toLocaleString("ja-JP")}`;
 }
 
-export function OnboardingWizard() {
+export function InitialSetupWizard() {
     const [step, setStep] = useState(0);
     const [data, setData] = useState<FormData>(INITIAL_DATA);
     const [isPending, setIsPending] = useState(false);

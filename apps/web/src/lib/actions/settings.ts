@@ -5,8 +5,8 @@ import { redirect } from "next/navigation";
 import { putSettings } from "@/lib/api/settings";
 import type { UpsertUserSettingsBody } from "@budget/api-client";
 
-/** オンボーディング完了 Cookie の有効期間（1年） */
-const ONBOARDING_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
+/** 初回設定完了 Cookie の有効期間（1年） */
+const SETUP_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
 export type SettingsActionState = {
   error: string | null;
@@ -14,7 +14,7 @@ export type SettingsActionState = {
 };
 
 /**
- * オンボーディング用: ユーザー設定を保存し、完了 Cookie をセットしてホームへリダイレクト。
+ * 初回設定用: ユーザー設定を保存し、完了 Cookie をセットしてホームへリダイレクト。
  * エラー時は { error: string } を返す（redirect は try/catch 外で実行する Next.js の作法に従う）。
  */
 export async function saveUserSettingsAction(
@@ -23,11 +23,11 @@ export async function saveUserSettingsAction(
     try {
         await putSettings(data);
         const cookieStore = await cookies();
-        cookieStore.set("onboarding_completed", "1", {
+        cookieStore.set("setup_completed", "1", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: ONBOARDING_COOKIE_MAX_AGE,
+            maxAge: SETUP_COOKIE_MAX_AGE,
             path: "/",
         });
     } catch (e) {

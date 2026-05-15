@@ -16,18 +16,18 @@ async function getPublicKey(): Promise<CryptoKey | null> {
   return cachedPublicKey;
 }
 
-/** オンボーディングをスキップしてよいルート（設定・オンボーディング自身） */
-const ONBOARDING_EXEMPT_PATHS = ["/onboarding", "/settings"];
+/** 初回設定をスキップしてよいルート（設定・初回設定自身） */
+const SETUP_EXEMPT_PATHS = ["/setup", "/settings"];
 
-/** 認証済みユーザーに対してオンボーディング未完了チェックを行い、必要ならリダイレクトを返す */
-function getOnboardingRedirect(request: NextRequest): NextResponse | null {
-  const isCompleted = request.cookies.has("onboarding_completed");
+/** 認証済みユーザーに対して初回設定未完了チェックを行い、必要ならリダイレクトを返す */
+function getSetupRedirect(request: NextRequest): NextResponse | null {
+  const isCompleted = request.cookies.has("setup_completed");
   if (isCompleted) return null;
-  const isExempt = ONBOARDING_EXEMPT_PATHS.some((p) =>
+  const isExempt = SETUP_EXEMPT_PATHS.some((p) =>
     request.nextUrl.pathname.startsWith(p),
   );
   if (isExempt) return null;
-  return NextResponse.redirect(new URL("/onboarding", request.url));
+  return NextResponse.redirect(new URL("/setup", request.url));
 }
 
 export async function middleware(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
   if (accessToken && publicKey) {
     try {
       await jwtVerify(accessToken, publicKey, { algorithms: [ALGORITHM] });
-      return getOnboardingRedirect(request) ?? NextResponse.next();
+      return getSetupRedirect(request) ?? NextResponse.next();
     } catch {
       // 期限切れ等 → リフレッシュを試みる
     }
@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
           };
 
         const secure = process.env.NODE_ENV === "production";
-        const response = getOnboardingRedirect(request) ?? NextResponse.next();
+        const response = getSetupRedirect(request) ?? NextResponse.next();
 
         response.cookies.set("access_token", newAccess, {
           httpOnly: true,
@@ -95,6 +95,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // /register, /forgot-password は公開ルートのため除外
-  // /onboarding は認証が必要なため含める
-  matcher: ["/expenses/:path*", "/report", "/report/:path*", "/settings", "/settings/:path*", "/analysis", "/analysis/:path*", "/onboarding"],
+  // /setup は認証が必要なため含める
+  matcher: ["/expenses/:path*", "/report", "/report/:path*", "/settings", "/settings/:path*", "/analysis", "/analysis/:path*", "/setup"],
 };

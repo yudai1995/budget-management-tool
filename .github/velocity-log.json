@@ -1001,7 +1001,7 @@
           "pbi_type": "feature",
           "size": "XS",
           "points": 1,
-          "cycle_time_hours": 1.0,
+          "cycle_time_hours": 1,
           "pr": 327
         },
         {
@@ -1019,7 +1019,7 @@
           "pbi_type": "feature",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": 2.0,
+          "cycle_time_hours": 2,
           "pr": 329
         },
         {
@@ -1028,8 +1028,23 @@
           "pbi_type": "feature",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": 1.0,
+          "cycle_time_hours": 1,
           "pr": 331
+        }
+      ]
+    },
+    {
+      "sprint_number": 25,
+      "date": "2026-05-15",
+      "total_points": 0,
+      "pbis": [
+        {
+          "issue": 334,
+          "title": "refactor: 「onboarding」を「初回設定（/setup）」にリネームする",
+          "size": "unknown",
+          "points": null,
+          "cycle_time_hours": null,
+          "pr": 338
         }
       ]
     }
