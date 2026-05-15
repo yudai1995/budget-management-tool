@@ -984,7 +984,7 @@
       "goal": "当たり前品質の基盤を固める（セキュリティ・エラーハンドリング・UX動線）",
       "hypothesis": "セッションタイムアウト・エラー画面・編集動線の整備により、ユーザーが安心して使えるプロダクトの土台が整う",
       "planned_points": 9,
-      "total_points": null,
+      "total_points": 9,
       "pbis": [
         {
           "issue": 324,
@@ -992,8 +992,8 @@
           "pbi_type": "feature",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 1.5,
+          "pr": 330
         },
         {
           "issue": 325,
@@ -1001,8 +1001,8 @@
           "pbi_type": "feature",
           "size": "XS",
           "points": 1,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 1.0,
+          "pr": 327
         },
         {
           "issue": 318,
@@ -1010,8 +1010,8 @@
           "pbi_type": "fix",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 0.5,
+          "pr": 328
         },
         {
           "issue": 326,
@@ -1019,8 +1019,8 @@
           "pbi_type": "feature",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 2.0,
+          "pr": 329
         },
         {
           "issue": 322,
@@ -1028,8 +1028,8 @@
           "pbi_type": "feature",
           "size": "S",
           "points": 2,
-          "cycle_time_hours": null,
-          "pr": null
+          "cycle_time_hours": 1.0,
+          "pr": 331
         }
       ]
     }
