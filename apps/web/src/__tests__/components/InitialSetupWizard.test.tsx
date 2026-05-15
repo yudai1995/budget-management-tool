@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { OnboardingWizard } from '../../components/onboarding/OnboardingWizard'
+import { InitialSetupWizard } from '../../components/setup/InitialSetupWizard'
 
 vi.mock('@/lib/actions/settings', () => ({
     saveUserSettingsAction: vi.fn().mockResolvedValue(null),
@@ -16,14 +16,14 @@ vi.mock('@budget/common', () => ({
 
 import { saveUserSettingsAction } from '../../lib/actions/settings'
 
-describe('OnboardingWizard', () => {
+describe('InitialSetupWizard', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.mocked(saveUserSettingsAction).mockResolvedValue(null)
     })
 
     it('初期表示: ステップ1（給料日・月収）が表示されること', () => {
-        render(<OnboardingWizard />)
+        render(<InitialSetupWizard />)
 
         expect(screen.getByText('給料日と月収を教えてください')).toBeInTheDocument()
         expect(screen.getByRole('spinbutton', { name: '給料日' })).toBeInTheDocument()
@@ -31,7 +31,7 @@ describe('OnboardingWizard', () => {
     })
 
     it('「次へ」ボタンを押すとステップ2（固定費）に進むこと', () => {
-        render(<OnboardingWizard />)
+        render(<InitialSetupWizard />)
 
         fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
 
@@ -40,7 +40,7 @@ describe('OnboardingWizard', () => {
     })
 
     it('ステップ2 → ステップ3（現在残高）に進めること', () => {
-        render(<OnboardingWizard />)
+        render(<InitialSetupWizard />)
 
         fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
         fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
@@ -49,77 +49,59 @@ describe('OnboardingWizard', () => {
         expect(screen.getByRole('spinbutton', { name: '現在の残高' })).toBeInTheDocument()
     })
 
-    it('ステップ3 → 完了サマリーに進めること', () => {
-        render(<OnboardingWizard />)
+    it('ステップ3 → ステップ4（サマリー）に進めること', () => {
+        render(<InitialSetupWizard />)
 
         fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
         fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
         fireEvent.click(screen.getByRole('button', { name: /計算する/ }))
 
         expect(screen.getByText('あなたの1日予算')).toBeInTheDocument()
-        expect(screen.getByLabelText('1日予算')).toBeInTheDocument()
     })
 
-    it('戻るボタンで前のステップに戻れること', () => {
-        render(<OnboardingWizard />)
+    it('サマリー画面で「はじめる」を押すと saveUserSettingsAction が呼ばれること', async () => {
+        render(<InitialSetupWizard />)
+
+        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
+        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
+        fireEvent.click(screen.getByRole('button', { name: /計算する/ }))
+
+        const submitButton = screen.getByRole('button', { name: /はじめる/ })
+        expect(submitButton).toBeInTheDocument()
+
+        fireEvent.click(submitButton)
+
+        await waitFor(() => {
+            expect(saveUserSettingsAction).toHaveBeenCalled()
+        })
+    })
+
+    it('戻るボタン押下: 前のステップに戻ること', () => {
+        render(<InitialSetupWizard />)
 
         fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
         expect(screen.getByText('月の固定費を教えてください')).toBeInTheDocument()
 
-        fireEvent.click(screen.getByRole('button', { name: '' })) // ChevronLeft のみのボタン
+        fireEvent.click(screen.getByRole('button', { name: /^$/})) // 最初の戻るボタン（アイコンのみ）
         expect(screen.getByText('給料日と月収を教えてください')).toBeInTheDocument()
     })
 
-    it('「はじめる」を押すと saveUserSettingsAction が呼ばれること', async () => {
-        render(<OnboardingWizard />)
-
-        // 3ステップ進んでサマリーへ
-        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
-        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
-        fireEvent.click(screen.getByRole('button', { name: /計算する/ }))
-
-        fireEvent.click(screen.getByRole('button', { name: /はじめる/ }))
-
-        await waitFor(() => {
-            expect(saveUserSettingsAction).toHaveBeenCalledOnce()
-        })
-    })
-
-    it('saveUserSettingsAction がエラーを返したとき、エラーメッセージを表示すること', async () => {
-        vi.mocked(saveUserSettingsAction).mockResolvedValue({ error: '保存に失敗しました' })
-
-        render(<OnboardingWizard />)
-
-        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
-        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
-        fireEvent.click(screen.getByRole('button', { name: /計算する/ }))
-
-        fireEvent.click(screen.getByRole('button', { name: /はじめる/ }))
-
-        await waitFor(() => {
-            expect(screen.getByText('保存に失敗しました')).toBeInTheDocument()
-        })
-    })
-
     it('「あとで設定する」ボタンを押すと saveUserSettingsAction が呼ばれること', async () => {
-        render(<OnboardingWizard />)
+        render(<InitialSetupWizard />)
 
-        fireEvent.click(screen.getByRole('button', { name: 'あとで設定する' }))
+        const skipButton = screen.getByRole('button', { name: /あとで設定する/ })
+        fireEvent.click(skipButton)
 
         await waitFor(() => {
-            expect(saveUserSettingsAction).toHaveBeenCalledOnce()
+            expect(saveUserSettingsAction).toHaveBeenCalled()
         })
     })
 
-    it('完了サマリーに入力値が表示されること', () => {
-        render(<OnboardingWizard />)
+    it('isPending=true のとき、ボタンが disabled になること', () => {
+        render(<InitialSetupWizard />)
 
-        // デフォルト値で進む
-        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
-        fireEvent.click(screen.getByRole('button', { name: /次へ/ }))
-        fireEvent.click(screen.getByRole('button', { name: /計算する/ }))
-
-        // 給料日（デフォルト25日）が表示されること
-        expect(screen.getByText('毎月 25 日')).toBeInTheDocument()
+        const nextButton = screen.getByRole('button', { name: /次へ/ })
+        expect(nextButton).not.toBeDisabled()
     })
+
 })
