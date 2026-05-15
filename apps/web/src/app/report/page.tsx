@@ -1,13 +1,12 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { X } from "lucide-react";
 import { getBudgets } from "@/lib/api/budget";
-import { deleteBudgetAction } from "@/lib/actions/budget";
-import { getCategoryById, OUTGO_CATEGORIES } from "@budget/common";
+import { OUTGO_CATEGORIES } from "@budget/common";
 import { PeriodSelector } from "@/components/report/PeriodSelector";
 import { MonthlyComparisonCard } from "@/components/report/MonthlyComparisonCard";
 import { CategoryDonutChart } from "@/components/report/CategoryDonutChart";
+import { ReportDetailItem } from "@/components/report/ReportDetailItem";
 import { AppShell } from "@/components/layout/AppShell";
 import { calcMonthlyComparison } from "@budget/common";
 import type { BudgetResponse } from "@budget/api-client";
@@ -186,51 +185,9 @@ async function ReportSection({ period }: { period: Period }) {
                   className="divide-y divide-[#e8c8b0] rounded-2xl border border-[#1c1410]/12 bg-white overflow-hidden"
                   style={{ boxShadow: "var(--shadow-card)" }}
                 >
-                  {items.map((item) => {
-                    const category = getCategoryById(item.balanceType, item.categoryId);
-                    const deleteAction = deleteBudgetAction.bind(null, item.id);
-                    const isIncome = item.balanceType === 1;
-                    return (
-                      <li
-                        key={item.id}
-                        className="flex items-center justify-between gap-3 px-4 py-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          {category && (
-                            <span
-                              className="h-3 w-3 flex-shrink-0 rounded-full border border-[#1c1410]/10"
-                              style={{ backgroundColor: category.color }}
-                            />
-                          )}
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold text-[#1c1410]">
-                              {category?.name ?? "未分類"}
-                            </span>
-                            {item.content && (
-                              <span className="text-xs font-medium text-[#1c1410]/40">{item.content}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span
-                            className="text-sm font-extrabold tabular-nums"
-                            style={{ color: isIncome ? "var(--color-income)" : "var(--color-expense)" }}
-                          >
-                            {isIncome ? "+" : "-"}¥{item.amount.toLocaleString()}
-                          </span>
-                          <form action={deleteAction}>
-                            <button
-                              type="submit"
-                              aria-label="削除"
-                              className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e8c8b0] bg-white text-[#1c1410]/40 transition-colors hover:border-[#f87171] hover:bg-[#fee2e2] hover:text-[#f87171]"
-                            >
-                              <X size={12} />
-                            </button>
-                          </form>
-                        </div>
-                      </li>
-                    );
-                  })}
+                  {items.map((item) => (
+                    <ReportDetailItem key={item.id} item={item} />
+                  ))}
                 </ul>
               </section>
             );
