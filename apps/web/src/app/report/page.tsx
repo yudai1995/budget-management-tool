@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { X } from "lucide-react";
 import { getBudgets } from "@/lib/api/budget";
 import { deleteBudgetAction } from "@/lib/actions/budget";
-import { getCategoryById, OUTGO_CATEGORIES } from "@/lib/constants/categories";
+import { getCategoryById, OUTGO_CATEGORIES } from "@budget/common";
 import { PeriodSelector } from "@/components/report/PeriodSelector";
 import { MonthlyComparisonCard } from "@/components/report/MonthlyComparisonCard";
 import { AppShell } from "@/components/layout/AppShell";

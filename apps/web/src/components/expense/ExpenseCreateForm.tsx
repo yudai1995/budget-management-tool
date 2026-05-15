@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { createExpenseAction } from "@/lib/actions/expense";
 import type { ExpenseActionState } from "@/lib/actions/expense";
-import { getCategoriesByType } from "@/lib/constants/categories";
+import { getCategoriesByType } from "@budget/common";
 
 type Props = {
   /** ログイン中のユーザー ID */
@@ -116,7 +116,9 @@ export function ExpenseCreateForm({ userId, defaultDate, defaultBalanceType = 0 
             style={{ "--tw-ring-color": accentColor } as React.CSSProperties}
           >
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
+              <option key={cat.id} value={cat.id}>
+                {cat.name}{cat.badge ? ` [${cat.badge}]` : ''}
+              </option>
             ))}
           </select>
         </div>
