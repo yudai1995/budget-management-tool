@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 9,
     "note": "Sprint #13-18 実績分析により 6pt → 9pt に改定（2026-05-15）。直近3スプリント平均 5.3pt・ピーク 8pt（Sprint #17）。AI 実装サイクルは推定の 1/10 以下で完了しており、M×3 + S×1 程度が 1 スプリントの適切な上限。上限超過時はユーザーに確認して分割する。",
-    "next_sprint_number": 24
+    "next_sprint_number": 25
   },
   "sprints": [
     {
@@ -974,6 +974,61 @@
           "size": "XS",
           "points": 1,
           "cycle_time_hours": 0.1,
+          "pr": null
+        }
+      ]
+    },
+    {
+      "sprint_number": 24,
+      "date": "2026-05-15",
+      "goal": "当たり前品質の基盤を固める（セキュリティ・エラーハンドリング・UX動線）",
+      "hypothesis": "セッションタイムアウト・エラー画面・編集動線の整備により、ユーザーが安心して使えるプロダクトの土台が整う",
+      "planned_points": 9,
+      "total_points": null,
+      "pbis": [
+        {
+          "issue": 324,
+          "title": "feat: セッションタイムアウト（一定時間非操作で自動ログアウト）",
+          "pbi_type": "feature",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 325,
+          "title": "feat: エラー画面の整備（404 / 500）",
+          "pbi_type": "feature",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 318,
+          "title": "fix: ヘッダーアイコンの不要な角丸CSS除去 & 不要再レンダリング抑止",
+          "pbi_type": "fix",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 326,
+          "title": "feat: レポートページの明細から支出を直接編集できるようにする",
+          "pbi_type": "feature",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
+          "pr": null
+        },
+        {
+          "issue": 322,
+          "title": "feat: 支出一覧のページネーション",
+          "pbi_type": "feature",
+          "size": "S",
+          "points": 2,
+          "cycle_time_hours": null,
           "pr": null
         }
       ]
