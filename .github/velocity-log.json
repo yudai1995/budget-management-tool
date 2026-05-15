@@ -889,8 +889,17 @@
       "goal": "スプリントプロセスを強化し、フロントエンドとワークフローの技術的負債を解消する",
       "hypothesis": "sprint-protocol 改善・コンポーネント廃止・GH Actions 整理により、開発可視性と保守性が向上する",
       "planned_points": 9,
-      "total_points": 0,
-      "pbis": []
+      "total_points": 1,
+      "pbis": [
+        {
+          "issue": 307,
+          "title": "[Retro Action] sprint agent フローで in-progress ラベル付与後に GH Actions 完了を待機する手順を追加する",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": null,
+          "pr": 309
+        }
+      ]
     }
   ]
 }
