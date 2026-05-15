@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 9,
     "note": "Sprint #13-18 実績分析により 6pt → 9pt に改定（2026-05-15）。直近3スプリント平均 5.3pt・ピーク 8pt（Sprint #17）。AI 実装サイクルは推定の 1/10 以下で完了しており、M×3 + S×1 程度が 1 スプリントの適切な上限。上限超過時はユーザーに確認して分割する。",
-    "next_sprint_number": 23
+    "next_sprint_number": 24
   },
   "sprints": [
     {
@@ -942,16 +942,39 @@
       ]
     },
     {
+      "sprint_number": 23,
       "date": "2026-05-15",
-      "total_points": 3,
+      "goal": "カテゴリ体系を刷新してプロダクト価値を高め、行動変容を促す UI を実装する",
+      "hypothesis": "行動変容10分類と円グラフ可視化により、ユーザーが節約意識を持って支出を記録できるようになる",
+      "planned_points": 9,
+      "total_points": 9,
       "pbis": [
+        {
+          "issue": 237,
+          "title": "[Feature] カテゴリ体系を行動変容を促す10分類に刷新し packages/common へ SSOT 化する",
+          "pbi_type": "feature",
+          "size": "L",
+          "points": 5,
+          "cycle_time_hours": null,
+          "pr": 312
+        },
         {
           "issue": 86,
           "title": "[Feature] カテゴリ別月次支出の円グラフ・棒グラフを追加する",
+          "pbi_type": "feature",
           "size": "M",
           "points": 3,
           "cycle_time_hours": 14.2,
           "pr": 313
+        },
+        {
+          "issue": 311,
+          "title": "[Retro Action] 次スプリントで cycle_time_hours が記録されたか確認してコメントする",
+          "pbi_type": "chore",
+          "size": "XS",
+          "points": 1,
+          "cycle_time_hours": 0.1,
+          "pr": null
         }
       ]
     }
