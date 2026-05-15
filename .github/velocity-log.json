@@ -17,7 +17,7 @@
     "pbi_type_rules": "fix:/bug: prefix → fix / type:tech-debt label → tech-debt / type:chore or design label → chore / otherwise → feature",
     "initial_velocity_estimate": 9,
     "note": "Sprint #13-18 実績分析により 6pt → 9pt に改定（2026-05-15）。直近3スプリント平均 5.3pt・ピーク 8pt（Sprint #17）。AI 実装サイクルは推定の 1/10 以下で完了しており、M×3 + S×1 程度が 1 スプリントの適切な上限。上限超過時はユーザーに確認して分割する。",
-    "next_sprint_number": 22
+    "next_sprint_number": 23
   },
   "sprints": [
     {
@@ -882,6 +882,15 @@
           "pr": 304
         }
       ]
+    },
+    {
+      "sprint_number": 22,
+      "date": "2026-05-15",
+      "goal": "スプリントプロセスを強化し、フロントエンドとワークフローの技術的負債を解消する",
+      "hypothesis": "sprint-protocol 改善・コンポーネント廃止・GH Actions 整理により、開発可視性と保守性が向上する",
+      "planned_points": 9,
+      "total_points": 0,
+      "pbis": []
     }
   ]
 }
