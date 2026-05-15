@@ -53,7 +53,6 @@ export async function createExpenseAction(
     return { error: "支出の登録に失敗しました", success: false };
   }
 
-  // ホームページの XDayDisplay も再計算するため "/" も revalidate する
   revalidatePath("/");
   revalidatePath("/expenses");
   return { error: null, success: true };

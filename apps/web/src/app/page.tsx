@@ -8,7 +8,6 @@ import { getSettings } from "@/lib/api/settings";
 import { ApiError } from "@/lib/api/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { ExpenseCreateForm } from "@/components/expense/ExpenseCreateForm";
-import { XDayDisplay } from "@/components/dashboard/XDayDisplay";
 import { MonthlyOverviewCard } from "@/components/dashboard/MonthlyOverviewCard";
 import { RecentExpenseList } from "@/components/dashboard/RecentExpenseList";
 import { DailyBudgetCard } from "@/components/dashboard/DailyBudgetCard";
@@ -17,50 +16,12 @@ export const metadata: Metadata = {
   title: "ホーム | 家計管理",
 };
 
-/** 支出リストからXデー算出用の集計値を計算 */
-function computeXDayInputs(expenses: { balanceType: number; amount: number; date: string }[]) {
+/** 本日の支出合計を計算 */
+function computeTodayExpense(expenses: { balanceType: number; amount: number; date: string }[]): number {
   const todayStr = new Date().toISOString().slice(0, 10);
-  const yesterdayStr = new Date(Date.now() - 86400_000).toISOString().slice(0, 10);
-
-  const todayExpense = expenses
+  return expenses
     .filter((e) => e.balanceType === 0 && e.date === todayStr)
     .reduce((s, e) => s + e.amount, 0);
-
-  const yesterdayExpense = expenses
-    .filter((e) => e.balanceType === 0 && e.date === yesterdayStr)
-    .reduce((s, e) => s + e.amount, 0);
-
-  // 完封連続日数: 今日から遡って支出ゼロの日が続く日数
-  const expenseDates = new Set(
-    expenses.filter((e) => e.balanceType === 0 && e.amount > 0).map((e) => e.date)
-  );
-  let zeroStreakDays = 0;
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
-    if (expenseDates.has(d)) break;
-    zeroStreakDays++;
-  }
-
-  // 連続記録日数: 今日から遡って何らかの記録がある日が続く日数
-  const allRecordDates = new Set(expenses.map((e) => e.date));
-  let recordingStreak = 0;
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
-    if (!allRecordDates.has(d)) break;
-    recordingStreak++;
-  }
-
-  // 直近30日の日次平均支出B（実績ベース）
-  const cutoff = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
-  const recent30 = expenses.filter((e) => e.balanceType === 0 && e.date >= cutoff);
-  const recordedDates = new Set(recent30.map((e) => e.date));
-  const recordedDays = recordedDates.size;
-  const avgDailyExpense =
-    recordedDays > 0
-      ? recent30.reduce((s, e) => s + e.amount, 0) / recordedDays
-      : 0;
-
-  return { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays, recordingStreak };
 }
 
 async function DashboardContent({ userId }: { userId: string }) {
@@ -95,8 +56,7 @@ async function DashboardContent({ userId }: { userId: string }) {
     fixedExpenses: settingsData?.fixedExpenses ?? 0,
   };
 
-  const { todayExpense, yesterdayExpense, zeroStreakDays, avgDailyExpense, recordedDays, recordingStreak } =
-    computeXDayInputs(expenses);
+  const todayExpense = computeTodayExpense(expenses);
 
   // 1日予算を算出（設定が揃っている場合のみ）
   const dailyBudgetResult =
@@ -116,11 +76,10 @@ async function DashboardContent({ userId }: { userId: string }) {
           1. 今日使えるお金（主要指標 → 行動変容の即時フィードバック）
           2. 今月の収支サマリー（現状把握）
           3. クイック入力（スクロールなしで操作可能）
-          4. 家計の寿命（補助指標 → 段階的廃止予定）
-          5. 最近の記録5件
+          4. 最近の記録5件
 
         Desktop (lg): 2-column
-          Left: 今日使えるお金 + 今月の収支 + 家計の寿命
+          Left: 今日使えるお金 + 今月の収支
           Right: クイック入力 + 最近の記録
       */}
       {/* 今日使えるお金: 全幅で最上位に配置 */}
@@ -132,20 +91,6 @@ async function DashboardContent({ userId }: { userId: string }) {
         {/* 左カラム（desktop）/ 先頭カード（mobile） */}
         <div className="flex flex-col gap-4">
           <MonthlyOverviewCard expenses={expenses} />
-          {/* 家計の寿命: 段階的廃止フェーズ1 — 表示は維持するが priority を下げる */}
-          {/* opacity-80 は削除: XDayDisplay の SetupModal バックドロップが透明化する原因となるため */}
-          <div className="lg:block">
-            <XDayDisplay
-              todayExpense={todayExpense}
-              yesterdayExpense={yesterdayExpense}
-              zeroStreakDays={zeroStreakDays}
-              avgDailyExpense={avgDailyExpense}
-              recordedDays={recordedDays}
-              recordingStreak={recordingStreak}
-              initialAssets={settings.totalAssets}
-              initialIncome={settings.monthlyIncome}
-            />
-          </div>
         </div>
 
         {/* 右カラム（desktop）/ 後続カード（mobile） */}
