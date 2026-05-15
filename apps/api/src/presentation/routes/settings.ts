@@ -73,6 +73,7 @@ export function createSettingsRoutes({
                 monthlyIncome: settings?.monthlyIncome ?? 0,
                 paydayDay: settings?.paydayDay ?? 25,
                 fixedExpenses: settings?.fixedExpenses ?? 0,
+                initialSetupCompleted: settings?.initialSetupCompleted ?? false,
             },
             200
         );
@@ -80,13 +81,14 @@ export function createSettingsRoutes({
 
     app.openapi(upsertUserSettingsRoute, async (c) => {
         const userId = c.get('userId');
-        const { totalAssets, monthlyIncome, paydayDay, fixedExpenses } = c.req.valid('json');
+        const { totalAssets, monthlyIncome, paydayDay, fixedExpenses, initialSetupCompleted } = c.req.valid('json');
         const result = await upsertUserSettingsUseCase.execute({
             userId,
             totalAssets,
             monthlyIncome,
             paydayDay,
             fixedExpenses,
+            initialSetupCompleted,
         });
         if (!result.ok) {
             return c.json({ result: 'error' as const, message: result.error.message }, result.error.statusCode as 400);
@@ -97,6 +99,7 @@ export function createSettingsRoutes({
                 monthlyIncome: result.value.monthlyIncome,
                 paydayDay: result.value.paydayDay,
                 fixedExpenses: result.value.fixedExpenses,
+                initialSetupCompleted: result.value.initialSetupCompleted,
             },
             200
         );

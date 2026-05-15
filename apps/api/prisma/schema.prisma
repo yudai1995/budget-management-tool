@@ -104,16 +104,17 @@ model UserSecurityAnswer {
   @@map("user_security_answers")
 }
 
-// ユーザー設定（総資産・月次収入・給料日・固定費）
+// ユーザー設定（総資産・月次収入・給料日・固定費・初回設定完了フラグ）
 model UserSettings {
-  id             String   @id @db.VarChar(26)
-  userId         String   @unique @db.VarChar(255) @map("user_id")
-  totalAssets    Int      @default(0) @map("total_assets")
-  monthlyIncome  Int      @default(0) @map("monthly_income")
-  paydayDay      Int      @default(25) @map("payday_day")
-  fixedExpenses  Int      @default(0) @map("fixed_expenses")
-  createdAt      DateTime @default(now()) @db.DateTime(6) @map("created_at")
-  updatedAt      DateTime @updatedAt @db.DateTime(6) @map("updated_at")
+  id                    String   @id @db.VarChar(26)
+  userId                String   @unique @db.VarChar(255) @map("user_id")
+  totalAssets           Int      @default(0) @map("total_assets")
+  monthlyIncome         Int      @default(0) @map("monthly_income")
+  paydayDay             Int      @default(25) @map("payday_day")
+  fixedExpenses         Int      @default(0) @map("fixed_expenses")
+  initialSetupCompleted Boolean  @default(false) @map("initial_setup_completed")
+  createdAt             DateTime @default(now()) @db.DateTime(6) @map("created_at")
+  updatedAt             DateTime @updatedAt @db.DateTime(6) @map("updated_at")
 
   @@index([userId], map: "IDX_user_settings_user_id")
   @@map("user_settings")

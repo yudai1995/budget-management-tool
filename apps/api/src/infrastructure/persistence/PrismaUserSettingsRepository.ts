@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import { ulid } from 'ulid';
 import type { UserSettings } from '../../domain/models/UserSettings';
-import type { IUserSettingsRepository } from '../../domain/repositories/IUserSettingsRepository';
+import type { IUserSettingsRepository, UpsertSettingsInput } from '../../domain/repositories/IUserSettingsRepository';
 
 export class PrismaUserSettingsRepository implements IUserSettingsRepository {
     constructor(private readonly prisma: PrismaClient) {}
@@ -16,12 +16,13 @@ export class PrismaUserSettingsRepository implements IUserSettingsRepository {
             monthlyIncome: record.monthlyIncome,
             paydayDay: record.paydayDay,
             fixedExpenses: record.fixedExpenses,
+            initialSetupCompleted: record.initialSetupCompleted,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
         };
     }
 
-    async upsert(settings: Omit<UserSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<UserSettings> {
+    async upsert(settings: UpsertSettingsInput): Promise<UserSettings> {
         const record = await this.prisma.userSettings.upsert({
             where: { userId: settings.userId },
             create: {
@@ -31,12 +32,16 @@ export class PrismaUserSettingsRepository implements IUserSettingsRepository {
                 monthlyIncome: settings.monthlyIncome,
                 paydayDay: settings.paydayDay,
                 fixedExpenses: settings.fixedExpenses,
+                initialSetupCompleted: settings.initialSetupCompleted ?? false,
             },
             update: {
                 totalAssets: settings.totalAssets,
                 monthlyIncome: settings.monthlyIncome,
                 paydayDay: settings.paydayDay,
                 fixedExpenses: settings.fixedExpenses,
+                ...(settings.initialSetupCompleted !== undefined && {
+                    initialSetupCompleted: settings.initialSetupCompleted,
+                }),
             },
         });
         return {
@@ -46,6 +51,7 @@ export class PrismaUserSettingsRepository implements IUserSettingsRepository {
             monthlyIncome: record.monthlyIncome,
             paydayDay: record.paydayDay,
             fixedExpenses: record.fixedExpenses,
+            initialSetupCompleted: record.initialSetupCompleted,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
         };

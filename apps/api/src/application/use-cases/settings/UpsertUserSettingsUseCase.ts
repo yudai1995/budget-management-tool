@@ -11,6 +11,8 @@ export type UpsertUserSettingsInput = {
     paydayDay: number;
     /** 月次固定費合計（円） */
     fixedExpenses: number;
+    /** 初回設定完了フラグ（省略時は既存値を維持） */
+    initialSetupCompleted?: boolean;
 };
 
 /** 給料日の有効範囲 */

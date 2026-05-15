@@ -1889,6 +1889,11 @@ export interface components {
              * @example 80000
              */
             fixedExpenses: number;
+            /**
+             * @description 初回設定完了フラグ
+             * @example false
+             */
+            initialSetupCompleted: boolean;
         };
         UpsertUserSettingsBody: {
             /**
@@ -1911,6 +1916,11 @@ export interface components {
              * @example 80000
              */
             fixedExpenses: number;
+            /**
+             * @description 初回設定完了フラグ
+             * @example true
+             */
+            initialSetupCompleted?: boolean;
         };
         XDayResponse: {
             /** @example 2031-09-14T00:00:00.000Z */

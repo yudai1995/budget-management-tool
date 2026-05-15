@@ -11,6 +11,7 @@ const mockSettings: UserSettings = {
     monthlyIncome: 200000,
     paydayDay: 25,
     fixedExpenses: 80000,
+    initialSetupCompleted: false,
     createdAt: new Date('2026-05-08T00:00:00.000Z'),
     updatedAt: new Date('2026-05-08T00:00:00.000Z'),
 };
@@ -135,5 +136,26 @@ describe('UpsertUserSettingsUseCase', () => {
         if (!result.ok) {
             expect(result.error).toBeInstanceOf(ValidationError);
         }
+    });
+
+    it('正常系: initialSetupCompleted=true で保存できる', async () => {
+        vi.mocked(mockRepo.upsert).mockResolvedValue({ ...mockSettings, initialSetupCompleted: true });
+
+        const result = await useCase.execute({ ...validInput, initialSetupCompleted: true });
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value.initialSetupCompleted).toBe(true);
+        }
+        expect(mockRepo.upsert).toHaveBeenCalledWith({ ...validInput, initialSetupCompleted: true });
+    });
+
+    it('正常系: initialSetupCompleted を省略した場合もリポジトリが呼ばれる', async () => {
+        vi.mocked(mockRepo.upsert).mockResolvedValue(mockSettings);
+
+        const result = await useCase.execute(validInput);
+
+        expect(result.ok).toBe(true);
+        expect(mockRepo.upsert).toHaveBeenCalledWith(validInput);
     });
 });
