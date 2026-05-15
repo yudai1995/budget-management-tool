@@ -7,7 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { SecurityBadges } from "@/components/common/SecurityBadges";
 import { SessionExpiredToast } from "./SessionExpiredToast";
 
 const initialState: LoginState = { error: null };
@@ -155,9 +154,6 @@ export function LoginForm({ returnTo }: Props) {
               新規登録
             </Link>
           </p>
-          <div className="flex justify-center pt-1">
-            <SecurityBadges />
-          </div>
         </div>
       </section>
     </div>

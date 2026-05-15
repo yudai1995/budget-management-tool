@@ -7,11 +7,20 @@ name: Sync Project Board
 #   Issue opened          → Status: Backlog（プロジェクトへ自動追加）
 #   PR opened/reopened    → リンク Issue の Status: In Review
 #   PR closed (not merged)→ リンク Issue の Status: Sprint Backlog（差し戻し）
-#   PR merged             → リンク Issue の Status: Done
 #
-# 必要なシークレット:
-#   PROJECT_TOKEN: project スコープを持つ Personal Access Token (classic)
-#   Settings → Secrets and variables → Actions → New repository secret
+# ※ PR merged 時の Issue → Done 遷移は sync-project-status.yml が担当
+#    (issues.closed イベントで処理。"Closes #N" による自動クローズと連動)
+#
+# ── ワークフロー責務マップ ───────────────────────────────────────────
+#   project-board-sync.yml: Issue/PR のライフサイクル Status 管理
+#   measure-cycle-time.yml: CT・Sprint#・SP プロジェクトフィールド更新
+#   sync-project-status.yml: Issue close → Status: Done
+#   update-velocity.yml:    velocity-log.json 自動更新
+#
+# ── PROJECT_TOKEN について ─────────────────────────────────────────
+#   ProjectV2 フィールド更新には project スコープの PAT が必要。
+#   GITHUB_TOKEN は ProjectV2 mutations を実行できないため代替不可。
+#   PAT は Settings → Secrets → PROJECT_TOKEN として登録済み。
 # ──────────────────────────────────────────────────────────────────
 
 on:
@@ -55,27 +64,33 @@ jobs:
               return res.addProjectV2ItemById.item.id;
             }
 
-            // ── ヘルパー: Project 内の Issue アイテム ID を検索 ──────────────────
+            // ── ヘルパー: Project 内の Issue アイテム ID を検索（ページネーション対応）──
             async function findProjectItemId(issueNumber) {
-              const res = await github.graphql(`
-                query($projectId: ID!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100) {
-                        nodes {
-                          id
-                          content {
-                            ... on Issue { number }
+              let cursor = null;
+              while (true) {
+                const res = await github.graphql(`
+                  query($projectId: ID!, $cursor: String) {
+                    node(id: $projectId) {
+                      ... on ProjectV2 {
+                        items(first: 100, after: $cursor) {
+                          pageInfo { hasNextPage endCursor }
+                          nodes {
+                            id
+                            content {
+                              ... on Issue { number }
+                            }
                           }
                         }
                       }
                     }
-                  }
-                }`, { projectId });
-              const item = res.node.items.nodes.find(
-                n => n.content?.number === issueNumber
-              );
-              return item?.id ?? null;
+                  }`, { projectId, cursor });
+                const { items } = res.node;
+                const found = items.nodes.find(n => n.content?.number === issueNumber);
+                if (found) return found.id;
+                if (!items.pageInfo.hasNextPage) break;
+                cursor = items.pageInfo.endCursor;
+              }
+              return null;
             }
 
             // ── ヘルパー: Status を更新 ──────────────────────────────────────────
@@ -131,19 +146,21 @@ jobs:
               }
             }
 
-            // ── PR closed: マージ → Done、差し戻し → Sprint Backlog ─────────────
+            // ── PR closed (not merged): リンク Issue → Sprint Backlog（差し戻し）──
+            // PR merged 時の Done 遷移は sync-project-status.yml が担当
             if (context.eventName === 'pull_request' && context.payload.action === 'closed') {
               const pr = context.payload.pull_request;
-              const merged = pr.merged;
+              if (pr.merged) {
+                console.log(`PR #${pr.number} merged → Done 遷移は sync-project-status.yml が処理`);
+                return;
+              }
               const issues = extractLinkedIssues(pr.body);
-              const targetOption = merged ? OPT_DONE : OPT_SPRINT_BACKLOG;
-              const label = merged ? 'Done' : 'Sprint Backlog (reverted)';
-              console.log(`PR #${pr.number} closed (merged=${merged}) → linked issues: ${issues}`);
+              console.log(`PR #${pr.number} closed (not merged) → linked issues: ${issues}`);
               for (const num of issues) {
                 const itemId = await findProjectItemId(num);
                 if (itemId) {
-                  await setStatus(itemId, targetOption);
-                  console.log(`#${num} → ${label}`);
+                  await setStatus(itemId, OPT_SPRINT_BACKLOG);
+                  console.log(`#${num} → Sprint Backlog (reverted)`);
                 }
               }
             }
