@@ -61,7 +61,7 @@ describeIf('Settings 統合テスト（実 DB）', () => {
     });
 
     describe('GET /api/settings', () => {
-        it('正常系: 未設定のとき totalAssets=0, monthlyIncome=0, paydayDay=25, fixedExpenses=0 を返す', async () => {
+        it('正常系: 未設定のとき totalAssets=0, monthlyIncome=0, paydayDay=25, fixedExpenses=0, initialSetupCompleted=false を返す', async () => {
             const { users } = await seedTestData({ pattern: 'minimal' });
             const agent = await loginClient(users[0].userId);
 
@@ -72,6 +72,7 @@ describeIf('Settings 統合テスト（実 DB）', () => {
                 monthlyIncome: 0,
                 paydayDay: 25,
                 fixedExpenses: 0,
+                initialSetupCompleted: false,
             });
         });
 
@@ -98,7 +99,49 @@ describeIf('Settings 統合テスト（実 DB）', () => {
                 monthlyIncome: 200000,
                 paydayDay: 25,
                 fixedExpenses: 80000,
+                initialSetupCompleted: false,
             });
+        });
+
+        it('正常系: initialSetupCompleted=true で保存・取得できる', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const agent = await loginClient(users[0].userId);
+
+            const res = await agent.put('/api/settings', {
+                totalAssets: 0,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 0,
+                initialSetupCompleted: true,
+            });
+            expect(res.status).toBe(200);
+            expect(res.body).toMatchObject({ initialSetupCompleted: true });
+
+            const getRes = await agent.get('/api/settings');
+            expect(getRes.body).toMatchObject({ initialSetupCompleted: true });
+        });
+
+        it('正常系: initialSetupCompleted を省略した更新で既存フラグが保持される', async () => {
+            const { users } = await seedTestData({ pattern: 'minimal' });
+            const agent = await loginClient(users[0].userId);
+
+            await agent.put('/api/settings', {
+                totalAssets: 0,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 0,
+                initialSetupCompleted: true,
+            });
+
+            await agent.put('/api/settings', {
+                totalAssets: 100000,
+                monthlyIncome: 0,
+                paydayDay: 25,
+                fixedExpenses: 0,
+            });
+
+            const getRes = await agent.get('/api/settings');
+            expect(getRes.body).toMatchObject({ initialSetupCompleted: true, totalAssets: 100000 });
         });
 
         it('正常系: 給料日1日・固定費0円で保存できる', async () => {

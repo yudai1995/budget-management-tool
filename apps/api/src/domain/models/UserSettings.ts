@@ -1,4 +1,4 @@
-/** ユーザー設定ドメインモデル（総資産・月次収入・給料日・固定費） */
+/** ユーザー設定ドメインモデル（総資産・月次収入・給料日・固定費・初回設定完了フラグ） */
 export type UserSettings = {
     id: string;
     userId: string;
@@ -8,6 +8,8 @@ export type UserSettings = {
     paydayDay: number;
     /** 月次固定費合計（円） */
     fixedExpenses: number;
+    /** 初回設定完了フラグ */
+    initialSetupCompleted: boolean;
     createdAt: Date;
     updatedAt: Date;
 };

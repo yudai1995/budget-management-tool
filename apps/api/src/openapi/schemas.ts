@@ -434,6 +434,7 @@ export const UserSettingsResponseSchema = z
         monthlyIncome: z.number().int().min(0).openapi({ description: '月次固定収入（円）', example: 200000 }),
         paydayDay: z.number().int().min(1).max(31).openapi({ description: '給料日（月の何日か: 1〜31）', example: 25 }),
         fixedExpenses: z.number().int().min(0).openapi({ description: '月次固定費合計（円）', example: 80000 }),
+        initialSetupCompleted: z.boolean().openapi({ description: '初回設定完了フラグ', example: false }),
     })
     .openapi('UserSettingsResponse');
 
@@ -460,5 +461,9 @@ export const UpsertUserSettingsBodySchema = z
             .int()
             .min(0, '固定費は0以上の値を入力してください')
             .openapi({ description: '月次固定費合計（円）', example: 80000 }),
+        initialSetupCompleted: z
+            .boolean({ invalid_type_error: '初回設定完了フラグは真偽値で入力してください' })
+            .optional()
+            .openapi({ description: '初回設定完了フラグ', example: true }),
     })
     .openapi('UpsertUserSettingsBody');

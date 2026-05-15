@@ -670,11 +670,16 @@ components:
           minimum: 0
           description: 月次固定費合計（円）
           example: 80000
+        initialSetupCompleted:
+          type: boolean
+          description: 初回設定完了フラグ
+          example: false
       required:
         - totalAssets
         - monthlyIncome
         - paydayDay
         - fixedExpenses
+        - initialSetupCompleted
     UpsertUserSettingsBody:
       type: object
       properties:
@@ -699,6 +704,10 @@ components:
           minimum: 0
           description: 月次固定費合計（円）
           example: 80000
+        initialSetupCompleted:
+          type: boolean
+          description: 初回設定完了フラグ
+          example: true
       required:
         - totalAssets
         - monthlyIncome
