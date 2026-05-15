@@ -5,8 +5,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/lib/actions/auth";
 import { PenLine, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { NAV_ITEMS } from "./navItems";
+
+const LogoImage = memo(function LogoImage({
+  size,
+  style,
+}: {
+  size: number;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <Image
+      src="/logo192.png"
+      alt="家計かんり"
+      width={size}
+      height={size}
+      style={style}
+    />
+  );
+});
 
 type Props = {
   userName?: string;
@@ -30,24 +48,10 @@ export function Header({ userName }: Props) {
         {/* ロゴ */}
         <div className="flex h-14 items-center justify-center border-b border-[#1c1410]/10 px-3">
           {collapsed ? (
-            <Image
-              src="/logo192.png"
-              alt="家計かんり"
-              width={32}
-              height={32}
-              className="rounded-xl"
-              style={{ boxShadow: "var(--shadow-pop-sm)" }}
-            />
+            <LogoImage size={32} style={{ boxShadow: "var(--shadow-pop-sm)" }} />
           ) : (
             <Link href="/" className="flex items-center gap-2 w-full">
-              <Image
-                src="/logo192.png"
-                alt="家計かんり"
-                width={32}
-                height={32}
-                className="flex-shrink-0 rounded-xl"
-                style={{ boxShadow: "var(--shadow-pop-sm)" }}
-              />
+              <LogoImage size={32} style={{ flexShrink: 0, boxShadow: "var(--shadow-pop-sm)" }} />
               <div className="flex flex-col leading-none">
                 <span className="text-sm font-extrabold text-[#1c1410]">家計かんり</span>
                 <span className="text-[10px] text-[#1c1410]/40">家計を、もっとシンプルに。</span>
@@ -129,14 +133,7 @@ export function Header({ userName }: Props) {
       {/* ─── モバイル: ミニヘッダー（md未満） ────────────────────── */}
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[#1c1410]/10 bg-[#fffdf5]/90 px-4 backdrop-blur-md md:hidden">
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo192.png"
-            alt="家計かんり"
-            width={28}
-            height={28}
-            className="rounded-lg"
-            style={{ boxShadow: "var(--shadow-pop-sm)" }}
-          />
+          <LogoImage size={28} style={{ boxShadow: "var(--shadow-pop-sm)" }} />
           <span className="text-sm font-extrabold text-[#1c1410]">家計かんり</span>
         </Link>
         <Link href="/expenses/new" className="btn-candy text-xs px-3 py-1.5">
