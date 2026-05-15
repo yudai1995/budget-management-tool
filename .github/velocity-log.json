@@ -940,6 +940,20 @@
           "pr": 309
         }
       ]
+    },
+    {
+      "date": "2026-05-15",
+      "total_points": 3,
+      "pbis": [
+        {
+          "issue": 86,
+          "title": "[Feature] カテゴリ別月次支出の円グラフ・棒グラフを追加する",
+          "size": "M",
+          "points": 3,
+          "cycle_time_hours": 14.2,
+          "pr": 313
+        }
+      ]
     }
   ]
 }
