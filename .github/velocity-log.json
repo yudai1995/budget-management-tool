@@ -1045,6 +1045,14 @@
           "points": null,
           "cycle_time_hours": null,
           "pr": 338
+        },
+        {
+          "issue": 336,
+          "title": "feat: 初回設定完了フラグを DB で管理し、セッション間で引き継げるようにする（スキーマ・API）",
+          "size": "unknown",
+          "points": null,
+          "cycle_time_hours": null,
+          "pr": 339
         }
       ]
     }
