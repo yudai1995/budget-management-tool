@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FileText, PenLine } from "lucide-react";
 import { MonthlyCalendar } from "@/components/calendar/MonthlyCalendar";
 import type { ExpenseResponse } from "@/lib/api/types";
-import { getCategoryById } from "@/lib/constants/categories";
+import { getCategoryById } from "@budget/common";
 
 type Props = {
   expenses: ExpenseResponse[];

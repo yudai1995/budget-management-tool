@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { updateExpenseAction } from "@/lib/actions/expense";
 import type { UpdateExpenseActionState } from "@/lib/actions/expense";
 import type { ExpenseResponse } from "@/lib/api/types";
-import { getCategoriesByType } from "@/lib/constants/categories";
+import { getCategoriesByType } from "@budget/common";
 import {
   Dialog,
   DialogContent,

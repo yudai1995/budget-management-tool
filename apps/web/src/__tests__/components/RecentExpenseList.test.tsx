@@ -41,9 +41,9 @@ describe('RecentExpenseList', () => {
     ]
     render(<RecentExpenseList expenses={expenses} />)
     const items = screen.getAllByRole('listitem')
-    expect(within(items[0]).getByText('2024-03-15 · 食費')).toBeInTheDocument()
-    expect(within(items[1]).getByText('2024-03-12 · 食費')).toBeInTheDocument()
-    expect(within(items[2]).getByText('2024-03-10 · 食費')).toBeInTheDocument()
+    expect(within(items[0]).getByText('2024-03-15 · 食費・スーパー')).toBeInTheDocument()
+    expect(within(items[1]).getByText('2024-03-12 · 食費・スーパー')).toBeInTheDocument()
+    expect(within(items[2]).getByText('2024-03-10 · 食費・スーパー')).toBeInTheDocument()
   })
 
   it('支出はマイナス（赤）表示する', () => {
@@ -67,8 +67,8 @@ describe('RecentExpenseList', () => {
   it('content が null のとき、カテゴリ名を表示する', () => {
     const expenses = [makeExpense({ id: 'id-1', content: null, categoryId: 1 })]
     render(<RecentExpenseList expenses={expenses} />)
-    // categoryId=1 の支出カテゴリは「食費」
+    // categoryId=1 の支出カテゴリは「食費・スーパー」
     const items = screen.getAllByRole('listitem')
-    expect(within(items[0]).getAllByText('食費').length).toBeGreaterThanOrEqual(1)
+    expect(within(items[0]).getAllByText('食費・スーパー').length).toBeGreaterThanOrEqual(1)
   })
 })

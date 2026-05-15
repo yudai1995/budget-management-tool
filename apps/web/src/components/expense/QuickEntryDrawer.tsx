@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { createExpenseAction } from "@/lib/actions/expense";
 import type { ExpenseActionState } from "@/lib/actions/expense";
-import { getCategoriesByType } from "@/lib/constants/categories";
+import { getCategoriesByType } from "@budget/common";
 
 type Props = {
   userId: string;
@@ -128,6 +128,12 @@ export function QuickEntryDrawer({ userId, open, onOpenChange }: Props) {
                 }
               >
                 {c.name}
+                {c.badge && (
+                  <span className="ml-1 rounded-sm px-1 py-0.5 text-[9px] font-bold"
+                    style={{ background: 'rgba(255,255,255,0.25)', opacity: categoryId === c.id ? 1 : 0.7 }}>
+                    {c.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>

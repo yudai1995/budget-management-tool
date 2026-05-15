@@ -1,6 +1,6 @@
 import type { ExpenseResponse } from "@/lib/api/types";
-import type { Category } from "@/lib/constants/categories";
-import { getCategoryById } from "@/lib/constants/categories";
+import type { Category } from "@budget/common";
+import { getCategoryById } from "@budget/common";
 
 type Props = {
   expenses: ExpenseResponse[];
