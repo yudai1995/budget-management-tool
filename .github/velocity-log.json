@@ -1045,6 +1045,14 @@
           "points": null,
           "cycle_time_hours": null,
           "pr": 338
+        },
+        {
+          "issue": 333,
+          "title": "feat: 設定ページに家計基本設定（給料日・月収・固定費・総資産）の編集セクションを追加する",
+          "size": "unknown",
+          "points": null,
+          "cycle_time_hours": null,
+          "pr": 340
         }
       ]
     }
