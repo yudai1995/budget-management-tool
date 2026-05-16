@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Smartphone, PenLine, ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List, Settings, Bell, SquareMenu } from 'lucide-react'
+import { ArrowRight, Layout, User, PlayCircle, CalendarDays, Wallet, Palette, LayoutDashboard, LayoutGrid, PieChart, TrendingUp, List, Settings, Bell, SquareMenu } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -11,22 +11,6 @@ type PrototypeCard = {
 }
 
 const prototypes: PrototypeCard[] = [
-  {
-    path: '/bottom-nav',
-    title: 'ボトムナビゲーション',
-    description: 'モバイル向け固定ボトムバー。タブ切り替え・FABボタンの試作。',
-    icon: Smartphone,
-    issue: '#119',
-    status: 'ready',
-  },
-  {
-    path: '/quick-entry',
-    title: 'クイック入力フォーム',
-    description: '3タップで記録完了する入力UXの試作。金額中心レイアウト。',
-    icon: PenLine,
-    issue: '#121',
-    status: 'ready',
-  },
   {
     path: '/nav-layout',
     title: 'ナビゲーション統合レイアウト',
