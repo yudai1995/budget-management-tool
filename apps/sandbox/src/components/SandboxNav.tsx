@@ -13,21 +13,21 @@ import { LayoutGrid, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'l
 
 // Gallery.tsx の prototypes 配列と同期させる（SSOT ではないが Sandbox 内限定）
 const PAGES: { path: string; label: string }[] = [
-  { path: '/bottom-nav',              label: 'ボトムナビゲーション' },
-  { path: '/quick-entry',             label: 'クイック入力フォーム' },
   { path: '/nav-layout',              label: 'ナビゲーション統合レイアウト' },
-  { path: '/account-section',         label: 'アカウントセクション' },
-  { path: '/onboarding',              label: 'オンボーディングウィザード' },
   { path: '/calendar-page',           label: 'カレンダーページ刷新' },
-  { path: '/daily-budget-card',       label: '今日使えるお金カード' },
   { path: '/daily-budget-card-palette', label: 'カラーパレット比較' },
-  { path: '/home-v3',                 label: 'ホーム V3' },
-  { path: '/home-v4',                 label: 'ホーム V4' },
+  { path: '/home',                    label: 'ホーム画面' },
   { path: '/category-ab',             label: '支出カテゴリ TOP A/B' },
-  { path: '/category-input-ab',       label: 'カテゴリ選択 A/B/C' },
   { path: '/asset-outlook-ab',        label: '長期指標 A/B' },
-  { path: '/recent-records-ab',       label: '最近の記録 A/B' },
-  { path: '/personal-settings',       label: '個人設定画面' },
+  { path: '/personal-settings',       label: '個人設定 — 現行' },
+  { path: '/settings-wizard',         label: '個人設定 B — ウィザード' },
+  { path: '/settings-e',              label: '個人設定 E — コンパクトリスト' },
+  { path: '/meisai',                   label: '明細' },
+  { path: '/status-color-palette',      label: 'ステータスカラー' },
+  { path: '/savings-forecast-palette', label: '貯蓄予測カラー' },
+  { path: '/today-status-palette',     label: '今日の状況カラー' },
+  { path: '/category-color-palette',  label: 'カテゴリカラー定義' },
+  { path: '/report',                  label: 'レポート' },
 ]
 
 export function SandboxNav() {
