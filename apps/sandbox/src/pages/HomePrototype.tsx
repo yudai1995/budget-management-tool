@@ -1079,50 +1079,66 @@ export function HomePrototype() {
 
     return (
         <TooltipPrimitive.Provider delayDuration={150}>
-        <div className="min-h-screen pb-32 tap-highlight lg:pb-28" style={{ background: C.bg, color: C.text }}>
+        {/* ─── サイドナビ（PC のみ） ──────────────────────────────────────── */}
+        <motion.aside
+            initial={{ x: -52, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ ...SPRING.smooth, delay: 0.05 }}
+            className="hidden lg:flex lg:flex-col fixed inset-y-0 left-0 z-30 w-52"
+            style={{ background: C.card, borderRight: `1px solid ${C.border}` }}
+        >
+            {/* ロゴ */}
+            <div className="flex h-14 shrink-0 items-center gap-2.5 border-b px-4" style={{ borderColor: C.border }}>
+                <img src="/logo192.png" alt="家計かんり" className="h-8 w-8 shrink-0" style={{ borderRadius: "10px" }} />
+                <span className="text-[15px] font-extrabold tracking-tight" style={{ color: C.text }}>家計かんり</span>
+            </div>
+
+            {/* ナビ項目 */}
+            <nav className="flex-1 overflow-y-auto p-3 space-y-0.5" aria-label="メインメニュー">
+                {[
+                    { label: "ホーム",   icon: Home,      to: "/home",              active: true  },
+                    { label: "明細",     icon: Receipt,   to: "/meisai",            active: false },
+                    { label: "レポート", icon: BarChart2,  to: "/report",            active: false },
+                    { label: "設定",     icon: Settings,   to: "/personal-settings", active: false },
+                ].map((item) => (
+                    <MotionLink
+                        key={item.label}
+                        to={item.to}
+                        whileTap={{ scale: 0.97 }}
+                        transition={SPRING.snap}
+                        className="flex w-full items-center gap-3 px-3 py-2.5 text-[13px] font-semibold tap-highlight"
+                        {...(
+                            item.label === "設定"     ? { "data-tour": "nav-settings" } :
+                            item.label === "明細"     ? { "data-tour": "nav-meisai"   } :
+                            item.label === "レポート" ? { "data-tour": "nav-report"   } :
+                            {}
+                        )}
+                        style={{
+                            borderRadius:   "10px",
+                            background:     item.active ? C.brandLight : "transparent",
+                            color:          item.active ? C.brand : "rgba(28,20,16,0.50)",
+                            textDecoration: "none",
+                        }}
+                    >
+                        <item.icon size={17} aria-hidden />
+                        {item.label}
+                    </MotionLink>
+                ))}
+            </nav>
+        </motion.aside>
+
+        <div className="min-h-screen pb-32 tap-highlight lg:pb-28 lg:pl-52" style={{ background: C.bg, color: C.text }}>
 
             {/* ─── ヘッダー ───────────────────────────────────────────────── */}
             <motion.header
                 className="glass sticky top-0 z-20 flex h-14 items-center border-b px-4 md:px-6"
                 style={{ borderColor: headerBorderColor, boxShadow: headerShadow }}
             >
-                <div className="flex items-center gap-2.5 shrink-0">
+                {/* ロゴ（SP のみ — PC はサイドナビに表示） */}
+                <div className="flex items-center gap-2.5 shrink-0 lg:hidden">
                     <img src="/logo192.png" alt="家計かんり" className="h-8 w-8 shrink-0" style={{ borderRadius: "10px" }} />
                     <span className="text-[15px] font-extrabold tracking-tight" style={{ color: C.text }}>家計かんり</span>
                 </div>
-
-                {/* デスクトップ ナビ */}
-                <nav className="hidden flex-1 items-center justify-center gap-0.5 md:flex">
-                    {[
-                        { label: "ホーム",   icon: Home,     to: "/home",              active: true  },
-                        { label: "明細",     icon: Receipt,  to: "/meisai",            active: false },
-                        { label: "レポート", icon: BarChart2, to: "/report",            active: false },
-                        { label: "設定",     icon: Settings,  to: "/personal-settings", active: false },
-                    ].map((item) => (
-                        <MotionLink
-                            key={item.label}
-                            to={item.to}
-                            whileTap={{ scale: 0.95 }}
-                            transition={SPRING.snap}
-                            className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold tap-highlight"
-                            {...(
-                                item.label === "設定"     ? { "data-tour": "nav-settings" } :
-                                item.label === "明細"     ? { "data-tour": "nav-meisai"   } :
-                                item.label === "レポート" ? { "data-tour": "nav-report"   } :
-                                {}
-                            )}
-                            style={{
-                                borderRadius:   "10px",
-                                background:     item.active ? C.brandLight : "transparent",
-                                color:          item.active ? C.brand : "rgba(28,20,16,0.50)",
-                                textDecoration: "none",
-                            }}
-                        >
-                            <item.icon size={14} aria-hidden />
-                            {item.label}
-                        </MotionLink>
-                    ))}
-                </nav>
 
                 {/* ⑥ ヘッダー右: ベル（通知パネル） + アバター */}
                 <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -1356,17 +1372,13 @@ export function HomePrototype() {
                         </motion.button>
                     </motion.div>
 
-                ) : (
-                    /* ─── 通常ダッシュボード ──────────────────────────────────
-                     *
-                     * モバイルのカード順序（DOM 順 = 表示順）:
-                     *   ① 今日使えるお金  ← 左カラム先頭
-                     *   ② 今月のサマリー  ← 左カラム2番目
-                     *   ③ クイック入力    ← 右カラム先頭
-                     *   ④ 最近の記録      ← 右カラム2番目
-                     *
-                     * デスクトップ（lg）: 左=[① ②] 右=[③ ④] の2カラムグリッド
-                     */
+                ) : (<>
+                    {/* ─── 通常ダッシュボード ──────────────────────────────────
+                     * モバイル: 縦1カラム
+                     * デスクトップ（lg）:
+                     *   上段 左=[今日の状況・今週の記録] 右=[今月の貯蓄予測・サマリー]
+                     *   下段 全幅=[最近の記録]
+                     */}
                     <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:items-start">
 
                         {/* ── 左カラム: 状況系ブロック ──────────────────────── */}
@@ -1431,88 +1443,6 @@ export function HomePrototype() {
                                     </div>
                                 </motion.div>
 
-                                {/* Block 3: 今月の貯蓄予測 */}
-                                <motion.div data-tour="block-savings-forecast" variants={pageItemVariants} className="border p-4" style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}>
-                                    <div className="mb-3 flex items-center justify-between">
-                                        <span className="text-[13px] font-bold" style={{ color: C.text }}>今月の貯蓄予測</span>
-                                        <span className="px-2 py-0.5 text-[10px] font-bold" style={{ borderRadius: R.badge, background: savingsBadge.bg, color: savingsBadge.color }}>{savingsBadge.label}</span>
-                                    </div>
-                                    <div className="text-[10px] font-semibold mb-0.5" style={{ color: C.muted }}>月末予測残高</div>
-                                    <div className="mb-3 flex items-baseline gap-1.5">
-                                        <span className="hero-number font-black" style={{ color: projectedSavings >= 0 ? C.income : "#f43f5e", fontSize: "clamp(1.6rem, 5vw, 2rem)", letterSpacing: "-0.03em" }}>{projectedSavings >= 0 ? "+" : "−"}{formatYen(Math.abs(projectedSavings))}</span>
-                                        <span className="text-[11px] font-semibold" style={{ color: C.muted }}>{projectedSavings >= 0 ? "貯まる見込み" : "不足見込み"}</span>
-                                    </div>
-                                    <div className="mb-1 flex justify-between text-[10px]" style={{ color: C.muted }}>
-                                        <span>{formatYen(MOCK.monthSummary.expense)} 使用</span>
-                                        <span>目標貯蓄 {formatYen(MOCK.savingsGoal)}</span>
-                                    </div>
-                                    <div className="relative h-2 rounded-full overflow-hidden" style={{ background: "rgba(28,20,16,0.06)" }}>
-                                        <motion.div className="absolute h-full" initial={{ width: 0 }} animate={{ width: `${actualExpensePct}%` }} transition={{ ...SPRING.bar, delay: 0.3 }} style={{ background: savingsBarColor.solid, borderRadius: "9999px 0 0 9999px" }} />
-                                        <motion.div className="absolute h-full" initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100 - actualExpensePct, projectedExpensePct - actualExpensePct))}%` }} transition={{ ...SPRING.bar, delay: 0.5 }} style={{ left: `${actualExpensePct}%`, background: savingsBarColor.light }} />
-                                        <div className="absolute top-0 h-full w-0.5" style={{ left: `${targetLinePct}%`, background: "rgba(28,20,16,0.28)" }} />
-                                    </div>
-                                    <div className="mt-1 text-right text-[10px]" style={{ color: C.muted }}>{dayOfMonth}日経過 / {daysInMonth}日</div>
-                                    <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t" style={{ borderColor: C.border }}>
-                                        {[
-                                            { label: "残り予算",  value: formatYen(remainingBudget),                   color: remainingBudget >= 0      ? C.text : "#f43f5e" },
-                                            { label: "残り日数",  value: `あと${remainingDays}日`,                      color: C.text },
-                                            { label: "1日の目安", value: formatYen(Math.max(0, dailyRemainingBudget)), color: dailyRemainingBudget >= 0 ? C.text : "#f43f5e" },
-                                        ].map(item => (
-                                            <div key={item.label} className="text-center">
-                                                <div className="text-[9px] font-semibold mb-0.5" style={{ color: C.muted }}>{item.label}</div>
-                                                <div className="text-[12px] font-extrabold tabular-nums" style={{ color: item.color }}>{item.value}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-
-                                {/* Block 4: 今月のサマリー */}
-                                {(() => {
-                                    const lastMonthDailyAvg  = MOCK.lastMonthExpense / 30
-                                    const thisMonthDailyAvg  = MOCK.monthSummary.expense / dayOfMonth
-                                    const momPct  = Math.round((thisMonthDailyAvg / lastMonthDailyAvg - 1) * 100)
-                                    const momSaved = momPct < 0
-                                    const sRate   = Math.round((netMonth / MOCK.monthSummary.income) * 100)
-                                    return (
-                                        <motion.div data-tour="block-summary" variants={pageItemVariants} className="border p-4 overflow-hidden" style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}>
-                                            <div className="mb-1 flex items-center justify-between">
-                                                <span className="text-[13px] font-bold" style={{ color: C.text }}>今月のサマリー</span>
-                                                <span className="font-mono text-[11px]" style={{ color: C.muted }}>{MOCK.monthSummary.label}</span>
-                                            </div>
-                                            <div className="mb-3 flex items-end gap-2">
-                                                <span className="hero-number text-3xl font-black" style={{ color: C.income, letterSpacing: "-0.02em" }}><SpringNumber value={netMonth} format={formatYen} /></span>
-                                                <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING.base, delay: 0.6 }} className="mb-0.5 flex items-center gap-0.5 text-xs font-semibold" style={{ color: savingsRate >= 20 ? C.income : "#f59e0b" }}><ArrowUpRight size={12} />{savingsRate}%</motion.span>
-                                            </div>
-                                            <div className="space-y-1.5 mb-3">
-                                                {[
-                                                    { label: "収入", value: formatYen(MOCK.monthSummary.income), color: C.income, icon: ArrowUpRight },
-                                                    { label: "支出", value: formatYen(MOCK.monthSummary.expense), color: C.brand, icon: ArrowDownRight },
-                                                ].map((item) => (
-                                                    <div key={item.label} className="flex items-center justify-between">
-                                                        <span className="flex items-center gap-1 text-[11px]" style={{ color: item.color }}><item.icon size={11} />{item.label}</span>
-                                                        <span className="hero-number text-[13px] font-bold tabular-nums" style={{ color: C.text }}>{item.value}</span>
-                                                    </div>
-                                                ))}
-                                                <div className="border-t pt-1.5 flex items-center justify-between" style={{ borderColor: C.border }}>
-                                                    <span className="flex items-center gap-1 text-[11px]" style={{ color: C.muted }}><Wallet size={10} />収支差</span>
-                                                    <span className="hero-number text-[13px] font-extrabold tabular-nums" style={{ color: netMonth >= 0 ? C.income : "#f43f5e" }}>{formatYenSigned(netMonth)}</span>
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <div className="flex flex-col gap-0.5 rounded-xl px-3 py-2.5" style={{ background: momSaved ? C.incomeLight : "rgba(244,63,94,0.06)" }}>
-                                                    <span className="text-[9px] font-semibold" style={{ color: C.muted }}>先月比 支出</span>
-                                                    <span className="text-[18px] font-extrabold tabular-nums" style={{ color: momSaved ? C.income : "#f43f5e", letterSpacing: "-0.02em" }}>{momPct > 0 ? "+" : ""}{momPct}%</span>
-                                                    <span className="text-[9px]" style={{ color: C.muted }}>{momSaved ? `月換算で${formatYen(Math.round((lastMonthDailyAvg - thisMonthDailyAvg) * 30))}節約` : "先月より支出増"}</span>
-                                                </div>
-                                                <div className="flex flex-col gap-0.5 rounded-xl px-3 py-2.5" style={{ background: C.incomeLight }}>
-                                                    <span className="text-[9px] font-semibold" style={{ color: C.muted }}>今月の貯蓄率</span>
-                                                    <span className="text-[18px] font-extrabold tabular-nums" style={{ color: C.income, letterSpacing: "-0.02em" }}>{sRate}%</span>
-                                                    <span className="text-[9px]" style={{ color: C.muted }}>収入の{sRate}%を貯蓄ペース</span>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    )
-                                })()}
                             </>
                         ) : (
                             /* ── SP: スワイプカルーセル(Block1,3,4) + ストリーク(Block2) ─ */
@@ -1759,171 +1689,202 @@ export function HomePrototype() {
                         )}
                         </motion.div>
 
-                        {/* ── 右カラム: ③ ④ ────────────────────────────────── */}
-                        <motion.div
-                            className="space-y-3"
-                            variants={pageContainerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {/* ③ クイック入力エリア（インラインカード — PC のみ表示。SP は FAB で代替） */}
-                            {isLargeScreen && <motion.div
-                                data-tour="quick-entry"
-                                variants={pageItemVariants}
-                                className="border p-4"
-                                style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
+                        {/* ── 右カラム: 今月の貯蓄予測・サマリー（PC のみ） ── */}
+                        {isLargeScreen && (
+                            <motion.div
+                                className="space-y-3"
+                                variants={pageContainerVariants}
+                                initial="hidden"
+                                animate="visible"
                             >
-                                <div className="mb-3 flex items-center justify-between">
-                                    <span className="text-[13px] font-bold" style={{ color: C.text }}>今日の支出を記録</span>
-                                    {MOCK.todayExpense > 0 && (
-                                        <span className="text-[11px]" style={{ color: C.muted }}>
-                                            今日 <span className="font-extrabold tabular-nums" style={{ color: C.text }}>{formatYen(MOCK.todayExpense)}</span>
-                                        </span>
-                                    )}
-                                </div>
+                                {/* Block 3: 今月の貯蓄予測 */}
+                                <motion.div data-tour="block-savings-forecast" variants={pageItemVariants} className="border p-4" style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}>
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <span className="text-[13px] font-bold" style={{ color: C.text }}>今月の貯蓄予測</span>
+                                        <span className="px-2 py-0.5 text-[10px] font-bold" style={{ borderRadius: R.badge, background: savingsBadge.bg, color: savingsBadge.color }}>{savingsBadge.label}</span>
+                                    </div>
+                                    <div className="text-[10px] font-semibold mb-0.5" style={{ color: C.muted }}>月末予測残高</div>
+                                    <div className="mb-3 flex items-baseline gap-1.5">
+                                        <span className="hero-number font-black" style={{ color: projectedSavings >= 0 ? C.income : "#f43f5e", fontSize: "clamp(1.6rem, 5vw, 2rem)", letterSpacing: "-0.03em" }}>{projectedSavings >= 0 ? "+" : "−"}{formatYen(Math.abs(projectedSavings))}</span>
+                                        <span className="text-[11px] font-semibold" style={{ color: C.muted }}>{projectedSavings >= 0 ? "貯まる見込み" : "不足見込み"}</span>
+                                    </div>
+                                    <div className="mb-1 flex justify-between text-[10px]" style={{ color: C.muted }}>
+                                        <span>{formatYen(MOCK.monthSummary.expense)} 使用</span>
+                                        <span>目標貯蓄 {formatYen(MOCK.savingsGoal)}</span>
+                                    </div>
+                                    <div className="relative h-2 rounded-full overflow-hidden" style={{ background: "rgba(28,20,16,0.06)" }}>
+                                        <motion.div className="absolute h-full" initial={{ width: 0 }} animate={{ width: `${actualExpensePct}%` }} transition={{ ...SPRING.bar, delay: 0.3 }} style={{ background: savingsBarColor.solid, borderRadius: "9999px 0 0 9999px" }} />
+                                        <motion.div className="absolute h-full" initial={{ width: 0 }} animate={{ width: `${Math.max(0, Math.min(100 - actualExpensePct, projectedExpensePct - actualExpensePct))}%` }} transition={{ ...SPRING.bar, delay: 0.5 }} style={{ left: `${actualExpensePct}%`, background: savingsBarColor.light }} />
+                                        <div className="absolute top-0 h-full w-0.5" style={{ left: `${targetLinePct}%`, background: "rgba(28,20,16,0.28)" }} />
+                                    </div>
+                                    <div className="mt-1 text-right text-[10px]" style={{ color: C.muted }}>{dayOfMonth}日経過 / {daysInMonth}日</div>
+                                    <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t" style={{ borderColor: C.border }}>
+                                        {[
+                                            { label: "残り予算",  value: formatYen(remainingBudget),                   color: remainingBudget >= 0      ? C.text : "#f43f5e" },
+                                            { label: "残り日数",  value: `あと${remainingDays}日`,                      color: C.text },
+                                            { label: "1日の目安", value: formatYen(Math.max(0, dailyRemainingBudget)), color: dailyRemainingBudget >= 0 ? C.text : "#f43f5e" },
+                                        ].map(item => (
+                                            <div key={item.label} className="text-center">
+                                                <div className="text-[9px] font-semibold mb-0.5" style={{ color: C.muted }}>{item.label}</div>
+                                                <div className="text-[12px] font-extrabold tabular-nums" style={{ color: item.color }}>{item.value}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
 
-                                {/* よく使うカテゴリ固定グリッド（上位4件） */}
-                                <div className="mb-3 grid grid-cols-4 gap-2">
-                                    {EXPENSE_CATEGORIES.filter(c => PINNED_EXPENSE_IDS.includes(c.id)).map((cat) => {
-                                        const Icon = cat.icon;
+                                {/* Block 4: 今月のサマリー */}
+                                {(() => {
+                                    const lastMonthDailyAvg  = MOCK.lastMonthExpense / 30
+                                    const thisMonthDailyAvg  = MOCK.monthSummary.expense / dayOfMonth
+                                    const momPct  = Math.round((thisMonthDailyAvg / lastMonthDailyAvg - 1) * 100)
+                                    const momSaved = momPct < 0
+                                    const sRate   = Math.round((netMonth / MOCK.monthSummary.income) * 100)
+                                    return (
+                                        <motion.div data-tour="block-summary" variants={pageItemVariants} className="border p-4 overflow-hidden" style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}>
+                                            <div className="mb-1 flex items-center justify-between">
+                                                <span className="text-[13px] font-bold" style={{ color: C.text }}>今月のサマリー</span>
+                                                <span className="font-mono text-[11px]" style={{ color: C.muted }}>{MOCK.monthSummary.label}</span>
+                                            </div>
+                                            <div className="mb-3 flex items-end gap-2">
+                                                <span className="hero-number text-3xl font-black" style={{ color: C.income, letterSpacing: "-0.02em" }}><SpringNumber value={netMonth} format={formatYen} /></span>
+                                                <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING.base, delay: 0.6 }} className="mb-0.5 flex items-center gap-0.5 text-xs font-semibold" style={{ color: savingsRate >= 20 ? C.income : "#f59e0b" }}><ArrowUpRight size={12} />{savingsRate}%</motion.span>
+                                            </div>
+                                            <div className="space-y-1.5 mb-3">
+                                                {[
+                                                    { label: "収入", value: formatYen(MOCK.monthSummary.income), color: C.income, icon: ArrowUpRight },
+                                                    { label: "支出", value: formatYen(MOCK.monthSummary.expense), color: C.brand, icon: ArrowDownRight },
+                                                ].map((item) => (
+                                                    <div key={item.label} className="flex items-center justify-between">
+                                                        <span className="flex items-center gap-1 text-[11px]" style={{ color: item.color }}><item.icon size={11} />{item.label}</span>
+                                                        <span className="hero-number text-[13px] font-bold tabular-nums" style={{ color: C.text }}>{item.value}</span>
+                                                    </div>
+                                                ))}
+                                                <div className="border-t pt-1.5 flex items-center justify-between" style={{ borderColor: C.border }}>
+                                                    <span className="flex items-center gap-1 text-[11px]" style={{ color: C.muted }}><Wallet size={10} />収支差</span>
+                                                    <span className="hero-number text-[13px] font-extrabold tabular-nums" style={{ color: netMonth >= 0 ? C.income : "#f43f5e" }}>{formatYenSigned(netMonth)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div className="flex flex-col gap-0.5 rounded-xl px-3 py-2.5" style={{ background: momSaved ? C.incomeLight : "rgba(244,63,94,0.06)" }}>
+                                                    <span className="text-[9px] font-semibold" style={{ color: C.muted }}>先月比 支出</span>
+                                                    <span className="text-[18px] font-extrabold tabular-nums" style={{ color: momSaved ? C.income : "#f43f5e", letterSpacing: "-0.02em" }}>{momPct > 0 ? "+" : ""}{momPct}%</span>
+                                                    <span className="text-[9px]" style={{ color: C.muted }}>{momSaved ? `月換算で${formatYen(Math.round((lastMonthDailyAvg - thisMonthDailyAvg) * 30))}節約` : "先月より支出増"}</span>
+                                                </div>
+                                                <div className="flex flex-col gap-0.5 rounded-xl px-3 py-2.5" style={{ background: C.incomeLight }}>
+                                                    <span className="text-[9px] font-semibold" style={{ color: C.muted }}>今月の貯蓄率</span>
+                                                    <span className="text-[18px] font-extrabold tabular-nums" style={{ color: C.income, letterSpacing: "-0.02em" }}>{sRate}%</span>
+                                                    <span className="text-[9px]" style={{ color: C.muted }}>収入の{sRate}%を貯蓄ペース</span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )
+                                })()}
+                            </motion.div>
+                        )}
+                    </div>
+
+                    {/* ④ 最近の記録 — 全幅（PC/SP 共通） */}
+                    <motion.div
+                        data-tour="recent-records"
+                        variants={pageContainerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <div
+                            className="overflow-hidden border"
+                            style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
+                        >
+                            {/* カードヘッダー */}
+                            <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: C.border }}>
+                                <span className="text-sm font-bold" style={{ color: C.text }}>最近の記録</span>
+                                <MotionLink
+                                    to="/meisai?period=all"
+                                    whileTap={{ scale: 0.92 }}
+                                    transition={SPRING.snap}
+                                    className="flex items-center gap-0.5 text-[12px] font-semibold tap-highlight"
+                                    style={{ color: C.brand, textDecoration: "none" }}
+                                >
+                                    すべて見る <ChevronRight size={12} />
+                                </MotionLink>
+                            </div>
+
+                            {/* 日付グループ */}
+                            {grouped.map((group) => (
+                                <div key={group.date}>
+                                    {/* 日付ヘッダー: 背景色 + 曜日付きラベル + 日計 */}
+                                    <div
+                                        className="flex items-center justify-between px-4 py-2"
+                                        style={{
+                                            background:   "rgba(28,20,16,0.03)",
+                                            borderBottom: `1px solid ${C.border}`,
+                                        }}
+                                    >
+                                        <span className="text-[12px] font-extrabold" style={{ color: C.text }}>
+                                            {group.label}
+                                        </span>
+                                        {group.dayTotal > 0 && (
+                                            <span className="text-[11px] font-semibold tabular-nums" style={{ color: C.muted }}>
+                                                −¥{group.dayTotal.toLocaleString("ja-JP")}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* アイテム */}
+                                    {group.items.map((it, i) => {
+                                        const isIncome = it.balanceType === 1;
+                                        const acc      = categoryAccent(it.categoryName, isIncome);
+                                        const Icon     = categoryIconComp(it.categoryName, isIncome);
                                         return (
                                             <motion.button
-                                                key={cat.id}
+                                                key={it.id}
                                                 type="button"
-                                                onClick={() => handleOpenDrawer(cat.id)}
-                                                whileTap={{ scale: 0.88 }}
-                                                transition={SPRING.snap}
-                                                className="flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold tap-highlight"
+                                                initial={{ opacity: 0, y: 4 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: i * 0.04, duration: 0.15, ease: "easeOut" }}
+                                                className="flex w-full items-center gap-3 px-4 py-2.5 text-left"
                                                 style={{
-                                                    borderRadius: R.inner,
-                                                    background:   C.bg,
-                                                    border:       `1px solid ${C.border}`,
-                                                    color:        C.muted,
+                                                    borderBottom: i < group.items.length - 1
+                                                        ? `1px solid ${C.border}`
+                                                        : "none",
                                                 }}
                                             >
-                                                <Icon size={18} style={{ color: cat.color }} aria-hidden />
-                                                {cat.name}
+                                                <div
+                                                    className="flex h-8 w-8 shrink-0 items-center justify-center"
+                                                    style={{ background: acc.bg, borderRadius: "9px" }}
+                                                    aria-hidden
+                                                >
+                                                    <Icon size={14} style={{ color: acc.fg }} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="truncate text-[13px] font-semibold" style={{ color: C.text }}>
+                                                        {it.content?.trim() || it.categoryName}
+                                                    </div>
+                                                    <div className="mt-0.5 flex items-center gap-1.5">
+                                                        <span
+                                                            className="inline-flex items-center px-1.5 text-[10px] font-semibold leading-[16px]"
+                                                            style={{ background: acc.bg, color: acc.fg, borderRadius: "4px" }}
+                                                        >
+                                                            {it.categoryName}
+                                                        </span>
+                                                        <span className="text-[10px]" style={{ color: "rgba(28,20,16,0.22)" }}>
+                                                            {it.time}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    className="shrink-0 text-[14px] font-bold tabular-nums"
+                                                    style={{ color: isIncome ? C.income : C.text, letterSpacing: "-0.01em" }}
+                                                >
+                                                    {isIncome ? "+" : "−"}¥{it.amount.toLocaleString("ja-JP")}
+                                                </div>
                                             </motion.button>
                                         );
                                     })}
                                 </div>
-
-                                {/* 金額入力 → Drawer を開くボタン */}
-                                <motion.button
-                                    type="button"
-                                    onClick={() => handleOpenDrawer()}
-                                    whileTap={{ scale: 0.97 }}
-                                    transition={SPRING.snap}
-                                    className="flex w-full items-center justify-center gap-2 py-3 text-sm font-bold text-white tap-highlight"
-                                    style={{
-                                        background:   `linear-gradient(135deg, ${C.brand}, ${C.brandDeep})`,
-                                        borderRadius: R.inner,
-                                        boxShadow:    "0 2px 10px rgba(241,136,64,0.22)",
-                                    }}
-                                >
-                                    <Plus size={16} strokeWidth={2.5} />
-                                    金額を入力して記録する
-                                </motion.button>
-                            </motion.div>}
-
-                            {/* ④ 最近の記録 — A案（ミニマルリスト改善版） */}
-                            <motion.div data-tour="recent-records" variants={pageItemVariants}>
-                                <div
-                                    className="overflow-hidden border"
-                                    style={{ borderRadius: R.card, background: C.card, borderColor: C.border, boxShadow: C.shadow }}
-                                >
-                                    {/* カードヘッダー */}
-                                    <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: C.border }}>
-                                        <span className="text-sm font-bold" style={{ color: C.text }}>最近の記録</span>
-                                        <MotionLink
-                                            to="/meisai?period=all"
-                                            whileTap={{ scale: 0.92 }}
-                                            transition={SPRING.snap}
-                                            className="flex items-center gap-0.5 text-[12px] font-semibold tap-highlight"
-                                            style={{ color: C.brand, textDecoration: "none" }}
-                                        >
-                                            すべて見る <ChevronRight size={12} />
-                                        </MotionLink>
-                                    </div>
-
-                                    {/* 日付グループ */}
-                                    {grouped.map((group) => (
-                                        <div key={group.date}>
-                                            {/* 日付ヘッダー: 背景色 + 曜日付きラベル + 日計 */}
-                                            <div
-                                                className="flex items-center justify-between px-4 py-2"
-                                                style={{
-                                                    background:   "rgba(28,20,16,0.03)",
-                                                    borderBottom: `1px solid ${C.border}`,
-                                                }}
-                                            >
-                                                <span className="text-[12px] font-extrabold" style={{ color: C.text }}>
-                                                    {group.label}
-                                                </span>
-                                                {group.dayTotal > 0 && (
-                                                    <span className="text-[11px] font-semibold tabular-nums" style={{ color: C.muted }}>
-                                                        −¥{group.dayTotal.toLocaleString("ja-JP")}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* アイテム: カラーバッジ + 時刻 + カテゴリバッジ + ホバー矢印 */}
-                                            {group.items.map((it, i) => {
-                                                const isIncome = it.balanceType === 1;
-                                                const acc      = categoryAccent(it.categoryName, isIncome);
-                                                const Icon     = categoryIconComp(it.categoryName, isIncome);
-                                                return (
-                                                    <motion.button
-                                                        key={it.id}
-                                                        type="button"
-                                                        initial={{ opacity: 0, y: 4 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ delay: i * 0.04, duration: 0.15, ease: "easeOut" }}
-                                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left"
-                                                        style={{
-                                                            borderBottom: i < group.items.length - 1
-                                                                ? `1px solid ${C.border}`
-                                                                : "none",
-                                                        }}
-                                                    >
-                                                        <div
-                                                            className="flex h-8 w-8 shrink-0 items-center justify-center"
-                                                            style={{ background: acc.bg, borderRadius: "9px" }}
-                                                            aria-hidden
-                                                        >
-                                                            <Icon size={14} style={{ color: acc.fg }} />
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="truncate text-[13px] font-semibold" style={{ color: C.text }}>
-                                                                {it.content?.trim() || it.categoryName}
-                                                            </div>
-                                                            <div className="mt-0.5 flex items-center gap-1.5">
-                                                                <span
-                                                                    className="inline-flex items-center px-1.5 text-[10px] font-semibold leading-[16px]"
-                                                                    style={{ background: acc.bg, color: acc.fg, borderRadius: "4px" }}
-                                                                >
-                                                                    {it.categoryName}
-                                                                </span>
-                                                                <span className="text-[10px]" style={{ color: "rgba(28,20,16,0.22)" }}>
-                                                                    {it.time}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            className="shrink-0 text-[14px] font-bold tabular-nums"
-                                                            style={{ color: isIncome ? C.income : C.text, letterSpacing: "-0.01em" }}
-                                                        >
-                                                            {isIncome ? "+" : "−"}¥{it.amount.toLocaleString("ja-JP")}
-                                                        </div>
-                                                    </motion.button>
-                                                );
-                                            })}
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </>
                 )}
             </main>
 
@@ -2191,6 +2152,24 @@ export function HomePrototype() {
                 )}
             </AnimatePresence>
         </div>
+        {/* ─── PC 専用 FAB（lg 以上のみ表示） ─────────────────────────────── */}
+        <motion.button
+            type="button"
+            aria-label="記録する"
+            onClick={() => handleOpenDrawer()}
+            className="fixed bottom-6 right-16 z-40 hidden lg:flex items-center gap-2 rounded-full px-5 text-sm font-bold text-white"
+            style={{
+                height:     48,
+                background: `linear-gradient(135deg, ${C.brand} 0%, ${C.brandDeep} 100%)`,
+                boxShadow:  "0 4px 20px rgba(241,136,64,0.40), 0 1px 4px rgba(241,136,64,0.18)",
+            }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.93 }}
+            transition={SPRING.snap}
+        >
+            <Plus size={17} strokeWidth={2.5} />
+            記録する
+        </motion.button>
         <HomeTour />
         </TooltipPrimitive.Provider>
     );
