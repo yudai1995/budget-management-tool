@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * AssetOutlookABPrototype — 長期指標 リッチデザイン（Sprint #18）
  *
@@ -22,17 +23,18 @@ import {
 } from 'framer-motion'
 import {
   ChevronLeft,
+  ChevronRight,
   TrendingUp,
   TrendingDown,
-  Shield,
   AlertTriangle,
-  Target,
   ChevronDown,
   ChevronUp,
+  Wallet,
+  PiggyBank,
 } from 'lucide-react'
 
 // ─── Spring プリセット ───────────────────────────────────────────────────
-const SPRING = {
+export const SPRING = {
   SNAP:   { type: 'spring', stiffness: 600, damping: 35 },
   QUICK:  { type: 'spring', stiffness: 400, damping: 30 },
   BASE:   { type: 'spring', stiffness: 300, damping: 28 },
@@ -40,20 +42,27 @@ const SPRING = {
 } as const
 
 // ─── デザイントークン ─────────────────────────────────────────────────────
-const D = {
-  bg:     '#f5f3ef',
-  card:   '#ffffff',
-  text:   '#1c1410',
-  muted:  'rgba(28,20,16,0.45)',
-  border: '#e8ddd5',
-  shadow: '0 2px 12px rgba(28,20,16,0.08), 0 0 0 1px rgba(28,20,16,0.06)',
-  brand:  '#f18840',
-  income: '#35b5a2',
-  danger: '#f43f5e',
-  // ヒーローカード — ブランドウォームダーク
-  heroBg:   'linear-gradient(145deg, #1a0c04 0%, #2c1608 42%, #1a0c04 100%)',
-  heroText: '#ffffff',
-  heroMuted: 'rgba(255,255,255,0.48)',
+export const D = {
+  bg:         '#fffdf5',
+  card:       '#ffffff',
+  text:       '#1c1410',
+  muted:      'rgba(28,20,16,0.45)',
+  mutedLight: 'rgba(28,20,16,0.22)',
+  border:     'rgba(28,20,16,0.08)',
+  borderMid:  'rgba(28,20,16,0.12)',
+  shadow:     '0 2px 12px rgba(28,20,16,0.08), 0 0 0 1px rgba(28,20,16,0.06)',
+  shadowMd:   '0 4px 24px rgba(28,20,16,0.10)',
+  brand:      '#f18840',
+  brandDeep:  '#d4601e',
+  income:     '#35b5a2',
+  incomeDeep: '#1d9181',
+  danger:     '#f43f5e',
+  // ヒーローカード — ライトパレット（白カード）
+  heroBg:    '#ffffff',
+  heroText:  '#1c1410',
+  heroMuted: 'rgba(28,20,16,0.45)',
+  heroCard:  'rgba(28,20,16,0.04)',
+  heroCardBorder: 'rgba(28,20,16,0.08)',
 } as const
 
 // ─── モックデータ ────────────────────────────────────────────────────────
@@ -66,7 +75,12 @@ const MOCK = {
   lastMonthIncome:  252600,
   netDailyExpense:  9800 - 252600 / 30,
   recordedMonths:   4,
+  // サマリー用
+  dailyBudget:      8420,
+  todayExpense:     2480,
 }
+const dailyRemaining  = Math.max(0, MOCK.dailyBudget - MOCK.todayExpense)  // 5,940
+const monthNet        = MOCK.thisMonthIncome - MOCK.thisMonthExpense        // 103,900
 
 const thisMonthSavings  = MOCK.thisMonthIncome - MOCK.thisMonthExpense       // 103,900
 const lastMonthSavings  = MOCK.lastMonthIncome - MOCK.lastMonthExpense       // 116,300
@@ -80,27 +94,17 @@ const assetRunwayDate   = (() => {
   return `${d.getFullYear()}年${d.getMonth() + 1}月`
 })()
 
-const SCORE_FACTORS = [
-  { label: '予算遵守率', score: 72, weight: 30, note: '過去7日で5日が予算内' },
-  { label: '貯蓄率',     score: 82, weight: 40, note: `今月 ${savingsRate}%（目安: 20% 以上）` },
-  { label: '支出トレンド', score: 55, weight: 30, note: '食費 +23%、医療費 +173% が押し下げ' },
-]
-const TOTAL_SCORE = Math.round(
-  SCORE_FACTORS.reduce((s, f) => s + (f.score * f.weight) / 100, 0),
-)
-
 function yen(n: number) { return `¥${Math.round(n).toLocaleString('ja-JP')}` }
 
 // ─── パターン定義 ─────────────────────────────────────────────────────────
-type PatternId = 'A' | 'B' | 'C' | 'D'
-const PATTERNS: PatternId[] = ['A', 'B', 'C', 'D']
+export type PatternId = 'A' | 'B' | 'C'
+export const PATTERNS: PatternId[] = ['A', 'B', 'C']
 
 // ブランドカラーに準じたアクセント割り当て
-const PATTERN_META: Record<PatternId, { name: string; accent: string }> = {
-  A: { name: '資産ランウェイ',    accent: D.brand  },   // ブランドオレンジ
-  B: { name: '今月の貯蓄額',      accent: D.income },   // ブランドティール
-  C: { name: '年間ペース予測',    accent: D.brand  },   // ブランドオレンジ
-  D: { name: '財政健全スコア',    accent: '#fbbf24' },  // アンバー（スコア中立色）
+export const PATTERN_META: Record<PatternId, { name: string; accent: string }> = {
+  A: { name: '資産ランウェイ', accent: D.brand  },   // ブランドオレンジ
+  B: { name: '今月の貯蓄額',   accent: D.income },   // ブランドティール
+  C: { name: '年間ペース予測', accent: D.brand  },   // ブランドオレンジ
 }
 
 // ─── コンテンツスライドアニメーション ─────────────────────────────────────
@@ -134,7 +138,7 @@ function SpringNumber({
   format?: (v: number) => string
 }) {
   const mv = useMotionValue(0)
-  const spring = useMotionSpring(mv, { stiffness: 70, damping: 18 })
+  const spring = useMotionSpring(mv, { stiffness: 260, damping: 28 })
   const display = useTransform(spring, (v) => format(Math.round(v)))
   useEffect(() => { mv.set(value) }, [mv, value])
   return <motion.span>{display}</motion.span>
@@ -155,14 +159,14 @@ function ProgressBar({
   return (
     <div
       className="overflow-hidden"
-      style={{ height, borderRadius: 9999, background: 'rgba(255,255,255,0.14)' }}
+      style={{ height, borderRadius: 9999, background: D.heroCard }}
     >
       <motion.div
         className="h-full"
         style={{ borderRadius: 9999, background: color }}
         initial={{ width: 0 }}
         animate={{ width: `${Math.min(100, pct)}%` }}
-        transition={{ type: 'spring', stiffness: 70, damping: 18, delay }}
+        transition={{ type: 'spring', stiffness: 260, damping: 28, delay }}
       />
     </div>
   )
@@ -175,10 +179,65 @@ const staggerItem = (i: number) => ({
   transition: { ...SPRING.BASE, delay: 0.1 + i * 0.05 },
 })
 
+// ─── サマリー行（全パターン共通: 今日使えるお金 + 今月の収支）─────────────
+export function SummaryRow() {
+  const isPositive = monthNet >= 0
+  return (
+    <motion.div
+      className="grid grid-cols-2 gap-2 w-full max-w-xs mx-auto mb-4"
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...SPRING.QUICK, delay: 0.05 }}
+    >
+      <div
+        className="flex items-center gap-2 rounded-2xl px-3 py-2"
+        style={{ background: D.heroCard, border: `1px solid ${D.heroCardBorder}` }}
+      >
+        <div
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+          style={{ background: `${D.brand}1a`, color: D.brand }}
+        >
+          <Wallet size={13} />
+        </div>
+        <div className="text-left leading-tight min-w-0">
+          <div className="text-[9px] font-semibold truncate" style={{ color: D.heroMuted }}>今日使えるお金</div>
+          <div className="text-[13px] font-extrabold tabular-nums" style={{ color: D.heroText, letterSpacing: '-0.01em' }}>
+            ¥{dailyRemaining.toLocaleString('ja-JP')}
+          </div>
+        </div>
+      </div>
+      <div
+        className="flex items-center gap-2 rounded-2xl px-3 py-2"
+        style={{ background: D.heroCard, border: `1px solid ${D.heroCardBorder}` }}
+      >
+        <div
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
+          style={{
+            background: isPositive ? `${D.income}1a` : `${D.danger}1a`,
+            color: isPositive ? D.income : D.danger,
+          }}
+        >
+          <PiggyBank size={13} />
+        </div>
+        <div className="text-left leading-tight min-w-0">
+          <div className="text-[9px] font-semibold truncate" style={{ color: D.heroMuted }}>今月の収支</div>
+          <div
+            className="text-[13px] font-extrabold tabular-nums"
+            style={{ color: isPositive ? D.income : D.danger, letterSpacing: '-0.01em' }}
+          >
+            {isPositive ? '+' : '−'}¥{Math.abs(monthNet).toLocaleString('ja-JP')}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 // ─── Pattern A ───────────────────────────────────────────────────────────
-function PatternAHero({ accent }: { accent: string }) {
+export function PatternAHero({ accent }: { accent: string }) {
   return (
     <div className="flex flex-col items-center text-center">
+      <SummaryRow />
       <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>
         今のペースで資産が尽きる時期
       </div>
@@ -196,7 +255,7 @@ function PatternAHero({ accent }: { accent: string }) {
           <motion.div
             key={item.label}
             className="rounded-2xl p-3 text-center"
-            style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.14)' }}
+            style={{ background: D.heroCard, border: `1px solid ${D.heroCardBorder}` }}
             {...staggerItem(i)}
           >
             <div className="text-[10px] mb-1" style={{ color: D.heroMuted }}>{item.label}</div>
@@ -209,10 +268,11 @@ function PatternAHero({ accent }: { accent: string }) {
 }
 
 // ─── Pattern B ───────────────────────────────────────────────────────────
-function PatternBHero({ accent }: { accent: string }) {
+export function PatternBHero({ accent }: { accent: string }) {
   const isPositive = savingsDiff >= 0
   return (
     <div className="flex flex-col items-center text-center">
+      <SummaryRow />
       <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>今月の貯蓄</div>
       <div className="text-[52px] font-extrabold leading-none tabular-nums mb-3" style={{ color: D.heroText }}>
         ¥<SpringNumber value={thisMonthSavings} />
@@ -237,7 +297,7 @@ function PatternBHero({ accent }: { accent: string }) {
           <motion.div
             key={item.label}
             className="rounded-2xl p-3 text-center"
-            style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.14)' }}
+            style={{ background: D.heroCard, border: `1px solid ${D.heroCardBorder}` }}
             {...staggerItem(i)}
           >
             <div className="text-[10px] mb-1" style={{ color: D.heroMuted }}>{item.label}</div>
@@ -250,11 +310,12 @@ function PatternBHero({ accent }: { accent: string }) {
 }
 
 // ─── Pattern C ───────────────────────────────────────────────────────────
-function PatternCHero({ accent }: { accent: string }) {
+export function PatternCHero({ accent }: { accent: string }) {
   const annualTarget = 1500000
   const progressPct  = Math.min(100, Math.round((annualSavingsPace / annualTarget) * 100))
   return (
     <div className="flex flex-col items-center text-center">
+      <SummaryRow />
       <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>このペースで年間</div>
       <div className="text-[44px] font-extrabold leading-none tabular-nums mb-1" style={{ color: D.heroText }}>
         ¥<SpringNumber value={annualSavingsPace} />
@@ -276,7 +337,7 @@ function PatternCHero({ accent }: { accent: string }) {
           <motion.div
             key={item.label}
             className="rounded-2xl p-2.5 text-center"
-            style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.14)' }}
+            style={{ background: D.heroCard, border: `1px solid ${D.heroCardBorder}` }}
             {...staggerItem(i)}
           >
             <div className="text-[9px] mb-0.5" style={{ color: D.heroMuted }}>{item.label}</div>
@@ -288,55 +349,8 @@ function PatternCHero({ accent }: { accent: string }) {
   )
 }
 
-// ─── Pattern D ───────────────────────────────────────────────────────────
-type ScoreTone = 'good' | 'ok' | 'bad'
-function scoreTone(s: number): ScoreTone { return s >= 70 ? 'good' : s >= 40 ? 'ok' : 'bad' }
-function toneColor(t: ScoreTone) {
-  return t === 'good' ? D.income : t === 'ok' ? '#f59e0b' : D.danger
-}
-const TONE_LABELS: Record<ScoreTone, string> = { good: '良好', ok: '普通', bad: '要注意' }
-
-function PatternDHero() {
-  const tone   = scoreTone(TOTAL_SCORE)
-  const color  = toneColor(tone)
-  const ToneIcon = tone === 'good' ? Shield : tone === 'ok' ? Target : AlertTriangle
-  return (
-    <div className="flex flex-col items-center text-center">
-      <div className="text-xs font-semibold mb-2" style={{ color: D.heroMuted }}>財政健全スコア</div>
-      <div className="flex items-end gap-2 mb-2">
-        <div className="text-[64px] font-extrabold leading-none tabular-nums" style={{ color }}>
-          <SpringNumber value={TOTAL_SCORE} />
-        </div>
-        <div className="text-xl font-semibold mb-2" style={{ color: D.heroMuted }}>/100</div>
-      </div>
-      <div
-        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold mb-5"
-        style={{ background: `${color}20`, color }}
-      >
-        <ToneIcon size={14} />
-        {TONE_LABELS[tone]}
-      </div>
-      <div className="w-full max-w-xs space-y-3">
-        {SCORE_FACTORS.map((f, i) => {
-          const t = scoreTone(f.score)
-          const c = toneColor(t)
-          return (
-            <motion.div key={f.label} {...staggerItem(i)}>
-              <div className="flex justify-between text-xs mb-1.5">
-                <span style={{ color: D.heroMuted }}>{f.label}</span>
-                <span className="font-bold tabular-nums" style={{ color: c }}>{f.score}</span>
-              </div>
-              <ProgressBar pct={f.score} color={c} height={5} delay={0.15 + i * 0.07} />
-            </motion.div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ─── Meta アコーディオン ──────────────────────────────────────────────────
-function MetaAccordion({
+export function MetaAccordion({
   pros, cons, data, warning,
 }: {
   pros: string[]; cons: string[]; data: string[]; warning?: string
@@ -407,7 +421,7 @@ function MetaAccordion({
   )
 }
 
-const PATTERN_DETAILS: Record<PatternId, { pros: string[]; cons: string[]; data: string[]; warning?: string }> = {
+export const PATTERN_DETAILS: Record<PatternId, { pros: string[]; cons: string[]; data: string[]; warning?: string }> = {
   A: {
     data: ['今の純支出ペースが続いた場合の資産枯渇時期', '総資産 ÷ (平均日次支出 − 月収÷30) で算出', '資産が「減っているか」の長期サイン'],
     pros: ['長期的な危機感を持てる', '資産と支出の関係が可視化される'],
@@ -425,18 +439,13 @@ const PATTERN_DETAILS: Record<PatternId, { pros: string[]; cons: string[]; data:
     cons: ['1 ヶ月データで年換算するのは精度が低い', '目標設定が必要（オンボーディング負荷）', 'ボーナス月などで大きくブレる'],
     warning: '今月の貯蓄が少ない月に見ると不安になりやすい。直近 3〜6 ヶ月平均の方が安定する。',
   },
-  D: {
-    data: ['複数の財政指標を統合した総合スコア（0〜100）', '内訳: 予算遵守率・貯蓄率・支出トレンドの加重平均', '各指標の個別スコアと改善ポイント'],
-    pros: ['単一の数値でわかりやすい', '改善すべき要因が内訳で確認できる', 'ゲーム感覚でモチベーション維持'],
-    cons: ['スコアの根拠が不透明に感じられる', '重みの設定が恣意的', '実装コストが高い'],
-    warning: 'スコアの算出ロジックを開示しないとブラックボックス感が強い。「なぜ 55 点か」を説明できる設計が必要。',
-  },
 }
 
 // ─── メインページ ────────────────────────────────────────────────────────
 export function AssetOutlookABPrototype() {
-  const [active, setActive]     = useState<PatternId>('B')
+  const [active, setActive]     = useState<PatternId>('A')
   const [direction, setDirection] = useState(0) // 正 = 次へ（左スワイプ）、負 = 前へ
+  const [hintPlayed, setHintPlayed] = useState(false) // 初回スワイプヒント再生済み
 
   const activeIdx = PATTERNS.indexOf(active)
   const accent    = PATTERN_META[active].accent
@@ -458,7 +467,6 @@ export function AssetOutlookABPrototype() {
     A: <PatternAHero accent={accent} />,
     B: <PatternBHero accent={accent} />,
     C: <PatternCHero accent={accent} />,
-    D: <PatternDHero />,
   }
 
   return (
@@ -481,10 +489,13 @@ export function AssetOutlookABPrototype() {
         {/* ヒーローカード */}
         <motion.div
           className="relative rounded-3xl overflow-hidden mb-4"
-          style={{ background: D.heroBg, boxShadow: '0 8px 40px rgba(26,12,4,0.40)' }}
+          style={{ background: D.heroBg, boxShadow: D.shadowMd, border: `1px solid ${D.border}` }}
           initial={{ opacity: 0, y: 24, filter: 'blur(10px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={SPRING.SMOOTH}
+          role="region"
+          aria-roledescription="カルーセル"
+          aria-label="長期指標パターン比較"
         >
           {/* グローオーブ */}
           <motion.div
@@ -500,66 +511,121 @@ export function AssetOutlookABPrototype() {
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           />
 
-          {/* パターン名 + スワイプヒント */}
-          <div className="px-5 pt-4 pb-1 flex items-center justify-between">
+          {/* スワイプ領域 + サイド矢印ボタン */}
+          <div className="relative">
+            {/* 左矢印 */}
+            <motion.button
+              type="button"
+              onClick={() => goToIdx(activeIdx - 1)}
+              disabled={activeIdx === 0}
+              whileTap={{ scale: 0.88 }}
+              transition={SPRING.SNAP}
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-25 disabled:cursor-not-allowed transition-opacity hover:opacity-100"
+              style={{
+                background:  D.heroCard,
+                border:      `1px solid ${D.heroCardBorder}`,
+                color:       D.text,
+                opacity:     activeIdx === 0 ? 0.25 : 0.85,
+                backdropFilter: 'blur(4px)',
+              }}
+              aria-label="前のパターン"
+            >
+              <ChevronLeft size={16} strokeWidth={2.5} />
+            </motion.button>
+
+            {/* 右矢印 */}
+            <motion.button
+              type="button"
+              onClick={() => goToIdx(activeIdx + 1)}
+              disabled={activeIdx === PATTERNS.length - 1}
+              whileTap={{ scale: 0.88 }}
+              transition={SPRING.SNAP}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-25 disabled:cursor-not-allowed transition-opacity hover:opacity-100"
+              style={{
+                background:  D.heroCard,
+                border:      `1px solid ${D.heroCardBorder}`,
+                color:       D.text,
+                opacity:     activeIdx === PATTERNS.length - 1 ? 0.25 : 0.85,
+                backdropFilter: 'blur(4px)',
+              }}
+              aria-label="次のパターン"
+            >
+              <ChevronRight size={16} strokeWidth={2.5} />
+            </motion.button>
+
+            {/* スワイプ可能なコンテンツ領域 */}
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.06}
+              onDragEnd={handleDragEnd}
+              className="px-12 pt-5 pb-4 select-none"
+              style={{ touchAction: 'pan-y', cursor: 'grab' }}
+              whileDrag={{ cursor: 'grabbing' }}
+              // 初回マウント時に微小なウィグルでスワイプ可能性を伝える
+              animate={hintPlayed ? {} : { x: [0, -10, 6, 0] }}
+              transition={hintPlayed ? {} : { duration: 0.9, delay: 0.4, ease: 'easeInOut' }}
+              onAnimationComplete={() => setHintPlayed(true)}
+            >
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={active}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  role="group"
+                  aria-roledescription="スライド"
+                  aria-label={`${activeIdx + 1} / ${PATTERNS.length}: ${PATTERN_META[active].name}`}
+                  aria-live="polite"
+                >
+                  {heroMap[active]}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          </div>
+
+          {/* ボトムインジケーター: ドット + アクティブラベル */}
+          <div className="flex flex-col items-center gap-2 pb-4 px-4">
+            <div className="flex items-center gap-1.5" role="tablist" aria-label="パターン選択">
+              {PATTERNS.map((id, i) => {
+                const isActive = active === id;
+                const itemAccent = PATTERN_META[id].accent;
+                return (
+                  <motion.button
+                    key={id}
+                    type="button"
+                    onClick={() => goToIdx(i)}
+                    whileTap={{ scale: 0.85 }}
+                    transition={SPRING.SNAP}
+                    aria-label={`Pattern ${id}: ${PATTERN_META[id].name}`}
+                    aria-current={isActive ? 'true' : undefined}
+                    role="tab"
+                    style={{
+                      height:       7,
+                      width:        isActive ? 28 : 7,
+                      borderRadius: 9999,
+                      background:   isActive ? itemAccent : 'rgba(28,20,16,0.18)',
+                      transition:   'width 0.22s ease-out, background 0.2s',
+                    }}
+                  />
+                );
+              })}
+            </div>
             <AnimatePresence mode="wait">
               <motion.div
-                key={`name-${active}`}
+                key={`label-${active}`}
                 className="text-[11px] font-bold uppercase tracking-wider"
                 style={{ color: accent }}
-                initial={{ opacity: 0, x: direction > 0 ? 12 : -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.16 }}
               >
                 Pattern {active} — {PATTERN_META[active].name}
               </motion.div>
             </AnimatePresence>
-            <div className="text-[10px]" style={{ color: 'rgba(255,255,255,0.28)' }}>
-              ← スワイプ →
-            </div>
-          </div>
-
-          {/* スワイプ領域 */}
-          <motion.div
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.06}
-            onDragEnd={handleDragEnd}
-            className="px-5 pt-3 pb-5 select-none"
-            style={{ touchAction: 'pan-y', cursor: 'grab' }}
-            whileDrag={{ cursor: 'grabbing' }}
-          >
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={active}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-              >
-                {heroMap[active]}
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-
-          {/* ドットインジケーター */}
-          <div className="flex justify-center gap-2 pb-4">
-            {PATTERNS.map((id, i) => (
-              <motion.button
-                key={id}
-                onClick={() => goToIdx(i)}
-                style={{
-                  height: 6,
-                  borderRadius: 9999,
-                  background: active === id ? accent : 'rgba(255,255,255,0.28)',
-                }}
-                animate={{ width: active === id ? 20 : 6 }}
-                transition={SPRING.QUICK}
-                layout
-              />
-            ))}
           </div>
         </motion.div>
 
@@ -599,16 +665,16 @@ export function AssetOutlookABPrototype() {
             <table className="w-full text-[11px]" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${D.border}` }}>
-                  {['', 'A: ランウェイ', 'B: 貯蓄額', 'C: 年間ペース', 'D: スコア'].map((h) => (
+                  {['', 'A: ランウェイ', 'B: 貯蓄額', 'C: 年間ペース'].map((h) => (
                     <th key={h} className="py-2 px-3 text-left font-bold whitespace-nowrap" style={{ color: D.muted }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { label: '対象',      vals: ['資産取り崩し中', '定収入・貯蓄', '年間目標あり', '総合管理'] },
-                  { label: '直感的さ',  vals: ['△', '◎', '○', '○'] },
-                  { label: '実装コスト', vals: ['中', '低', '低〜中', '高'] },
+                  { label: '対象',      vals: ['資産取り崩し中', '定収入・貯蓄', '年間目標あり'] },
+                  { label: '直感的さ',  vals: ['△', '◎', '○'] },
+                  { label: '実装コスト', vals: ['中', '低', '低〜中'] },
                 ].map((row) => (
                   <tr key={row.label} style={{ borderBottom: `1px solid ${D.border}` }}>
                     <td className="py-2 px-3 font-semibold whitespace-nowrap" style={{ color: D.muted }}>{row.label}</td>
@@ -636,8 +702,8 @@ export function AssetOutlookABPrototype() {
           <Link to="/category-ab" style={{ color: D.brand }} className="font-semibold hover:underline">
             ← カテゴリ TOP A/B
           </Link>
-          <Link to="/home-v4" style={{ color: D.brand }} className="font-semibold hover:underline">
-            V4 ダッシュボードへ →
+          <Link to="/home" style={{ color: D.brand }} className="font-semibold hover:underline">
+            ホームへ →
           </Link>
         </div>
       </div>
