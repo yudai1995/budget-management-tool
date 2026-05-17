@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import { Gallery } from './pages/Gallery'
 import { SandboxNav } from './components/SandboxNav'
-import { NavLayoutPrototype } from './pages/NavLayoutPrototype'
 import { CalendarPagePrototype } from './pages/CalendarPagePrototype'
 import { DailyBudgetCardPalettePrototype } from './pages/DailyBudgetCardPalettePrototype'
 import { HomePrototype } from './pages/HomePrototype'
@@ -28,7 +27,6 @@ createRoot(document.getElementById('root')!).render(
       <SandboxNav />
       <Routes>
         <Route path="/" element={<Gallery />} />
-        <Route path="/nav-layout" element={<NavLayoutPrototype />} />
         <Route path="/calendar-page" element={<CalendarPagePrototype />} />
         <Route path="/daily-budget-card-palette" element={<DailyBudgetCardPalettePrototype />} />
         <Route path="/home" element={<HomePrototype />} />

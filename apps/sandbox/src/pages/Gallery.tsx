@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Layout, CalendarDays, Palette, LayoutDashboard, PieChart, TrendingUp, Settings, CircleUser, Monitor, Wand2, Rows3, BarChart2, Receipt, Layers, PiggyBank, SunMedium, Shapes } from 'lucide-react'
+import { ArrowRight, CalendarDays, Palette, LayoutDashboard, PieChart, TrendingUp, Settings, CircleUser, Monitor, Wand2, Rows3, BarChart2, Receipt, Layers, PiggyBank, SunMedium, Shapes } from 'lucide-react'
 
 type PrototypeCard = {
   path: string
@@ -11,14 +11,6 @@ type PrototypeCard = {
 }
 
 const prototypes: PrototypeCard[] = [
-  {
-    path: '/nav-layout',
-    title: 'ナビゲーション統合レイアウト',
-    description: 'PC:左サイドバー / モバイル:ボトムナビ。NAV_ITEMSを1箇所で定義。',
-    icon: Layout,
-    issue: '#141',
-    status: 'ready',
-  },
   {
     path: '/calendar-page',
     title: 'カレンダーページ刷新',
